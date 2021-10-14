@@ -57,6 +57,14 @@ class Generator {
 
 }
 
+let operators = {
+  number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "===", "!="],
+  string: ["+", "[]"],
+  boolean: ["!", "&&", "||"],
+  array: ["[]"],
+}
+
+
 let g = new Generator();
 
 // Get the type as far as we are concerned.
