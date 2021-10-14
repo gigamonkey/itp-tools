@@ -1,0 +1,35 @@
+body {
+  margin: .5in;
+  font-family: "Gill Sans", sans-serif;
+  font-weight: 300;
+}
+
+h1, h2 { font-weight: 300; }
+
+#question {
+  width: 25%;
+  margin: auto;
+  vertical-align: middle;
+}
+
+.hole {
+  margin: 4px;
+  padding: 6px;
+  width: 1em;
+  height: 1em;
+  border: thin solid rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#answers button {
+  margin: 4px;
+  padding: 6px;
+  border: none;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+#answers button.selected {
+  background: blue;
+  color: white;
+}
