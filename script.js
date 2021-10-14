@@ -4,6 +4,18 @@
 // the current level. (E.g. initially just simple values, maybe of one type;
 // later more complex expressions.) These make up the palette for a level.
 
+// Levels (values):
+//  0: just numbers
+//  1: just strings and numbers for indices.
+//  2: just booleans
+//  3: numbers and strings
+//  4: homogeneous arrays
+//  5: numbers, strings, booleans, and homogenous arrays
+//  6: add heterogenous arrays but no nesting
+//  7: add nested heterogenous arrays
+//  8: arithmetic expressions
+//  9: string expressions
+
 // Then generate random questions: pick one or more expressions at random
 // and then generate a random expression with that many holes in it and
 // evaluate it with the selected expressions to get the result. By construction
@@ -14,7 +26,7 @@ let types = ["number", "string", "boolean", "array"];
 let minNumber = -10;
 let maxNumber = 20;
 let words = ["food", "orange", "duck", "computer", "grue"];
-let maxArrayLength = 5;
+let maxArrayLength = 3;
 
 class Generator {
 
@@ -24,7 +36,7 @@ class Generator {
 
   boolean() { return Math.random() < 0.5; }
 
-  array() { return Array(this.int(maxArrayLength)).fill().map(this.arrayTypeFunction().bind(this)); }
+  array() { return Array(this.int(maxArrayLength + 1)).fill().map(this.arrayTypeFunction().bind(this)); }
 
   value() { return this.typeFunction().bind(this)(); }
 
@@ -61,4 +73,28 @@ function type(value) {
 }
 
 
+/*
+ * We have jQuery at home!
+ */
+function $(s, t) {
+  if (s === undefined) {
+    return $("<i>", "undefined")
+  } else if (s[0] === "#") {
+    return document.getElementById(s.substring(1));
+  } else if (s[0] === "<") {
+    const e = document.createElement(s.substring(1, s.length - 1));
+    if (t != undefined) {
+      e.append($(t));
+    }
+    return e;
+  } else {
+    return document.createTextNode(s);
+  }
+}
 
+function init() {
+  let answers = $("#answers");
+  for (let v of g.values(20)) {
+    answers.append($("<button>", JSON.stringify(v)))
+  }
+}

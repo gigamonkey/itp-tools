@@ -9,6 +9,7 @@ h1, h2 { font-weight: 300; }
 #question {
   width: 25%;
   margin: auto;
+  font-family: monospace;
   vertical-align: middle;
 }
 
@@ -27,6 +28,7 @@ h1, h2 { font-weight: 300; }
   padding: 6px;
   border: none;
   background: rgba(0, 0, 0, 0.2);
+  font-family: monospace;
 }
 
 #answers button.selected {
