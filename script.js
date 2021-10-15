@@ -65,8 +65,8 @@ function divide(op) {
     } else if (blankValue == 1) {
       return blankOnLeft(blankValue, g.choice([2, 3, 4]), op);
     } else {
-      let fs = factors(blankValue);
-      if (fs.length > 0) {
+      let factors = Array(blankValue).fill().map((_, i) => i).filter(i => i > 1 && blankValue % i == 0)
+      if (factors.length > 0) {
         return blankOnLeft(blankValue, g.choice(fs), op);
       } else {
         return blankOnRight(g.choice([2, 3]) * blankValue, blankValue, op);
@@ -75,19 +75,9 @@ function divide(op) {
   };
 }
 
-function factors(n) {
-  const fs = [];
-  for (let i = 2; i < n; i++) {
-    if (n % i === 0) {
-      fs.push(i);
-    }
-  }
-  return fs;
-}
-
 function modulus(op) {
   return (blankValue) => {
-    if (blankValue === 0) {
+    if (blankValue < 2) {
       return blankOnLeft(blankValue, g.nonZeroNumber(), op);
     } else {
       return pickASide(blankValue, g.nonZeroNumber(), op);
