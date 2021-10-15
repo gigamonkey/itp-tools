@@ -46,6 +46,10 @@ class Random {
         return this.number();
       case 1:
         return this.oneOf(["number", "string"]);
+      case 2:
+        return this.oneOf(["number", "string", "boolean"]);
+      case 3:
+        return this.oneOf(["number", "string", "boolean", "array"]);
       default:
         console.log("level " + level + " nyi");
     }

@@ -1,6 +1,6 @@
 import { $, clear, withClass } from "./whjqah.js";
 import { shuffleArray } from "./shuffle.js";
-import { random as g} from "./random.js";
+import { random as g } from "./random.js";
 import { Value, Blank, BinaryOp, PrefixOp } from "./expressions.js";
 
 // Basic plan.
@@ -111,22 +111,59 @@ let operatorsForType = {
 };
 
 const ops = {
-  "+": op((a, b) => a + b, sameType),
-  "-": op((a, b) => a - b, numeric),
-  "*": op((a, b) => a * b, numeric),
-  "/": op((a, b) => a / b, divide),
-  "%": op((a, b) => a % b, modulus),
-  "<": op((a, b) => a < b, numeric),
-  "<=": op((a, b) => a <= b, numeric),
-  ">": op((a, b) => a > b, numeric),
-  ">=": op((a, b) => a >= b, numeric),
-  "===": op((a, b) => a === b, any),
-  "!==": op((a, b) => a !== b, any),
-  "[]": op((a, b) => a[b], index),
-  "&&": op((a, b) => a && b, boolean),
-  "||": op((a, b) => a || b, boolean),
-  "!": op((a) => !a, prefix),
+  "+": op((a, b) => a + b, sameType), // matches type
+  "-": op((a, b) => a - b, numeric), // number
+  "*": op((a, b) => a * b, numeric),  // number
+  "/": op((a, b) => a / b, divide), // number
+  "%": op((a, b) => a % b, modulus), // number
+  "<": op((a, b) => a < b, numeric), // number
+  "<=": op((a, b) => a <= b, numeric), // number
+  ">": op((a, b) => a > b, numeric), // number
+  ">=": op((a, b) => a >= b, numeric), // number
+  "===": op((a, b) => a === b, any), // any
+  "!==": op((a, b) => a !== b, any), // any
+  "[]": op((a, b) => a[b], index), // depends on what's filled in
+  "&&": op((a, b) => a && b, boolean), // boolean
+  "||": op((a, b) => a || b, boolean), // boolean
+  "!": op((a) => !a, prefix), // boolean
 };
+
+function okTypes(op, nonBlankType) {
+  switch (op) {
+    case "+":
+      return [nonBlankType];
+
+    case "-":
+    case "*":
+    case "/":
+    case "%":
+    case "<":
+    case "<=":
+    case ">":
+    case ">=":
+      return ["number"];
+
+    case "[]":
+      if (nonBlankType == "string" || nonBlankType == "array") {
+        return ["number"];
+      } else {
+        return ["string", "array"];
+      }
+
+    case "&&":
+    case "||":
+    case "!":
+      return ["boolean"];
+
+    case "!==":
+    case "===":
+      return ["number", "string", "boolean", "array"];
+
+    default:
+      throw Error("Missing op " + op);
+  }
+}
+
 
 function op(fn, constructor) {
   return { fn: fn, constructor: constructor };
@@ -152,7 +189,7 @@ function type(value) {
 
 let model = {
   currentAnswers: {},
-  level: 1,
+  level: 3,
 };
 
 function init() {
@@ -203,11 +240,25 @@ function logAnswer(expr, got) {
   // we used to create the question because there could be
   // multiple answers that would get the same result (e.g.
   // consider ? * 0 ==> 0.)
-  const expected = expr.blankValue();
+
+  // Things to check:
+  // - Was the selected answer an acceptable type?
+  // - Does evaluating the expression with the selected answer yield the same result.
+  //
+  // The former does not necessarily require that the answer is the same type
+  // as the value in the blank--in an === or !== any value is a plausible type.
+  // (I'm ignoring the legality of types after coercion so no numbers to && or
+  // booleans to +, etc.)
+  //
+
+  const inBlank = expr.blankValue();
+  const nonBlankType = type(expr.nonBlankValue());
+  const types = okTypes(expr.op, nonBlankType);
+  const typeOk = types.indexOf(type(got)) != -1
+
   const withGot = expr.fillBlank(got);
-  const typeRight = type(got) === type(expected);
   const valueRight = withGot.evaluate() === expr.evaluate();
-  const passed = typeRight && valueRight;
+  const passed = typeOk && valueRight;
 
   const row = $("#results").insertRow(0);
   row.className = passed ? "pass" : "fail";
@@ -216,16 +267,22 @@ function logAnswer(expr, got) {
   const resultCell = row.insertCell();
   if (passed) {
     resultCell.append($("✅"));
-  } else if (typeRight) {
-    const e = JSON.stringify(expected);
-
-    resultCell.append($("❌: right type but wrong value. "));
-    resultCell.append(withClass("mono", $("<span>", e)));
+  } else if (typeOk) {
+    resultCell.append($("❌: value is an ok type but the value itelf isn't quite right. "));
+    resultCell.append(withClass("mono", $("<span>", JSON.stringify(inBlank))));
     resultCell.append($(" would have worked"));
   } else {
-    resultCell.append($(`❌: expected a ${type(expected)}`));
+    let expectation;
+    if (types.length == 1) {
+      expectation = types[0];
+    } else {
+      expectation = `either ${types[0]} or ${types[1]}`;
+    }
+    resultCell.append($(`❌: wrong type of value. Should have been ${expectation}.`));
   }
 }
+
+
 
 function showExpression(expr, where) {
   const s1 = withClass("mono", $("<span>"));

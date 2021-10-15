@@ -31,7 +31,14 @@ class Expression {
    * Return the blanked out value, if any, in this expression. Otherwise undefined.
    */
   blankValue() {
-    throw Error("Abstract method not implemented.");
+    return undefined;
+  }
+
+  /*
+   * Return the unblanked value, if any, in this expression. Otherwise undefined.
+   */
+  nonBlankValue() {
+    return undefined;
   }
 
 }
@@ -54,10 +61,7 @@ class Value extends Expression {
   fillBlank(value) {
     return this;
   }
-
-  blankValue() {
-    return undefined;
-  }
+  nonBlankValue() { return this.value; }
 }
 
 /*
@@ -111,11 +115,12 @@ class BinaryOp extends Expression {
     );
   }
 
-  /*
-   * Get the value of the blank spot in this expression.
-   */
   blankValue() {
     return this.left.blankValue() ?? this.right.blankValue();
+  }
+
+  nonBlankValue() {
+    return this.left.nonBlankValue() ?? this.right.nonBlankValue();
   }
 }
 
