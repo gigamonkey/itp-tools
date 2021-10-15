@@ -108,6 +108,8 @@ class Value {
   }
 
   fillBlank(value) { return this; }
+
+  blankValue() { return undefined; }
 }
 
 /*
@@ -120,6 +122,7 @@ class Blank extends Value {
   fillBlank(value) {
     return new Value(value);
   }
+  blankValue() { return this.value; }
 }
 
 class NumberPlus {
@@ -138,6 +141,11 @@ class NumberPlus {
 
   fillBlank(value) {
     return new NumberPlus(this.a.fillBlank(value), this.b.fillBlank(value));
+  }
+
+  blankValue() { 
+    const a = this.a.blankValue();
+    return a !== undefined ? a : this.b.blankValue();
   }
 }
 
@@ -164,15 +172,17 @@ let model = {
 };
 
 function init() {
-  $("#log").append(makeResultsTable());
   model.currentAnswers = uniqueAnswers();
   populateAnswers(model.currentAnswers);
   setQuestion();
 }
 
-function populateAnswers(answers) {
+function populateAnswers(currentAnswers) {
+  const answers = Object.values(currentAnswers);
+  shuffleArray(answers);
+
   const div = $("#answers");
-  for (const json in answers) {
+  for (const json of answers) {
     let v = answers[json];
     let b = $("<button>", json);
     b.value = json;
@@ -200,14 +210,12 @@ function onAnswer(e) {
 
 function logAnswer(expr, answer) {
   const answered = expr.fillBlank(answer);
-  const got = answered.evaluate();
-  const expected = expr.evaluate();
   const passed = answered.evaluate() === expr.evaluate();
   const row = $("#results").insertRow(0);
   row.className = passed ? "pass" : "fail";
   showExpression(expr, row.insertCell());;
-  row.insertCell().append($(JSON.stringify(got)));
-  row.insertCell().append($(JSON.stringify(expected)));
+  row.insertCell().append($(JSON.stringify(answer)));
+  row.insertCell().append($(JSON.stringify(expr.blankValue())));
   row.insertCell().append($(passed ? "✅" : "❌"));
  }
 
@@ -233,39 +241,3 @@ function uniqueAnswers() {
   return answers;
 }
 
-
-/*
- * Make a table to told the results of running the tests for one function.
- */
-function makeResultsTable() {
-  const table = $("<table>");
-  const colgroup = $("<colgroup>");
-  colgroup.append(withClass("question", $("<col>")));
-  colgroup.append(withClass("got", $("<col>")));
-  colgroup.append(withClass("expected", $("<col>")));
-  colgroup.append(withClass("result", $("<col>")));
-  table.append(colgroup);
-
-  const thead = $("<thead>");
-  const tr = $("<tr>");
-  tr.append($("<th>", "Question"));
-  tr.append($("<th>", "Got"))
-  tr.append($("<th>", "Expected"));
-  tr.append($("<th>", "Passed?"));
-  thead.append(tr);
-  table.append(thead);
-  const tbody = $("<tbody>");
-  tbody.id = "results";
-  table.append(tbody);
-  return table;
-}
-
-function addResultRow(tbody, fn, input, got, expected, passed) {
-  const row = tbody.insertRow();
-  row.className = passed ? "pass" : "fail";
-  row.insertCell().append(fn + "(" + input.map(JSON.stringify).join(", ") + ")");
-  row.insertCell().append($(JSON.stringify(got)));
-  row.insertCell().append($(JSON.stringify(expected)));
-  row.insertCell().append($(passed ? "✅" : "❌"));
-  return passed;
-}

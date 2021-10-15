@@ -9,8 +9,27 @@
   <body onload="init()">
     <div id="question"></div>
     <div id="answers"></div>
-    <div id="log"></div>
+    <div id="log">
+      <table>
+        <colgroup>
+          <col class="question">
+          <col class="got">
+          <col class="expected">
+          <col class="result">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Got</th>
+            <th>Expected</th>
+            <th>Passed?</th>
+          </tr>
+      </thead>
+      <tbody id="results"></tbody>
+    </table>
+    </div>
     <script src="whjqah.js"></script>
+    <script src="shuffle.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
