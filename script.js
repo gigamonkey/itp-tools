@@ -107,7 +107,7 @@ let operatorsForType = {
   number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "===", "!=="],
   string: ["+", "[]", "===", "!=="],
   boolean: ["&&", "||", "!", "===", "!=="],
-  array: ["[]", "===", "!=="],
+  array: ["[]"] //, "===", "!=="],
 };
 
 const ops = {
@@ -268,7 +268,7 @@ function logAnswer(expr, got) {
   if (passed) {
     resultCell.append($("✅"));
   } else if (typeOk) {
-    resultCell.append($("❌: value is an ok type but the value itelf isn't quite right. "));
+    resultCell.append($("❌: value is an ok type for the operator but the value itelf isn't quite right. "));
     resultCell.append(withClass("mono", $("<span>", JSON.stringify(inBlank))));
     resultCell.append($(" would have worked"));
   } else {

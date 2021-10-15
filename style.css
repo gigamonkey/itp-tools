@@ -24,7 +24,6 @@ h1, h2 { font-weight: 300; }
 }
 
 #answers {
-  height: 50px;
   font-family: monospace;
   text-align: center;
   //border: thin solid red;
