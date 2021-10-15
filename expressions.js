@@ -4,12 +4,11 @@ import { $, clear, withClass } from "./whjqah.js";
  * Expressions possibly containing a blanked out value.
  */
 class Expression {
-
   /*
    * Evaluate the expression producing an actual Javascript value.
    */
   evaluate() {
-    throw Error("Abstract method not implemented.")
+    throw Error("Abstract method not implemented.");
   }
 
   /*
@@ -40,7 +39,6 @@ class Expression {
   nonBlankValue() {
     throw Error("Abstract method not implemented.");
   }
-
 }
 
 /*
@@ -62,9 +60,13 @@ class Value extends Expression {
     return this;
   }
 
-  blankValue() { return undefined; }
+  blankValue() {
+    return undefined;
+  }
 
-  nonBlankValue() { return this.value; }
+  nonBlankValue() {
+    return this.value;
+  }
 }
 
 /*
@@ -81,9 +83,10 @@ class Blank extends Value {
   blankValue() {
     return this.value;
   }
-  
-  nonBlankValue() { return undefined; }
 
+  nonBlankValue() {
+    return undefined;
+  }
 }
 
 class BinaryOp extends Expression {
@@ -155,8 +158,9 @@ class PrefixOp extends Expression {
     return this.operand.blankValue();
   }
 
-  nonBlankValue() { return undefined; }
+  nonBlankValue() {
+    return undefined;
+  }
 }
-
 
 export { Value, Blank, BinaryOp, PrefixOp };
