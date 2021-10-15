@@ -1,5 +1,5 @@
-import { $, clear, withClass } from './whjqah.js';
-import { shuffleArray } from './shuffle.js';
+import { $, clear, withClass } from "./whjqah.js";
+import { shuffleArray } from "./shuffle.js";
 
 // Basic plan.
 
@@ -71,7 +71,7 @@ class Generator {
       case 0:
         return this.number();
       case 1:
-        return this.oneOf(['number', 'string']);
+        return this.oneOf(["number", "string"]);
       default:
         console.log("level " + level + " nyi");
     }
@@ -121,9 +121,13 @@ class Value {
     parent.append($(JSON.stringify(this.value)));
   }
 
-  fillBlank(value) { return this; }
+  fillBlank(value) {
+    return this;
+  }
 
-  blankValue() { return undefined; }
+  blankValue() {
+    return undefined;
+  }
 }
 
 /*
@@ -136,7 +140,9 @@ class Blank extends Value {
   fillBlank(value) {
     return new Value(value);
   }
-  blankValue() { return this.value; }
+  blankValue() {
+    return this.value;
+  }
 }
 
 class BinaryOp {
@@ -155,7 +161,10 @@ class BinaryOp {
   }
 
   fillBlank(value) {
-    return new this.constructor(this.a.fillBlank(value), this.b.fillBlank(value));
+    return new this.constructor(
+      this.a.fillBlank(value),
+      this.b.fillBlank(value)
+    );
   }
 
   blankValue() {
@@ -170,7 +179,7 @@ class BinaryOp {
 
 class Plus extends BinaryOp {
   constructor(a, b) {
-    super(a, { fn: (a, b) => a + b, code: '+' }, b);
+    super(a, { fn: (a, b) => a + b, code: "+" }, b);
   }
   otherValue(blankValue) {
     return new Value(g.valueOf(type(blankValue)));
@@ -179,19 +188,19 @@ class Plus extends BinaryOp {
 
 class Minus extends BinaryOp {
   constructor(a, b) {
-    super(a, { fn: (a, b) => a - b, code: '-' }, b);
+    super(a, { fn: (a, b) => a - b, code: "-" }, b);
   }
 }
 
 class Multiply extends BinaryOp {
   constructor(a, b) {
-    super(a, { fn: (a, b) => a * b, code: '*' }, b);
+    super(a, { fn: (a, b) => a * b, code: "*" }, b);
   }
 }
 
 class Divide extends BinaryOp {
   constructor(a, b) {
-    super(a, { fn: (a, b) => a / b, code: '/' }, b);
+    super(a, { fn: (a, b) => a / b, code: "/" }, b);
   }
   otherValue(v) {
     if (v === 0) {
@@ -220,7 +229,10 @@ class StringIndex {
   }
 
   fillBlank(value) {
-    return new this.constructor(this.s.fillBlank(value), this.s.fillBlank(value));
+    return new this.constructor(
+      this.s.fillBlank(value),
+      this.s.fillBlank(value)
+    );
   }
 
   blankValue() {
@@ -233,13 +245,10 @@ class StringIndex {
   }
 }
 
-
-
 const forType = {
   number: [Plus, Minus, Multiply, Divide],
   string: [Plus],
-}
-
+};
 
 function forBlank(blank) {
   const clazz = g.choice(forType[type(blank.value)]);
@@ -346,7 +355,6 @@ function showExpression(expr, where) {
   where.append(s2);
 }
 
-
 function uniqueAnswers() {
   let count = 0;
   let iters = 0;
@@ -373,7 +381,4 @@ function multiples(n) {
   return ms;
 }
 
-
-
 document.addEventListener("DOMContentLoaded", init);
-
