@@ -1,6 +1,7 @@
 import { $, clear, withClass } from "./whjqah.js";
 import { shuffleArray } from "./shuffle.js";
 import { random as g} from "./random.js";
+import { Value, Blank, BinaryOp, PrefixOp } from "./expressions.js";
 
 // Basic plan.
 
@@ -20,104 +21,21 @@ import { random as g} from "./random.js";
 //  8: arithmetic expressions
 //  9: string expressions
 
-class Value {
-  constructor(value) {
-    this.value = value;
-  }
-  evaluate() {
-    return this.value;
-  }
-  render(parent) {
-    parent.append($(JSON.stringify(this.value)));
-  }
 
-  fillBlank(value) {
-    return this;
-  }
-
-  blankValue() {
-    return undefined;
+function pickASide(blankValue, otherValue, op) {
+  if (Math.random() < 0.5) {
+    return blankOnLeft(blankValue, otherValue, op);
+  } else {
+    return blankOnRight(otherValue, blankValue, op);
   }
 }
 
-/*
- * A blank spot in an expression that needs to be filled in though it does
- * have a particular value associated with it.
- */
-class Blank extends Value {
-  render(parent) {
-    parent.append(withClass("hole", $("<span>", "?")));
-  }
-  fillBlank(value) {
-    return new Value(value);
-  }
-  blankValue() {
-    return this.value;
-  }
+function blankOnLeft(left, right, op) {
+  return new BinaryOp(new Blank(left), new Value(right), op, ops[op].fn);
 }
 
-class BinaryOp {
-  constructor(left, right, op) {
-    this.left = left;
-    this.right = right;
-    this.op = op;
-  }
-  evaluate() {
-    return ops[this.op].fn(this.left.evaluate(), this.right.evaluate());
-  }
-  render(parent) {
-    this.left.render(parent);
-    if (this.op === "[]") {
-      parent.append($("["));
-      this.right.render(parent);
-      parent.append($("]"));
-    } else {
-      parent.append($(" " + this.op + " "));
-      this.right.render(parent);
-    }
-  }
-
-  /*
-   * Produce a BinaryOp with the blank value filled in with the given value.
-   */
-  fillBlank(value) {
-    return new BinaryOp(
-      this.left.fillBlank(value),
-      this.right.fillBlank(value),
-      this.op
-    );
-  }
-
-  /*
-   * Get the value of the blank spot in this expression.
-   */
-  blankValue() {
-    return this.left.blankValue() ?? this.right.blankValue();
-  }
-}
-
-class PrefixOp {
-  constructor(operand, op) {
-    this.operand = operand;
-    this.op = op;
-  }
-
-  evaluate() {
-    return ops[this.op].fn(this.operand.evaluate());
-  }
-
-  render(parent) {
-    parent.append($(this.op));
-    this.operand.render(parent);
-  }
-
-  fillBlank(value) {
-    return new PrefixOp(this.operand.fillBlank(value), this.op);
-  }
-
-  blankValue() {
-    return this.operand.blankValue();
-  }
+function blankOnRight(left, right, op) {
+  return new BinaryOp(new Value(left), new Blank(right), op, ops[op].fn);
 }
 
 function numeric(op) {
@@ -137,7 +55,7 @@ function sameType(op) {
 }
 
 function prefix(op) {
-  return (blankValue) => new PrefixOp(blankValue, op);
+  return (blankValue) => new PrefixOp(blankValue, op, ops[op].fn);
 }
 
 function divide(op) {
@@ -155,6 +73,16 @@ function divide(op) {
       }
     }
   };
+}
+
+function factors(n) {
+  const fs = [];
+  for (let i = 2; i < n; i++) {
+    if (n % i === 0) {
+      fs.push(i);
+    }
+  }
+  return fs;
 }
 
 function modulus(op) {
@@ -183,21 +111,7 @@ function index(op) {
   };
 }
 
-function blankOnLeft(left, right, op) {
-  return new BinaryOp(new Blank(left), new Value(right), op);
-}
 
-function blankOnRight(left, right, op) {
-  return new BinaryOp(new Value(left), new Blank(right), op);
-}
-
-function pickASide(blankValue, otherValue, op) {
-  if (Math.random() < 0.5) {
-    return blankOnLeft(blankValue, otherValue, op);
-  } else {
-    return blankOnRight(otherValue, blankValue, op);
-  }
-}
 
 let operatorsForType = {
   number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "===", "!=="],
@@ -349,15 +263,6 @@ function uniqueAnswers() {
   return answers;
 }
 
-// Factors of n. Does not include 1 or n.
-function factors(n) {
-  const fs = [];
-  for (let i = 2; i < n; i++) {
-    if (n % i === 0) {
-      fs.push(i);
-    }
-  }
-  return fs;
-}
+
 
 document.addEventListener("DOMContentLoaded", init);
