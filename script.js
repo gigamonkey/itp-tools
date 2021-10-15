@@ -21,57 +21,76 @@ import { Value, Blank, BinaryOp, PrefixOp } from "./expressions.js";
 //  8: arithmetic expressions
 //  9: string expressions
 
-function pickASide(blankValue, otherValue, op) {
+let all_types = ["number", "string", "boolean", "array"];
+
+function pickASide(blankValue, otherValue, op, okTypes) {
   if (Math.random() < 0.5) {
-    return blankOnLeft(blankValue, otherValue, op);
+    return blankOnLeft(blankValue, otherValue, op, okTypes);
   } else {
-    return blankOnRight(otherValue, blankValue, op);
+    return blankOnRight(otherValue, blankValue, op, okTypes);
   }
 }
 
-function blankOnLeft(left, right, op) {
-  return new BinaryOp(new Blank(left), new Value(right), op, ops[op].fn);
+function blankOnLeft(left, right, op, okTypes) {
+  return new BinaryOp(
+    new Blank(left),
+    new Value(right),
+    op,
+    ops[op].fn,
+    okTypes
+  );
 }
 
 function blankOnRight(left, right, op) {
-  return new BinaryOp(new Value(left), new Blank(right), op, ops[op].fn);
+  return new BinaryOp(
+    new Value(left),
+    new Blank(right),
+    op,
+    ops[op].fn,
+    okTypes
+  );
 }
 
 function numeric(op) {
-  return (blankValue) => pickASide(blankValue, g.number(), op);
+  return (blankValue) => pickASide(blankValue, g.number(), op, ["number"]);
 }
 
 function any(op) {
-  return (blankValue) => pickASide(blankValue, g.value(), op);
+  return (blankValue) => pickASide(blankValue, g.value(), op, all_types);
 }
 
 function boolean(op) {
-  return (blankValue) => pickASide(blankValue, g.boolean(), op);
+  return (blankValue) => pickASide(blankValue, g.boolean(), op, ["boolean"]);
 }
 
 function sameType(op) {
-  return (blankValue) => pickASide(blankValue, g.valueOf(type(blankValue)), op);
+  return (blankValue) => {
+    let blankType = type(blankValue);
+    pickASide(blankValue, g.valueOf(blankType), op, [blankType]);
+  };
 }
 
 function prefix(op) {
-  return (blankValue) => new PrefixOp(blankValue, op, ops[op].fn);
+  return (blankValue) => new PrefixOp(blankValue, op, ops[op].fn, ["boolean"]);
 }
 
 function divide(op) {
   return (blankValue) => {
     if (blankValue === 0) {
-      return blankOnLeft(blankValue, g.nonZeroNumber(), op);
+      return blankOnLeft(blankValue, g.nonZeroNumber(), op, ["number"]);
     } else if (blankValue == 1) {
-      return blankOnLeft(blankValue, g.choice([2, 3, 4]), op);
+      return blankOnLeft(blankValue, g.choice([2, 3, 4]), op, ["number"]);
     } else {
       let factors = Array(blankValue)
         .fill()
         .map((_, i) => i)
         .filter((i) => i > 1 && blankValue % i == 0);
       if (factors.length > 0) {
-        return blankOnLeft(blankValue, g.choice(fs), op);
+        return blankOnLeft(blankValue, g.choice(fs), op, ["number"]);
       } else {
-        return blankOnRight(g.choice([2, 3]) * blankValue, blankValue, op);
+        return blankOnRight(g.choice([2, 3]) * blankValue, blankValue, op, [
+          "number",
+        ]);
       }
     }
   };
@@ -80,9 +99,9 @@ function divide(op) {
 function modulus(op) {
   return (blankValue) => {
     if (blankValue < 2) {
-      return blankOnLeft(blankValue, g.nonZeroNumber(), op);
+      return blankOnLeft(blankValue, g.nonZeroNumber(), op, ["number"]);
     } else {
-      return pickASide(blankValue, g.nonZeroNumber(), op);
+      return pickASide(blankValue, g.nonZeroNumber(), op, ["number"]);
     }
   };
 }
@@ -91,14 +110,16 @@ function index(op) {
   return (blankValue) => {
     let t = type(blankValue);
     if (t === "string" || t === "array") {
-      return blankOnLeft(blankValue, g.int(0, blankValue.length), op);
+      return blankOnLeft(blankValue, g.int(0, blankValue.length), op, [
+        "number",
+      ]);
     } else {
       // FIXME: move to generator and add possibility of getting array
       let s = "abcdefghijklmnopqrstuvwxyz".substring(
         0,
         Math.floor(blankValue * 1.5)
       );
-      return blankOnRight(s, blankValue, op);
+      return blankOnRight(s, blankValue, op, ["string", "array"]);
     }
   };
 }
@@ -250,11 +271,7 @@ function logAnswer(expr, got) {
   // booleans to +, etc.)
   //
 
-  const inBlank = expr.blankValue();
-  const nonBlankType = type(expr.nonBlankValue());
-  const types = okTypes(expr.op, nonBlankType);
-  const typeOk = types.indexOf(type(got)) != -1;
-
+  const typeOk = expr.okTypes.indexOf(type(got)) != -1;
   const withGot = expr.fillBlank(got);
   const valueRight = withGot.evaluate() === expr.evaluate();
   const passed = typeOk && valueRight;
@@ -272,14 +289,16 @@ function logAnswer(expr, got) {
         "❌: value is an ok type for the operator but the value itelf isn't quite right. "
       )
     );
-    resultCell.append(withClass("mono", $("<span>", JSON.stringify(inBlank))));
+    resultCell.append(
+      withClass("mono", $("<span>", JSON.stringify(expr.blankValue())))
+    );
     resultCell.append($(" would have worked"));
   } else {
     let expectation;
-    if (types.length == 1) {
-      expectation = types[0];
+    if (expr.okTypes.length == 1) {
+      expectation = expr.okTypes[0];
     } else {
-      expectation = `either ${types[0]} or ${types[1]}`;
+      expectation = `either ${expr.okTypes[0]} or ${expr.okTypes[1]}`;
     }
     resultCell.append(
       $(`❌: wrong type of value. Should have been ${expectation}.`)

@@ -90,12 +90,13 @@ class Blank extends Value {
 }
 
 class BinaryOp extends Expression {
-  constructor(left, right, op, fn) {
+  constructor(left, right, op, fn, okTypes) {
     super();
     this.left = left;
     this.right = right;
     this.op = op;
     this.fn = fn;
+    this.okTypes = okTypes;
   }
   evaluate() {
     return this.fn(this.left.evaluate(), this.right.evaluate());
@@ -134,11 +135,12 @@ class BinaryOp extends Expression {
 }
 
 class PrefixOp extends Expression {
-  constructor(operand, op, fn) {
+  constructor(operand, op, fn, okTypes) {
     super();
     this.operand = operand;
     this.op = op;
     this.fn = fn;
+    this.okTypes = okTypes;
   }
 
   evaluate() {
