@@ -1,5 +1,5 @@
-import { $, clear, withClass } from './whjqah.js';
-import { shuffleArray } from './shuffle.js';
+import { $, clear, withClass } from "./whjqah.js";
+import { shuffleArray } from "./shuffle.js";
 
 // Basic plan.
 
@@ -71,7 +71,7 @@ class Generator {
       case 0:
         return this.number();
       case 1:
-        return this.oneOf(['number', 'string']);
+        return this.oneOf(["number", "string"]);
       default:
         console.log("level " + level + " nyi");
     }
@@ -103,7 +103,6 @@ class Generator {
 
 let g = new Generator();
 
-
 class Value {
   constructor(value) {
     this.value = value;
@@ -115,9 +114,13 @@ class Value {
     parent.append($(JSON.stringify(this.value)));
   }
 
-  fillBlank(value) { return this; }
+  fillBlank(value) {
+    return this;
+  }
 
-  blankValue() { return undefined; }
+  blankValue() {
+    return undefined;
+  }
 }
 
 /*
@@ -130,7 +133,9 @@ class Blank extends Value {
   fillBlank(value) {
     return new Value(value);
   }
-  blankValue() { return this.value; }
+  blankValue() {
+    return this.value;
+  }
 }
 
 class BinaryOp {
@@ -158,14 +163,18 @@ class BinaryOp {
    * Produce a BinaryOp with the blank value filled in with the given value.
    */
   fillBlank(value) {
-    return new BinaryOp(this.left.fillBlank(value), this.right.fillBlank(value), this.op);
+    return new BinaryOp(
+      this.left.fillBlank(value),
+      this.right.fillBlank(value),
+      this.op
+    );
   }
 
   /*
    * Get the value of the blank spot in this expression.
    */
   blankValue() {
-    return this.left.blankValue() ?? this.right.blankValue()
+    return this.left.blankValue() ?? this.right.blankValue();
   }
 }
 
@@ -208,7 +217,7 @@ function sameType(op) {
 }
 
 function prefix(op) {
-  return(blankValue) => new PrefixOp(blankValue, op);
+  return (blankValue) => new PrefixOp(blankValue, op);
 }
 
 function divide(blankValue) {
@@ -236,11 +245,14 @@ function modulus(blankValue) {
 
 function index(blankValue) {
   let t = type(blankValue);
-  if (t === 'string' || t === 'array') {
+  if (t === "string" || t === "array") {
     return blankOnLeft(blankValue, g.int(0, blankValue.length), "[]");
   } else {
     // FIXME: move to generator and add possibility of getting array
-    let s = "abcdefghijklmnopqrstuvwxyz".substring(0, Math.floor(blankValue * 1.5));
+    let s = "abcdefghijklmnopqrstuvwxyz".substring(
+      0,
+      Math.floor(blankValue * 1.5)
+    );
     return blankOnRight(s, blankValue, "[]");
   }
 }
@@ -302,7 +314,7 @@ const constructors = {
   "&&": simpleBoolean("&&"),
   "||": simpleBoolean("||"),
   "!": prefix("!"),
-}
+};
 
 function forBlank(blankValue) {
   const op = g.choice(operatorsForType[type(blankValue)]);
@@ -409,7 +421,6 @@ function showExpression(expr, where) {
   where.append(s2);
 }
 
-
 function uniqueAnswers() {
   let count = 0;
   let iters = 0;
@@ -437,7 +448,4 @@ function factors(n) {
   return fs;
 }
 
-
-
 document.addEventListener("DOMContentLoaded", init);
-
