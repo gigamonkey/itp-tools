@@ -1,3 +1,6 @@
+import { $, clear, withClass } from './whjqah.js';
+import { shuffleArray } from './shuffle.js';
+
 // Basic plan.
 
 // Generate a bunch of random expressions whose complexity is based on
@@ -240,4 +243,6 @@ function uniqueAnswers() {
   }
   return answers;
 }
+
+document.addEventListener("DOMContentLoaded", init);
 

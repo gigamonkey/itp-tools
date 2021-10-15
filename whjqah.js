@@ -36,4 +36,4 @@ function withClass(className, e) {
   return e;
 }
 
-
+export { $, clear, withClass };
