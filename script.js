@@ -59,10 +59,11 @@ class Generator {
   }
 
   valueForLevel(level) {
-    if (level === 0) {
-      return this.number();
-    } else {
-      console.log("level " + level + " nyi");
+    switch (level) {
+      case 0:
+        return this.number();
+      default:
+        console.log("level " + level + " nyi");
     }
   }
 
@@ -146,7 +147,7 @@ class NumberPlus {
     return new NumberPlus(this.a.fillBlank(value), this.b.fillBlank(value));
   }
 
-  blankValue() { 
+  blankValue() {
     const a = this.a.blankValue();
     return a !== undefined ? a : this.b.blankValue();
   }
@@ -177,6 +178,7 @@ let model = {
 function init() {
   model.currentAnswers = uniqueAnswers();
   populateAnswers(model.currentAnswers);
+  clear($("#results"));
   setQuestion();
 }
 
@@ -195,12 +197,17 @@ function populateAnswers(currentAnswers) {
 }
 
 function setQuestion() {
-  let a = g.choice(Object.values(model.currentAnswers));
-  let expr = forBlank(new Blank(a));
-  model.currentQuestion = expr;
-  showExpression(expr, clear($("#question")));
+  const answers = Object.values(model.currentAnswers);
+  if (answers.length > 0) {
+    let a = g.choice(answers);
+    let expr = forBlank(new Blank(a));
+    model.currentQuestion = expr;
+    showExpression(expr, clear($("#question")));
+  } else {
+    model.level++;
+    init();
+  }
 }
-
 
 function onAnswer(e) {
   const answer = JSON.parse(e.target.value);
@@ -220,7 +227,7 @@ function logAnswer(expr, answer) {
   row.insertCell().append($(JSON.stringify(answer)));
   row.insertCell().append($(JSON.stringify(expr.blankValue())));
   row.insertCell().append($(passed ? "✅" : "❌"));
- }
+}
 
 function showExpression(expr, where) {
   expr.render(where);
