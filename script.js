@@ -1,5 +1,6 @@
 import { $, clear, withClass } from "./whjqah.js";
 import { shuffleArray } from "./shuffle.js";
+import { random as g} from "./random.js";
 
 // Basic plan.
 
@@ -23,85 +24,6 @@ import { shuffleArray } from "./shuffle.js";
 // and then generate a random expression with that many holes in it and
 // evaluate it with the selected expressions to get the result. By construction
 // the expressions needed to fill the holes exist.
-
-let types = ["number", "string", "boolean", "array"];
-
-let minNumber = 0;
-let maxNumber = 10;
-let words = ["food", "orange", "duck", "computer", "grue"];
-let maxArrayLength = 3;
-
-class Generator {
-  number() {
-    return this.int(minNumber, maxNumber);
-  }
-
-  nonZeroNumber() {
-    return this.int(1, maxNumber);
-  }
-
-  string() {
-    return this.choice(words);
-  }
-
-  boolean() {
-    return Math.random() < 0.5;
-  }
-
-  array() {
-    return Array(this.int(maxArrayLength + 1))
-      .fill()
-      .map(this.arrayTypeFunction().bind(this));
-  }
-
-  value() {
-    return this.typeFunction().bind(this)();
-  }
-
-  valueOf(type) {
-    return this[type]();
-  }
-
-  oneOf(types) {
-    return this.valueOf(this.choice(types));
-  }
-
-  valueForLevel(level) {
-    switch (level) {
-      case 0:
-        return this.number();
-      case 1:
-        return this.oneOf(["number", "string"]);
-      default:
-        console.log("level " + level + " nyi");
-    }
-  }
-
-  values(n) {
-    return Array(n).fill().map(this.value.bind(this));
-  }
-
-  int(min, max) {
-    if (max === undefined) {
-      [min, max] = [0, min];
-    }
-    return min + Math.floor(Math.random() * (max - min));
-  }
-
-  choice(choices) {
-    return choices[this.int(choices.length)];
-  }
-
-  arrayTypeFunction() {
-    return this.choice([this.number, this.string, this.boolean]);
-  }
-
-  typeFunction() {
-    return this.choice([this.number, this.string, this.boolean, this.array]);
-  }
-}
-
-let g = new Generator();
 
 class Value {
   constructor(value) {
@@ -289,10 +211,6 @@ let operatorsForType = {
   array: ["[]", "===", "!=="],
 };
 
-function op(fn, constructor) {
-  return { fn: fn, constructor: constructor };
-}
-
 const ops = {
   "+": op((a, b) => a + b, sameType),
   "-": op((a, b) => a - b, numeric),
@@ -310,6 +228,10 @@ const ops = {
   "||": op((a, b) => a || b, boolean),
   "!": op((a) => !a, prefix),
 };
+
+function op(fn, constructor) {
+  return { fn: fn, constructor: constructor };
+}
 
 function forBlank(blankValue) {
   const op = g.choice(operatorsForType[type(blankValue)]);
