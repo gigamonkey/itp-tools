@@ -115,7 +115,7 @@ class Value {
  */
 class Blank extends Value {
   render(parent) {
-    parent.append(withClass("hole", $("<span>")));
+    parent.append(withClass("hole", $("<span>", "?")));
   }
   fillBlank(value) {
     return new Value(value);
@@ -159,7 +159,7 @@ function type(value) {
 }
 
 let model = {
-  currentAnswers: [],
+  currentAnswers: {},
   level: 0,
 };
 
@@ -172,8 +172,8 @@ function init() {
 
 function populateAnswers(answers) {
   const div = $("#answers");
-  for (const v of answers) {
-    let json = JSON.stringify(v);
+  for (const json in answers) {
+    let v = answers[json];
     let b = $("<button>", json);
     b.value = json;
     b.onclick = onAnswer;
@@ -182,7 +182,7 @@ function populateAnswers(answers) {
 }
 
 function setQuestion() {
-  let a = g.choice(model.currentAnswers);
+  let a = g.choice(Object.values(model.currentAnswers));
   let expr = forBlank(new Blank(a));
   model.currentQuestion = expr;
   showExpression(expr, clear($("#question")));
@@ -192,6 +192,7 @@ function setQuestion() {
 function onAnswer(e) {
   const answer = JSON.parse(e.target.value);
   const answered = model.currentQuestion.fillBlank(answer);
+  delete model.currentAnswers[e.target.value];
   e.target.parentElement.removeChild(e.target);
   logAnswer(model.currentQuestion, answer);
   setQuestion();
@@ -219,15 +220,13 @@ function showExpression(expr, where) {
 function uniqueAnswers() {
   let count = 0;
   let iters = 0;
-  let seen = {};
-  let answers = [];
+  let answers = {};
   while (count < 20 && iters < 200) {
     let v = g.valueForLevel(model.level);
     let json = JSON.stringify(v);
-    if (!(json in seen)) {
-      seen[json] = true;
+    if (!(json in answers)) {
+      answers[json] = v;
       count++;
-      answers.push(v);
     }
     iters++;
   }
