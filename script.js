@@ -1,6 +1,6 @@
 // Basic plan.
 
-// Generate a bunch of random expressions whose complexity is based on 
+// Generate a bunch of random expressions whose complexity is based on
 // the current level. (E.g. initially just simple values, maybe of one type;
 // later more complex expressions.) These make up the palette for a level.
 
@@ -29,34 +29,54 @@ let words = ["food", "orange", "duck", "computer", "grue"];
 let maxArrayLength = 3;
 
 class Generator {
+  number() {
+    return this.int(minNumber, maxNumber);
+  }
 
-  number() { return this.int(minNumber, maxNumber); }
+  string() {
+    return this.choice(words);
+  }
 
-  string() { return this.choice(words); }
+  boolean() {
+    return Math.random() < 0.5;
+  }
 
-  boolean() { return Math.random() < 0.5; }
+  array() {
+    return Array(this.int(maxArrayLength + 1))
+      .fill()
+      .map(this.arrayTypeFunction().bind(this));
+  }
 
-  array() { return Array(this.int(maxArrayLength + 1)).fill().map(this.arrayTypeFunction().bind(this)); }
+  value() {
+    return this.typeFunction().bind(this)();
+  }
 
-  value() { return this.typeFunction().bind(this)(); }
+  valueOf(type) {
+    return this[type]();
+  }
 
-  valueOf(type) { return this[type](); }
-
-  values(n) { return Array(n).fill().map(this.value.bind(this)); }
+  values(n) {
+    return Array(n).fill().map(this.value.bind(this));
+  }
 
   int(min, max) {
     if (max === undefined) {
-      [min, max] = [0, min]
+      [min, max] = [0, min];
     }
     return min + Math.floor(Math.random() * (max - min));
   }
 
-  choice(choices) { return choices[this.int(choices.length)]; }
+  choice(choices) {
+    return choices[this.int(choices.length)];
+  }
 
-  arrayTypeFunction() { return this.choice([this.number, this.string, this.boolean]); }
+  arrayTypeFunction() {
+    return this.choice([this.number, this.string, this.boolean]);
+  }
 
-  typeFunction() { return this.choice([this.number, this.string, this.boolean, this.array]); }
-
+  typeFunction() {
+    return this.choice([this.number, this.string, this.boolean, this.array]);
+  }
 }
 
 let g = new Generator();
@@ -66,21 +86,27 @@ let operators = {
   string: ["+", "[]"],
   boolean: ["!", "&&", "||"],
   array: ["[]"],
-}
+};
 
 class Value {
   constructor(value) {
     this.value = value;
   }
-  evaluate() { return this.value; }
-  render(parent) { parent.append($(JSON.stringify(this.value))); }
+  evaluate() {
+    return this.value;
+  }
+  render(parent) {
+    parent.append($(JSON.stringify(this.value)));
+  }
 }
 
 /*
  * A blank spot in an expression that needs to be filled in.
  */
 class Blank extends Value {
-  render(parent) { parent.append(withClass("hole", $("<span>"))); }
+  render(parent) {
+    parent.append(withClass("hole", $("<span>")));
+  }
 }
 
 class NumberPlus {
@@ -88,7 +114,9 @@ class NumberPlus {
     this.a = a;
     this.b = b;
   }
-  evaluate() { return this.a.evaluate() + this.b.evaluate(); }
+  evaluate() {
+    return this.a.evaluate() + this.b.evaluate();
+  }
   render(parent) {
     this.a.render(parent);
     parent.append($(" + "));
@@ -96,29 +124,20 @@ class NumberPlus {
   }
 }
 
-function forBlanks(blanks) {
-  // This is stupidly hardwired.
-  if (blanks.length == 1) {
-    return new NumberPlus(blanks[0], new Value(g.valueOf('number')));
-  } else if (blanks.length == 2) {
-    return new NumberPlus(blanks[0], blanks[1]);
-  }
-}
-
-function expressionQuestion(values) {
-  return forBlanks(Array.from(values).map(v => new Blank(v)));
+function forBlank(blank) {
+  return new NumberPlus(blank, new Value(g.valueOf("number")));
 }
 
 // Get the type as far as we are concerned.
 function type(value) {
   let t = typeof value;
   switch (t) {
-    case 'number':
-    case 'string':
-    case 'boolean':
+    case "number":
+    case "string":
+    case "boolean":
       return t;
     default:
-      return Array.isArray(value) ? 'array' : 'unknown';
+      return Array.isArray(value) ? "array" : "unknown";
   }
 }
 
@@ -132,25 +151,26 @@ function init() {
   setQuestion();
 }
 
-function setQuestion() {
-  const div = $("#question");
-  let a = g.choice(model.currentAnswers);
-  let expr = forBlanks([new Blank(a)]);
-  console.log(expr);
-  expr.render(div);
-  div.append($(" ⟹ "));
-  div.append($(JSON.stringify(expr.evaluate())));
-}
-
 function populateAnswers(answers) {
   const div = $("#answers");
   for (const v of answers) {
     let json = JSON.stringify(v);
     let b = $("<button>", json);
     b.value = json;
-    b.onclick = e => console.log(e.target.value + ": " + type(JSON.parse(e.target.value)));
+    b.onclick = (e) =>
+      console.log(e.target.value + ": " + type(JSON.parse(e.target.value)));
     div.append(b);
   }
+}
+
+function setQuestion() {
+  const div = $("#question");
+  let a = g.choice(model.currentAnswers);
+  let expr = forBlanks(new Blank(a));
+  console.log(expr);
+  expr.render(div);
+  div.append($(" ⟹ "));
+  div.append($(JSON.stringify(expr.evaluate())));
 }
 
 function uniqueAnswers() {
@@ -158,7 +178,7 @@ function uniqueAnswers() {
   let seen = {};
   let answers = [];
   while (count < 20) {
-    let v = g.number();
+    let v = g.number(); // FIXME: use .value() but maybe with some sense of level.
     let json = JSON.stringify(v);
     if (!(json in seen)) {
       seen[json] = true;
@@ -168,4 +188,3 @@ function uniqueAnswers() {
   }
   return answers;
 }
-

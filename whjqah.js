@@ -4,7 +4,7 @@
 
 function $(s, t) {
   if (s === undefined) {
-    return $("<i>", "undefined")
+    return $("<i>", "undefined");
   } else if (s[0] === "#") {
     return document.getElementById(s.substring(1));
   } else if (s[0] === "<") {
@@ -17,7 +17,6 @@ function $(s, t) {
     return document.createTextNode(s);
   }
 }
-
 
 /*
  * Remove all the children from the given DOM element.
