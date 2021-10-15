@@ -124,7 +124,8 @@ class Value {
 }
 
 /*
- * A blank spot in an expression that needs to be filled in.
+ * A blank spot in an expression that needs to be filled in though it does
+ * have a particular value associated with it.
  */
 class Blank extends Value {
   render(parent) {
@@ -183,9 +184,11 @@ class PrefixOp {
     this.operand = operand;
     this.op = op;
   }
+
   evaluate() {
     return ops[this.op](this.operand.evaluate());
   }
+
   render(parent) {
     parent.append($(this.op));
     this.operand.render(parent);
