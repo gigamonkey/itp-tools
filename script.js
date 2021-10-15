@@ -180,7 +180,8 @@ class NumberDivide extends NumberBinary {
 
 
 function forBlank(blank) {
-  const clazz = g.choice([NumberPlus, NumberMinus, NumberMultiply, NumberDivide]);
+  // Skipping NumberDivide as they're too hard to do when things don't evenly divide.
+  const clazz = g.choice([NumberPlus, NumberMinus, NumberMultiply ]);
   return new clazz(blank, new Value(g.valueOf("number")));
 }
 
@@ -231,7 +232,7 @@ function setQuestion() {
     model.currentQuestion = expr;
     showExpression(expr, clear($("#question")));
   } else {
-    model.level++;
+    //model.level++;
     init();
   }
 }
@@ -246,29 +247,42 @@ function onAnswer(e) {
 }
 
 function logAnswer(expr, got) {
+  // We can't just compare the answer we got to the answer
+  // we used to create the question because there could be
+  // multiple answers that would get the same result (e.g.
+  // consider ? * 0 ==> 0.)
   const expected = expr.blankValue();
+  const withGot = expr.fillBlank(got);
   const typeRight = type(got) === type(expected);
-  const valueRight = got === expected;
+  const valueRight = withGot.evaluate() === expr.evaluate();
   const passed = typeRight && valueRight;
+
   const row = $("#results").insertRow(0);
   row.className = passed ? "pass" : "fail";
-  showExpression(expr, row.insertCell());;
-  row.insertCell().append($(JSON.stringify(got)));
-  row.insertCell().append($(JSON.stringify(expected)));
+  showExpression(expr, row.insertCell());
+  showExpression(withGot, row.insertCell());
   const resultCell = row.insertCell();
   if (passed) {
     resultCell.append($("✅"));
   } else if (typeRight) {
-    resultCell.append("❌: right type but wrong value");
+    const e = JSON.stringify(expected);
+
+    resultCell.append($("❌: right type but wrong value. "));
+    resultCell.append(withClass("mono", $("<span>", e)));
+    resultCell.append($(" would have worked"));
   } else {
-    resultCell.append(`❌: expected a ${type(expected)}`);
+    resultCell.append($(`❌: expected a ${type(expected)}`));
   }
 }
 
 function showExpression(expr, where) {
-  expr.render(where);
+  const s1 = withClass("mono", $("<span>"));
+  const s2 = withClass("mono", $("<span>"));
+  expr.render(s1);
+  s2.append($(JSON.stringify(expr.evaluate())));
+  where.append(s1);
   where.append($(" ⟹ "));
-  where.append($(JSON.stringify(expr.evaluate())));
+  where.append(s2);
 }
 
 function uniqueAnswers() {
