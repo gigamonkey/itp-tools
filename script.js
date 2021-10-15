@@ -185,13 +185,18 @@ class NumberDivide extends NumberBinary {
     super(a, { fn: (a, b) => a / b, code: '/' }, b);
   }
   otherValue(v) {
-    return new Value(v === 0 ? g.nonZeroNumber() : g.choice([v, v * 2, v * 3]));
+    if (v === 0) {
+      return new Value(g.nonZeroNumber());
+    } else {
+      // multiples includes 1 and v.
+      return new Value(g.choice(multiples(v)));
+    }
   }
 }
 
 
 function forBlank(blank) {
-  const clazz = g.choice([NumberPlus, NumberMinus, NumberMultiply, NumberDivide ]);
+  const clazz = g.choice([/*NumberPlus, NumberMinus, NumberMultiply,*/ NumberDivide ]);
   return new clazz(blank);
 }
 
@@ -310,6 +315,18 @@ function uniqueAnswers() {
   }
   return answers;
 }
+
+function multiples(n) {
+  const ms = [];
+  for (let i = 0; i <= n; i++) {
+    if (n % i === 0) {
+      ms.push(i);
+    }
+  }
+  return ms;
+}
+
+
 
 document.addEventListener("DOMContentLoaded", init);
 
