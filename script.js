@@ -203,7 +203,7 @@ class PrefixOp {
   }
 }
 
-function simpleNumeric(op) {
+function numeric(op) {
   return (blankValue) => pickASide(blankValue, g.number(), op);
 }
 
@@ -211,7 +211,7 @@ function any(op) {
   return (blankValue) => pickASide(blankValue, g.value(), op);
 }
 
-function simpleBoolean(op) {
+function boolean(op) {
   return (blankValue) => pickASide(blankValue, g.boolean(), op);
 }
 
@@ -223,41 +223,47 @@ function prefix(op) {
   return (blankValue) => new PrefixOp(blankValue, op);
 }
 
-function divide(blankValue) {
-  if (blankValue === 0) {
-    return blankOnLeft(blankValue, g.nonZeroNumber(), "/");
-  } else if (blankValue == 1) {
-    return blankOnLeft(blankValue, g.choice([2, 3, 4]), "/");
-  } else {
-    let fs = factors(blankValue);
-    if (fs.length > 0) {
-      return blankOnLeft(blankValue, g.choice(fs), "/");
+function divide(op) {
+  return (blankValue) => {
+    if (blankValue === 0) {
+      return blankOnLeft(blankValue, g.nonZeroNumber(), op);
+    } else if (blankValue == 1) {
+      return blankOnLeft(blankValue, g.choice([2, 3, 4]), op);
     } else {
-      return blankOnRight(g.choice([2, 3]) * blankValue, blankValue, "/");
+      let fs = factors(blankValue);
+      if (fs.length > 0) {
+        return blankOnLeft(blankValue, g.choice(fs), op);
+      } else {
+        return blankOnRight(g.choice([2, 3]) * blankValue, blankValue, op);
+      }
     }
-  }
+  };
 }
 
-function modulus(blankValue) {
-  if (blankValue === 0) {
-    return blankOnLeft(blankValue, g.nonZeroNumber(), "/");
-  } else {
-    return pickASide(blankValue, g.nonZeroNumber(), "/");
-  }
+function modulus(op) {
+  return (blankValue) => {
+    if (blankValue === 0) {
+      return blankOnLeft(blankValue, g.nonZeroNumber(), op);
+    } else {
+      return pickASide(blankValue, g.nonZeroNumber(), op);
+    }
+  };
 }
 
-function index(blankValue) {
-  let t = type(blankValue);
-  if (t === "string" || t === "array") {
-    return blankOnLeft(blankValue, g.int(0, blankValue.length), "[]");
-  } else {
-    // FIXME: move to generator and add possibility of getting array
-    let s = "abcdefghijklmnopqrstuvwxyz".substring(
-      0,
-      Math.floor(blankValue * 1.5)
-    );
-    return blankOnRight(s, blankValue, "[]");
-  }
+function index(op) {
+  return (blankValue) => {
+    let t = type(blankValue);
+    if (t === "string" || t === "array") {
+      return blankOnLeft(blankValue, g.int(0, blankValue.length), op);
+    } else {
+      // FIXME: move to generator and add possibility of getting array
+      let s = "abcdefghijklmnopqrstuvwxyz".substring(
+        0,
+        Math.floor(blankValue * 1.5)
+      );
+      return blankOnRight(s, blankValue, op);
+    }
+  };
 }
 
 function blankOnLeft(left, right, op) {
@@ -283,45 +289,31 @@ let operatorsForType = {
   array: ["[]", "===", "!=="],
 };
 
-const ops = {
-  "+": (a, b) => a + b,
-  "-": (a, b) => a - b,
-  "*": (a, b) => a * b,
-  "/": (a, b) => a / b,
-  "%": (a, b) => a % b,
-  "<": (a, b) => a < b,
-  "<=": (a, b) => a <= b,
-  ">": (a, b) => a > b,
-  ">=": (a, b) => a >= b,
-  "===": (a, b) => a === b,
-  "!==": (a, b) => a !== b,
-  "[]": (a, b) => a[b],
-  "&&": (a, b) => a && b,
-  "||": (a, b) => a || b,
-  "!": (a) => !a,
-};
+function op(fn, constructor) {
+  return { fn: fn, constructor: constructor };
+}
 
-const constructors = {
-  "+": sameType("+"),
-  "-": simpleNumeric("-"),
-  "*": simpleNumeric("*"),
-  "/": divide,
-  "%": modulus,
-  "<": simpleNumeric("<"),
-  "<=": simpleNumeric("<="),
-  ">": simpleNumeric(">"),
-  ">=": simpleNumeric(">="),
-  "===": any("==="),
-  "!==": any("!=="),
-  "[]": index,
-  "&&": simpleBoolean("&&"),
-  "||": simpleBoolean("||"),
-  "!": prefix("!"),
+const ops = {
+  "+": op((a, b) => a + b, sameType),
+  "-": op((a, b) => a - b, numeric),
+  "*": op((a, b) => a * b, numeric),
+  "/": op((a, b) => a / b, divide),
+  "%": op((a, b) => a % b, modulus),
+  "<": op((a, b) => a < b, numeric),
+  "<=": op((a, b) => a <= b, numeric),
+  ">": op((a, b) => a > b, numeric),
+  ">=": op((a, b) => a >= b, numeric),
+  "===": op((a, b) => a === b, any),
+  "!==": op((a, b) => a !== b, any),
+  "[]": op((a, b) => a[b], index),
+  "&&": op((a, b) => a && b, boolean),
+  "||": op((a, b) => a || b, boolean),
+  "!": op((a) => !a, prefix),
 };
 
 function forBlank(blankValue) {
   const op = g.choice(operatorsForType[type(blankValue)]);
-  return constructors[op](blankValue, op);
+  return ops[op].constructor(op)(blankValue);
 }
 
 // Get the type as far as we are concerned.
