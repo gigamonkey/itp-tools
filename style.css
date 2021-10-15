@@ -28,6 +28,7 @@ h1, h2 { font-weight: 300; }
 
 #answers {
   width: 50%;
+  height: 50px;
   margin: auto;
   font-family: monospace;
   text-align: center;
@@ -45,3 +46,31 @@ h1, h2 { font-weight: 300; }
   background: blue;
   color: white;
 }
+
+#log {
+  margin-top: 40px;
+}
+
+
+#log table {
+  width: 100%; 
+  table-layout: fixed;
+}
+
+col.functionCall { width: 40%; }
+col.got, col.expected { width: 25%; }
+col.result { width: 10%; }
+
+th { 
+  font-weight: 300;
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom: thin solid rgba(0, 0, 0, 0.2);
+}
+td, th { padding: 10px; }
+td, th { text-align: center; }
+td:first-child, th:first-child { text-align: left; }
+td { font-family: monospace; }
+
+tr.pass { background: rgba(100, 255, 100, 0.2); }
+tr.fail { background: rgba(255, 100, 100, 0.2); }
+

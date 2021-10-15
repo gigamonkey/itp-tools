@@ -23,8 +23,8 @@
 
 let types = ["number", "string", "boolean", "array"];
 
-let minNumber = -10;
-let maxNumber = 20;
+let minNumber = 0;
+let maxNumber = 10;
 let words = ["food", "orange", "duck", "computer", "grue"];
 let maxArrayLength = 3;
 
@@ -53,6 +53,14 @@ class Generator {
 
   valueOf(type) {
     return this[type]();
+  }
+
+  valueForLevel(level) {
+    if (level === 0) {
+      return this.number();
+    } else {
+      console.log("level " + level + " nyi");
+    }
   }
 
   values(n) {
@@ -98,6 +106,8 @@ class Value {
   render(parent) {
     parent.append($(JSON.stringify(this.value)));
   }
+
+  fillBlank(value) { return this; }
 }
 
 /*
@@ -106,6 +116,9 @@ class Value {
 class Blank extends Value {
   render(parent) {
     parent.append(withClass("hole", $("<span>")));
+  }
+  fillBlank(value) {
+    return new Value(value);
   }
 }
 
@@ -121,6 +134,10 @@ class NumberPlus {
     this.a.render(parent);
     parent.append($(" + "));
     this.b.render(parent);
+  }
+
+  fillBlank(value) {
+    return new NumberPlus(this.a.fillBlank(value), this.b.fillBlank(value));
   }
 }
 
@@ -143,9 +160,11 @@ function type(value) {
 
 let model = {
   currentAnswers: [],
+  level: 0,
 };
 
 function init() {
+  $("#log").append(makeResultsTable());
   model.currentAnswers = uniqueAnswers();
   populateAnswers(model.currentAnswers);
   setQuestion();
@@ -157,20 +176,45 @@ function populateAnswers(answers) {
     let json = JSON.stringify(v);
     let b = $("<button>", json);
     b.value = json;
-    b.onclick = (e) =>
-      console.log(e.target.value + ": " + type(JSON.parse(e.target.value)));
+    b.onclick = onAnswer;
     div.append(b);
   }
 }
 
 function setQuestion() {
-  const div = $("#question");
   let a = g.choice(model.currentAnswers);
-  let expr = forBlanks(new Blank(a));
+  let expr = forBlank(new Blank(a));
+  model.currentQuestion = expr;
   console.log(expr);
-  expr.render(div);
-  div.append($(" ⟹ "));
-  div.append($(JSON.stringify(expr.evaluate())));
+  showExpression(expr, clear($("#question")));
+}
+
+
+function onAnswer(e) {
+  const answer = JSON.parse(e.target.value);
+  const answered = model.currentQuestion.fillBlank(answer);
+  e.target.parentElement.removeChild(e.target);
+  logAnswer(model.currentQuestion, answer);
+  setQuestion();
+}
+
+function logAnswer(expr, answer) {
+  const answered = expr.fillBlank(answer);
+  const got = answered.evaluate();
+  const expected = expr.evaluate();
+  const passed = answered.evaluate() === expr.evaluate();
+  const row = $("#results").insertRow(0);
+  row.className = passed ? "pass" : "fail";
+  showExpression(expr, row.insertCell());;
+  row.insertCell().append($(JSON.stringify(got)));
+  row.insertCell().append($(JSON.stringify(expected)));
+  row.insertCell().append($(passed ? "✅" : "❌"));
+ }
+
+function showExpression(expr, where) {
+  expr.render(where);
+  where.append($(" ⟹ "));
+  where.append($(JSON.stringify(expr.evaluate())));
 }
 
 function uniqueAnswers() {
@@ -178,7 +222,7 @@ function uniqueAnswers() {
   let seen = {};
   let answers = [];
   while (count < 20) {
-    let v = g.number(); // FIXME: use .value() but maybe with some sense of level.
+    let v = g.valueForLevel(model.level);
     let json = JSON.stringify(v);
     if (!(json in seen)) {
       seen[json] = true;
@@ -188,3 +232,5 @@ function uniqueAnswers() {
   }
   return answers;
 }
+
+
