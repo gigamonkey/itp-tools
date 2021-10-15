@@ -36,6 +36,10 @@ class Generator {
     return this.int(minNumber, maxNumber);
   }
 
+  nonZeroNumber() {
+    return this.int(1, maxNumber);
+  }
+
   string() {
     return this.choice(words);
   }
@@ -130,10 +134,10 @@ class Blank extends Value {
 }
 
 class NumberBinary {
-  constructor(a, b, op) {
+  constructor(a, op, b) {
     this.a = a;
-    this.b = b;
     this.op = op;
+    this.b = b === undefined ? this.otherValue(a.value) : b;
   }
   evaluate() {
     return this.op.fn(this.a.evaluate(), this.b.evaluate());
@@ -152,37 +156,43 @@ class NumberBinary {
     const a = this.a.blankValue();
     return a !== undefined ? a : this.b.blankValue();
   }
+
+  otherValue(blankValue) {
+    return new Value(g.number());
+  }
 }
 
 class NumberPlus extends NumberBinary {
   constructor(a, b) {
-    super(a, b, { fn: (a, b) => a + b, code: '+' });
+    super(a, { fn: (a, b) => a + b, code: '+' }, b);
   }
 }
 
 class NumberMinus extends NumberBinary {
   constructor(a, b) {
-    super(a, b, { fn: (a, b) => a - b, code: '-' });
+    super(a, { fn: (a, b) => a - b, code: '-' }, b);
   }
 }
 
 class NumberMultiply extends NumberBinary {
   constructor(a, b) {
-    super(a, b, { fn: (a, b) => a * b, code: '*' });
+    super(a, { fn: (a, b) => a * b, code: '*' }, b);
   }
 }
 
 class NumberDivide extends NumberBinary {
   constructor(a, b) {
-    super(a, b, { fn: (a, b) => a / b, code: '/' });
+    super(a, { fn: (a, b) => a / b, code: '/' }, b);
+  }
+  otherValue(v) {
+    return new Value(v === 0 ? g.nonZeroNumber() : g.choice([v, v * 2, v * 3]));
   }
 }
 
 
 function forBlank(blank) {
-  // Skipping NumberDivide as they're too hard to do when things don't evenly divide.
-  const clazz = g.choice([NumberPlus, NumberMinus, NumberMultiply ]);
-  return new clazz(blank, new Value(g.valueOf("number")));
+  const clazz = g.choice([NumberPlus, NumberMinus, NumberMultiply, NumberDivide ]);
+  return new clazz(blank);
 }
 
 // Get the type as far as we are concerned.
