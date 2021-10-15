@@ -41,20 +41,7 @@ class Random {
   }
 
   valueForLevel(level) {
-    switch (level) {
-      case 0:
-        return this.number();
-      case 1:
-        return this.oneOf(["number", "string"]);
-      case 2:
-        return this.oneOf(["number", "string", "boolean"]);
-      case 3:
-        return this.oneOf(["number", "string", "boolean", "array"]);
-      case 4:
-        return this.array();
-      default:
-        console.log("level " + level + " nyi");
-    }
+    return this.oneOf(types.slice(0, level + 1));
   }
 
   values(n) {
