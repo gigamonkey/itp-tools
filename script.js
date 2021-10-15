@@ -32,23 +32,11 @@ function pickASide(blankValue, otherValue, op, okTypes) {
 }
 
 function blankOnLeft(left, right, op, okTypes) {
-  return new BinaryOp(
-    new Blank(left),
-    new Value(right),
-    op,
-    ops[op].fn,
-    okTypes
-  );
+  return new BinaryOp(new Blank(left), new Value(right), op, ops[op].fn, okTypes);
 }
 
 function blankOnRight(left, right, op, okTypes) {
-  return new BinaryOp(
-    new Value(left),
-    new Blank(right),
-    op,
-    ops[op].fn,
-    okTypes
-  );
+  return new BinaryOp(new Value(left), new Blank(right), op, ops[op].fn, okTypes);
 }
 
 function numeric(op) {
@@ -88,9 +76,7 @@ function divide(op) {
       if (factors.length > 0) {
         return blankOnLeft(blankValue, g.choice(factors), op, ["number"]);
       } else {
-        return blankOnRight(g.choice([2, 3]) * blankValue, blankValue, op, [
-          "number",
-        ]);
+        return blankOnRight(g.choice([2, 3]) * blankValue, blankValue, op, ["number"]);
       }
     }
   };
@@ -113,10 +99,7 @@ function index(op) {
       return blankOnLeft(blankValue, g.int(0, blankValue.length), op, ["string", "array"]);
     } else {
       // FIXME: move to generator and add possibility of getting array
-      let s = "abcdefghijklmnopqrstuvwxyz".substring(
-        0,
-        Math.floor(blankValue * 1.5)
-      );
+      let s = "abcdefghijklmnopqrstuvwxyz".substring(0, Math.floor(blankValue * 1.5));
       return blankOnRight(s, blankValue, op, ["number"]);
     }
   };
@@ -146,7 +129,6 @@ const ops = {
   "||": op((a, b) => a || b, boolean), // boolean
   "!": op((a) => !a, prefix), // boolean
 };
-
 
 function op(fn, constructor) {
   return { fn: fn, constructor: constructor };
@@ -250,11 +232,7 @@ function logAnswer(expr, got) {
     notesCell.append($("Looks good!"));
     resultCell.append($("✅"));
   } else if (typeOk) {
-    notesCell.append(
-      $(
-        "Value is an ok type for the operator but the value itelf isn't quite right. "
-      )
-    );
+    notesCell.append($("Value is an ok type for the operator but the value itelf isn't quite right. "));
     notesCell.append(withClass("mono", $("<span>", JSON.stringify(expr.blankValue()))));
     notesCell.append($(" would have worked"));
     resultCell.append($("❌"));
@@ -265,9 +243,7 @@ function logAnswer(expr, got) {
     } else {
       expectation = `either ${expr.okTypes[0]} or ${expr.okTypes[1]}`;
     }
-    notesCell.append(
-      $(`Wrong type of value. Should have been ${expectation}.`)
-    );
+    notesCell.append($(`Wrong type of value. Should have been ${expectation}.`));
     resultCell.append($("❌"));
   }
 }

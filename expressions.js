@@ -96,7 +96,6 @@ class BinaryOp extends Expression {
     this.right = right;
     this.op = op;
     this.fn = fn;
-    if (!okTypes) throw Error("Binary Op " + op + " okTypes: " + okTypes);
     this.okTypes = okTypes;
   }
   evaluate() {
@@ -118,13 +117,7 @@ class BinaryOp extends Expression {
    * Produce a BinaryOp with the blank value filled in with the given value.
    */
   fillBlank(value) {
-    return new BinaryOp(
-      this.left.fillBlank(value),
-      this.right.fillBlank(value),
-      this.op,
-      this.fn,
-      this.okTypes
-    );
+    return new BinaryOp(this.left.fillBlank(value), this.right.fillBlank(value), this.op, this.fn, this.okTypes);
   }
 
   blankValue() {
@@ -142,7 +135,6 @@ class PrefixOp extends Expression {
     this.operand = operand;
     this.op = op;
     this.fn = fn;
-    if (!okTypes) throw Error("PrefixOp " + op + " okTypes: " + okTypes);
     this.okTypes = okTypes;
   }
 
