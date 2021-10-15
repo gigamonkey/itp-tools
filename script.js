@@ -103,13 +103,6 @@ class Generator {
 
 let g = new Generator();
 
-let operators = {
-  number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "===", "!="],
-  string: ["+", "[]"],
-  boolean: ["!", "&&", "||"],
-  array: ["[]"],
-};
-
 class Value {
   constructor(value) {
     this.value = value;
@@ -146,113 +139,186 @@ class Blank extends Value {
 }
 
 class BinaryOp {
-  constructor(a, op, b) {
-    this.a = a;
+  constructor(left, right, op) {
+    this.left = left;
+    this.right = right;
     this.op = op;
-    this.b = b === undefined ? this.otherValue(a.value) : b;
   }
   evaluate() {
-    return this.op.fn(this.a.evaluate(), this.b.evaluate());
+    return ops[this.op](this.left.evaluate(), this.right.evaluate());
   }
   render(parent) {
-    this.a.render(parent);
-    parent.append($(" " + this.op.code + " "));
-    this.b.render(parent);
+    this.left.render(parent);
+    if (this.op === "[]") {
+      parent.append($("["));
+      this.right.render(parent);
+      parent.append($("]"));
+    } else {
+      parent.append($(" " + this.op + " "));
+      this.right.render(parent);
+    }
   }
 
+  /*
+   * Produce a BinaryOp with the blank value filled in with the given value.
+   */
   fillBlank(value) {
-    return new this.constructor(
-      this.a.fillBlank(value),
-      this.b.fillBlank(value)
+    return new BinaryOp(
+      this.left.fillBlank(value),
+      this.right.fillBlank(value),
+      this.op
     );
   }
 
+  /*
+   * Get the value of the blank spot in this expression.
+   */
   blankValue() {
-    const a = this.a.blankValue();
-    return a !== undefined ? a : this.b.blankValue();
-  }
-
-  otherValue(blankValue) {
-    return new Value(g.number());
+    return this.left.blankValue() ?? this.right.blankValue();
   }
 }
 
-class Plus extends BinaryOp {
-  constructor(a, b) {
-    super(a, { fn: (a, b) => a + b, code: "+" }, b);
+class PrefixOp {
+  constructor(operand, op) {
+    this.operand = operand;
+    this.op = op;
   }
-  otherValue(blankValue) {
-    return new Value(g.valueOf(type(blankValue)));
+  evaluate() {
+    return ops[this.op](this.operand.evaluate());
+  }
+  render(parent) {
+    parent.append($(this.op));
+    this.operand.render(parent);
+  }
+
+  fillBlank(value) {
+    return new PrefixOp(this.operand.fillBlank(value), this.op);
+  }
+
+  blankValue() {
+    return this.operand.blankValue();
   }
 }
 
-class Minus extends BinaryOp {
-  constructor(a, b) {
-    super(a, { fn: (a, b) => a - b, code: "-" }, b);
-  }
+function simpleNumeric(op) {
+  return (blankValue) => pickASide(blankValue, g.number(), op);
 }
 
-class Multiply extends BinaryOp {
-  constructor(a, b) {
-    super(a, { fn: (a, b) => a * b, code: "*" }, b);
-  }
+function any(op) {
+  return (blankValue) => pickASide(blankValue, g.value(), op);
 }
 
-class Divide extends BinaryOp {
-  constructor(a, b) {
-    super(a, { fn: (a, b) => a / b, code: "/" }, b);
-  }
-  otherValue(v) {
-    if (v === 0) {
-      return new Value(g.nonZeroNumber());
+function simpleBoolean(op) {
+  return (blankValue) => pickASide(blankValue, g.boolean(), op);
+}
+
+function sameType(op) {
+  return (blankValue) => pickASide(blankValue, g.valueOf(type(blankValue)), op);
+}
+
+function prefix(op) {
+  return (blankValue) => new PrefixOp(blankValue, op);
+}
+
+function divide(blankValue) {
+  if (blankValue === 0) {
+    return blankOnLeft(blankValue, g.nonZeroNumber(), "/");
+  } else if (blankValue == 1) {
+    return blankOnLeft(blankValue, g.choice([2, 3, 4]), "/");
+  } else {
+    let fs = factors(blankValue);
+    if (fs.length > 0) {
+      return blankOnLeft(blankValue, g.choice(fs), "/");
     } else {
-      // multiples includes 1 and v.
-      return new Value(g.choice(multiples(v)));
+      return blankOnRight(g.choice([2, 3]) * blankValue, blankValue, "/");
     }
   }
 }
 
-class StringIndex {
-  constructor(s, i) {
-    this.s = s;
-    this.i = i;
-  }
-
-  evaluate() {
-    return this.s[this.i];
-  }
-  render(parent) {
-    this.s.render(parent);
-    parent.append($("["));
-    this.i.render(parent);
-    parent.append($("]"));
-  }
-
-  fillBlank(value) {
-    return new this.constructor(
-      this.s.fillBlank(value),
-      this.s.fillBlank(value)
-    );
-  }
-
-  blankValue() {
-    const s = this.a.blankValue();
-    return s !== undefined ? s : this.b.blankValue();
-  }
-
-  otherValue(blankValue) {
-    return new Value(g.number());
+function modulus(blankValue) {
+  if (blankValue === 0) {
+    return blankOnLeft(blankValue, g.nonZeroNumber(), "/");
+  } else {
+    return pickASide(blankValue, g.nonZeroNumber(), "/");
   }
 }
 
-const forType = {
-  number: [Plus, Minus, Multiply, Divide],
-  string: [Plus],
+function index(blankValue) {
+  let t = type(blankValue);
+  if (t === "string" || t === "array") {
+    return blankOnLeft(blankValue, g.int(0, blankValue.length), "[]");
+  } else {
+    // FIXME: move to generator and add possibility of getting array
+    let s = "abcdefghijklmnopqrstuvwxyz".substring(
+      0,
+      Math.floor(blankValue * 1.5)
+    );
+    return blankOnRight(s, blankValue, "[]");
+  }
+}
+
+function blankOnLeft(left, right, op) {
+  return new BinaryOp(new Blank(left), new Value(right), op);
+}
+
+function blankOnRight(left, right, op) {
+  return new BinaryOp(new Value(left), new Blank(right), op);
+}
+
+function pickASide(blankValue, otherValue, op) {
+  if (Math.random() < 0.5) {
+    return blankOnLeft(blankValue, otherValue, op);
+  } else {
+    return blankOnRight(otherValue, blankValue, op);
+  }
+}
+
+let operatorsForType = {
+  number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "===", "!=="],
+  string: ["+", "[]", "===", "!=="],
+  boolean: ["&&", "||", "!", "===", "!=="],
+  array: ["[]", "===", "!=="],
 };
 
-function forBlank(blank) {
-  const clazz = g.choice(forType[type(blank.value)]);
-  return new clazz(blank);
+const ops = {
+  "+": (a, b) => a + b,
+  "-": (a, b) => a - b,
+  "*": (a, b) => a * b,
+  "/": (a, b) => a / b,
+  "%": (a, b) => a % b,
+  "<": (a, b) => a < b,
+  "<=": (a, b) => a <= b,
+  ">": (a, b) => a > b,
+  ">=": (a, b) => a >= b,
+  "===": (a, b) => a === b,
+  "!==": (a, b) => a !== b,
+  "[]": (a, b) => a[b],
+  "&&": (a, b) => a && b,
+  "||": (a, b) => a || b,
+  "!": (a) => !a,
+};
+
+const constructors = {
+  "+": sameType("+"),
+  "-": simpleNumeric("-"),
+  "*": simpleNumeric("*"),
+  "/": divide,
+  "%": modulus,
+  "<": simpleNumeric("<"),
+  "<=": simpleNumeric("<="),
+  ">": simpleNumeric(">"),
+  ">=": simpleNumeric(">="),
+  "===": any("==="),
+  "!==": any("!=="),
+  "[]": index,
+  "&&": simpleBoolean("&&"),
+  "||": simpleBoolean("||"),
+  "!": prefix("!"),
+};
+
+function forBlank(blankValue) {
+  const op = g.choice(operatorsForType[type(blankValue)]);
+  return constructors[op](blankValue, op);
 }
 
 // Get the type as far as we are concerned.
@@ -298,7 +364,7 @@ function setQuestion() {
   const answers = Object.values(model.currentAnswers);
   if (answers.length > 0) {
     let a = g.choice(answers);
-    let expr = forBlank(new Blank(a));
+    let expr = forBlank(a);
     model.currentQuestion = expr;
     showExpression(expr, clear($("#question")));
   } else {
@@ -371,14 +437,15 @@ function uniqueAnswers() {
   return answers;
 }
 
-function multiples(n) {
-  const ms = [];
-  for (let i = 0; i <= n; i++) {
+// Factors of n. Does not include 1 or n.
+function factors(n) {
+  const fs = [];
+  for (let i = 2; i < n; i++) {
     if (n % i === 0) {
-      ms.push(i);
+      fs.push(i);
     }
   }
-  return ms;
+  return fs;
 }
 
 document.addEventListener("DOMContentLoaded", init);
