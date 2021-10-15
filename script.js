@@ -62,10 +62,16 @@ class Generator {
     return this[type]();
   }
 
+  oneOf(types) {
+    return this.valueOf(this.choice(types));
+  }
+
   valueForLevel(level) {
     switch (level) {
       case 0:
         return this.number();
+      case 1:
+        return this.oneOf(['number', 'string']);
       default:
         console.log("level " + level + " nyi");
     }
@@ -133,7 +139,7 @@ class Blank extends Value {
   blankValue() { return this.value; }
 }
 
-class NumberBinary {
+class BinaryOp {
   constructor(a, op, b) {
     this.a = a;
     this.op = op;
@@ -162,25 +168,28 @@ class NumberBinary {
   }
 }
 
-class NumberPlus extends NumberBinary {
+class Plus extends BinaryOp {
   constructor(a, b) {
     super(a, { fn: (a, b) => a + b, code: '+' }, b);
   }
+  otherValue(blankValue) {
+    return new Value(g.valueOf(type(blankValue)));
+  }
 }
 
-class NumberMinus extends NumberBinary {
+class Minus extends BinaryOp {
   constructor(a, b) {
     super(a, { fn: (a, b) => a - b, code: '-' }, b);
   }
 }
 
-class NumberMultiply extends NumberBinary {
+class Multiply extends BinaryOp {
   constructor(a, b) {
     super(a, { fn: (a, b) => a * b, code: '*' }, b);
   }
 }
 
-class NumberDivide extends NumberBinary {
+class Divide extends BinaryOp {
   constructor(a, b) {
     super(a, { fn: (a, b) => a / b, code: '/' }, b);
   }
@@ -194,9 +203,46 @@ class NumberDivide extends NumberBinary {
   }
 }
 
+class StringIndex {
+  constructor(s, i) {
+    this.s = s;
+    this.i = i;
+  }
+
+  evaluate() {
+    return this.s[this.i];
+  }
+  render(parent) {
+    this.s.render(parent);
+    parent.append($("["));
+    this.i.render(parent);
+    parent.append($("]"));
+  }
+
+  fillBlank(value) {
+    return new this.constructor(this.s.fillBlank(value), this.s.fillBlank(value));
+  }
+
+  blankValue() {
+    const s = this.a.blankValue();
+    return s !== undefined ? s : this.b.blankValue();
+  }
+
+  otherValue(blankValue) {
+    return new Value(g.number());
+  }
+}
+
+
+
+const forType = {
+  number: [Plus, Minus, Multiply, Divide],
+  string: [Plus],
+}
+
 
 function forBlank(blank) {
-  const clazz = g.choice([/*NumberPlus, NumberMinus, NumberMultiply,*/ NumberDivide ]);
+  const clazz = g.choice(forType[type(blank.value)]);
   return new clazz(blank);
 }
 
@@ -215,7 +261,7 @@ function type(value) {
 
 let model = {
   currentAnswers: {},
-  level: 0,
+  level: 1,
 };
 
 function init() {
@@ -226,7 +272,7 @@ function init() {
 }
 
 function populateAnswers(currentAnswers) {
-  const answers = Object.values(currentAnswers);
+  const answers = Object.keys(currentAnswers);
   shuffleArray(answers);
 
   const div = $("#answers");
@@ -275,7 +321,7 @@ function logAnswer(expr, got) {
   const row = $("#results").insertRow(0);
   row.className = passed ? "pass" : "fail";
   showExpression(expr, row.insertCell());
-  showExpression(withGot, row.insertCell());
+  row.insertCell().append(withClass("mono", $("<span>", JSON.stringify(got))));
   const resultCell = row.insertCell();
   if (passed) {
     resultCell.append($("✅"));
@@ -299,6 +345,7 @@ function showExpression(expr, where) {
   where.append($(" ⟹ "));
   where.append(s2);
 }
+
 
 function uniqueAnswers() {
   let count = 0;

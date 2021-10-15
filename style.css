@@ -48,12 +48,14 @@ h1, h2 { font-weight: 300; }
 
 
 #log table {
-  width: 100%; 
+  margin: auto;
+  width: 80%;
   table-layout: fixed;
 }
 
-col.question, col.answer { width: 25%; }
-col.result { width: 50%; }
+col.question { width: 25%; }
+col.answer { width: 30%; }
+col.result { width: 45%; }
 
 th { 
   font-weight: 300;
@@ -61,7 +63,8 @@ th {
   border-bottom: thin solid rgba(0, 0, 0, 0.2);
 }
 td, th { padding: 10px; }
-td, th { text-align: center; }
+th { text-align: center; }
+td { text-align: left; }
 
 tr.pass { background: rgba(100, 255, 100, 0.2); }
 tr.fail { background: rgba(255, 100, 100, 0.2); }
