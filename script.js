@@ -21,7 +21,6 @@ import { Value, Blank, BinaryOp, PrefixOp } from "./expressions.js";
 //  8: arithmetic expressions
 //  9: string expressions
 
-
 function pickASide(blankValue, otherValue, op) {
   if (Math.random() < 0.5) {
     return blankOnLeft(blankValue, otherValue, op);
@@ -65,7 +64,10 @@ function divide(op) {
     } else if (blankValue == 1) {
       return blankOnLeft(blankValue, g.choice([2, 3, 4]), op);
     } else {
-      let factors = Array(blankValue).fill().map((_, i) => i).filter(i => i > 1 && blankValue % i == 0)
+      let factors = Array(blankValue)
+        .fill()
+        .map((_, i) => i)
+        .filter((i) => i > 1 && blankValue % i == 0);
       if (factors.length > 0) {
         return blankOnLeft(blankValue, g.choice(fs), op);
       } else {
@@ -101,19 +103,17 @@ function index(op) {
   };
 }
 
-
-
 let operatorsForType = {
   number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "===", "!=="],
   string: ["+", "[]", "===", "!=="],
   boolean: ["&&", "||", "!", "===", "!=="],
-  array: ["[]"] //, "===", "!=="],
+  array: ["[]"], //, "===", "!=="],
 };
 
 const ops = {
   "+": op((a, b) => a + b, sameType), // matches type
   "-": op((a, b) => a - b, numeric), // number
-  "*": op((a, b) => a * b, numeric),  // number
+  "*": op((a, b) => a * b, numeric), // number
   "/": op((a, b) => a / b, divide), // number
   "%": op((a, b) => a % b, modulus), // number
   "<": op((a, b) => a < b, numeric), // number
@@ -163,7 +163,6 @@ function okTypes(op, nonBlankType) {
       throw Error("Missing op " + op);
   }
 }
-
 
 function op(fn, constructor) {
   return { fn: fn, constructor: constructor };
@@ -254,7 +253,7 @@ function logAnswer(expr, got) {
   const inBlank = expr.blankValue();
   const nonBlankType = type(expr.nonBlankValue());
   const types = okTypes(expr.op, nonBlankType);
-  const typeOk = types.indexOf(type(got)) != -1
+  const typeOk = types.indexOf(type(got)) != -1;
 
   const withGot = expr.fillBlank(got);
   const valueRight = withGot.evaluate() === expr.evaluate();
@@ -271,7 +270,11 @@ function logAnswer(expr, got) {
     notesCell.append($("Looks good!"));
     resultCell.append($("✅"));
   } else if (typeOk) {
-    notesCell.append($("Value is an ok type for the operator but the value itelf isn't quite right. "));
+    notesCell.append(
+      $(
+        "Value is an ok type for the operator but the value itelf isn't quite right. "
+      )
+    );
     notesCell.append(withClass("mono", $("<span>", JSON.stringify(inBlank))));
     notesCell.append($(" would have worked"));
     resultCell.append($("❌"));
@@ -282,12 +285,12 @@ function logAnswer(expr, got) {
     } else {
       expectation = `either ${types[0]} or ${types[1]}`;
     }
-    notesCell.append($(`Wrong type of value. Should have been ${expectation}.`));
+    notesCell.append(
+      $(`Wrong type of value. Should have been ${expectation}.`)
+    );
     resultCell.append($("❌"));
   }
 }
-
-
 
 function showExpression(expr, where) {
   const s1 = withClass("mono", $("<span>"));
@@ -314,7 +317,5 @@ function uniqueAnswers() {
   }
   return answers;
 }
-
-
 
 document.addEventListener("DOMContentLoaded", init);
