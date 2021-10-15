@@ -5,7 +5,7 @@ let maxNumber = 10;
 let words = ["food", "orange", "duck", "computer", "grue"];
 let maxArrayLength = 3;
 
-class Generator {
+class Random {
   number() {
     return this.int(minNumber, maxNumber);
   }
@@ -75,7 +75,7 @@ class Generator {
   }
 }
 
-const random = new Generator();
+const random = new Random();
 
 export { random };
 

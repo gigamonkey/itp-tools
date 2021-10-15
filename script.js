@@ -20,11 +20,6 @@ import { random as g} from "./random.js";
 //  8: arithmetic expressions
 //  9: string expressions
 
-// Then generate random questions: pick one or more expressions at random
-// and then generate a random expression with that many holes in it and
-// evaluate it with the selected expressions to get the result. By construction
-// the expressions needed to fill the holes exist.
-
 class Value {
   constructor(value) {
     this.value = value;
