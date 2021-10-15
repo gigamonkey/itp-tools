@@ -54,7 +54,9 @@ h1, h2 { font-weight: 300; }
 
 col.question { width: 25%; }
 col.answer { width: 30%; }
-col.result { width: 45%; }
+col.notes { width: 25%; }
+col.result { width: 20%; }
+
 
 th { 
   font-weight: 300;
@@ -64,6 +66,7 @@ th {
 td, th { padding: 10px; }
 th { text-align: center; }
 td { text-align: left; }
+td:last-child { text-align: center; }
 
 tr.pass { background: rgba(100, 255, 100, 0.2); }
 tr.fail { background: rgba(255, 100, 100, 0.2); }
