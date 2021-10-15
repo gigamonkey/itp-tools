@@ -96,6 +96,7 @@ class BinaryOp extends Expression {
     this.right = right;
     this.op = op;
     this.fn = fn;
+    if (!okTypes) throw Error("Binary Op " + op + " okTypes: " + okTypes);
     this.okTypes = okTypes;
   }
   evaluate() {
@@ -121,7 +122,8 @@ class BinaryOp extends Expression {
       this.left.fillBlank(value),
       this.right.fillBlank(value),
       this.op,
-      this.fn
+      this.fn,
+      this.okTypes
     );
   }
 
@@ -140,6 +142,7 @@ class PrefixOp extends Expression {
     this.operand = operand;
     this.op = op;
     this.fn = fn;
+    if (!okTypes) throw Error("PrefixOp " + op + " okTypes: " + okTypes);
     this.okTypes = okTypes;
   }
 
@@ -153,7 +156,7 @@ class PrefixOp extends Expression {
   }
 
   fillBlank(value) {
-    return new PrefixOp(this.operand.fillBlank(value), this.op, this.fn);
+    return new PrefixOp(this.operand.fillBlank(value), this.op, this.fn, this.okTypes);
   }
 
   blankValue() {

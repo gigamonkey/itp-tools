@@ -41,7 +41,7 @@ function blankOnLeft(left, right, op, okTypes) {
   );
 }
 
-function blankOnRight(left, right, op) {
+function blankOnRight(left, right, op, okTypes) {
   return new BinaryOp(
     new Value(left),
     new Blank(right),
@@ -66,12 +66,12 @@ function boolean(op) {
 function sameType(op) {
   return (blankValue) => {
     let blankType = type(blankValue);
-    pickASide(blankValue, g.valueOf(blankType), op, [blankType]);
+    return pickASide(blankValue, g.valueOf(blankType), op, [blankType]);
   };
 }
 
 function prefix(op) {
-  return (blankValue) => new PrefixOp(blankValue, op, ops[op].fn, ["boolean"]);
+  return (blankValue) => new PrefixOp(new Blank(blankValue), op, ops[op].fn, ["boolean"]);
 }
 
 function divide(op) {
@@ -86,7 +86,7 @@ function divide(op) {
         .map((_, i) => i)
         .filter((i) => i > 1 && blankValue % i == 0);
       if (factors.length > 0) {
-        return blankOnLeft(blankValue, g.choice(fs), op, ["number"]);
+        return blankOnLeft(blankValue, g.choice(factors), op, ["number"]);
       } else {
         return blankOnRight(g.choice([2, 3]) * blankValue, blankValue, op, [
           "number",
@@ -110,16 +110,14 @@ function index(op) {
   return (blankValue) => {
     let t = type(blankValue);
     if (t === "string" || t === "array") {
-      return blankOnLeft(blankValue, g.int(0, blankValue.length), op, [
-        "number",
-      ]);
+      return blankOnLeft(blankValue, g.int(0, blankValue.length), op, ["string", "array"]);
     } else {
       // FIXME: move to generator and add possibility of getting array
       let s = "abcdefghijklmnopqrstuvwxyz".substring(
         0,
         Math.floor(blankValue * 1.5)
       );
-      return blankOnRight(s, blankValue, op, ["string", "array"]);
+      return blankOnRight(s, blankValue, op, ["number"]);
     }
   };
 }
@@ -149,48 +147,14 @@ const ops = {
   "!": op((a) => !a, prefix), // boolean
 };
 
-function okTypes(op, nonBlankType) {
-  switch (op) {
-    case "+":
-      return [nonBlankType];
-
-    case "-":
-    case "*":
-    case "/":
-    case "%":
-    case "<":
-    case "<=":
-    case ">":
-    case ">=":
-      return ["number"];
-
-    case "[]":
-      if (nonBlankType == "string" || nonBlankType == "array") {
-        return ["number"];
-      } else {
-        return ["string", "array"];
-      }
-
-    case "&&":
-    case "||":
-    case "!":
-      return ["boolean"];
-
-    case "!==":
-    case "===":
-      return ["number", "string", "boolean", "array"];
-
-    default:
-      throw Error("Missing op " + op);
-  }
-}
 
 function op(fn, constructor) {
   return { fn: fn, constructor: constructor };
 }
 
 function forBlank(blankValue) {
-  const op = g.choice(operatorsForType[type(blankValue)]);
+  const operators = operatorsForType[type(blankValue)];
+  const op = g.choice(operators);
   return ops[op].constructor(op)(blankValue);
 }
 
@@ -270,7 +234,6 @@ function logAnswer(expr, got) {
   // (I'm ignoring the legality of types after coercion so no numbers to && or
   // booleans to +, etc.)
   //
-
   const typeOk = expr.okTypes.indexOf(type(got)) != -1;
   const withGot = expr.fillBlank(got);
   const valueRight = withGot.evaluate() === expr.evaluate();
@@ -292,7 +255,7 @@ function logAnswer(expr, got) {
         "Value is an ok type for the operator but the value itelf isn't quite right. "
       )
     );
-    notesCell.append(withClass("mono", $("<span>", JSON.stringify(inBlank))));
+    notesCell.append(withClass("mono", $("<span>", JSON.stringify(expr.blankValue()))));
     notesCell.append($(" would have worked"));
     resultCell.append($("❌"));
   } else {

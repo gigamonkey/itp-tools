@@ -23,7 +23,7 @@ class Random {
   }
 
   array() {
-    return Array(this.int(maxArrayLength + 1))
+    return Array(this.int(maxArrayLength) + 1)
       .fill()
       .map(this.arrayTypeFunction().bind(this));
   }
