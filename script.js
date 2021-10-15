@@ -40,6 +40,8 @@ class Generator {
 
   value() { return this.typeFunction().bind(this)(); }
 
+  valueOf(type) { return this[type](); }
+
   values(n) { return Array(n).fill().map(this.value.bind(this)); }
 
   int(min, max) {
@@ -57,6 +59,8 @@ class Generator {
 
 }
 
+let g = new Generator();
+
 let operators = {
   number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "===", "!="],
   string: ["+", "[]"],
@@ -64,8 +68,46 @@ let operators = {
   array: ["[]"],
 }
 
+class Value {
+  constructor(value) {
+    this.value = value;
+  }
+  evaluate() { return this.value; }
+  render(parent) { parent.append($(JSON.stringify(this.value))); }
+}
 
-let g = new Generator();
+/*
+ * A blank spot in an expression that needs to be filled in.
+ */
+class Blank extends Value {
+  render(parent) { parent.append(withClass("hole", $("<span>"))); }
+}
+
+class NumberPlus {
+  constructor(a, b) {
+    this.a = a;
+    this.b = b;
+  }
+  evaluate() { return this.a.evaluate() + this.b.evaluate(); }
+  render(parent) {
+    this.a.render(parent);
+    parent.append($(" + "));
+    this.b.render(parent);
+  }
+}
+
+function forBlanks(blanks) {
+  // This is stupidly hardwired.
+  if (blanks.length == 1) {
+    return new NumberPlus(blanks[0], new Value(g.valueOf('number')));
+  } else if (blanks.length == 2) {
+    return new NumberPlus(blanks[0], blanks[1]);
+  }
+}
+
+function expressionQuestion(values) {
+  return forBlanks(Array.from(values).map(v => new Blank(v)));
+}
 
 // Get the type as far as we are concerned.
 function type(value) {
@@ -80,29 +122,50 @@ function type(value) {
   }
 }
 
-
-/*
- * We have jQuery at home!
- */
-function $(s, t) {
-  if (s === undefined) {
-    return $("<i>", "undefined")
-  } else if (s[0] === "#") {
-    return document.getElementById(s.substring(1));
-  } else if (s[0] === "<") {
-    const e = document.createElement(s.substring(1, s.length - 1));
-    if (t != undefined) {
-      e.append($(t));
-    }
-    return e;
-  } else {
-    return document.createTextNode(s);
-  }
-}
+let model = {
+  currentAnswers: [],
+};
 
 function init() {
-  let answers = $("#answers");
-  for (let v of g.values(20)) {
-    answers.append($("<button>", JSON.stringify(v)))
+  model.currentAnswers = uniqueAnswers();
+  populateAnswers(model.currentAnswers);
+  setQuestion();
+}
+
+function setQuestion() {
+  const div = $("#question");
+  let a = g.choice(model.currentAnswers);
+  let expr = forBlanks([new Blank(a)]);
+  console.log(expr);
+  expr.render(div);
+  div.append($(" ⟹ "));
+  div.append($(JSON.stringify(expr.evaluate())));
+}
+
+function populateAnswers(answers) {
+  const div = $("#answers");
+  for (const v of answers) {
+    let json = JSON.stringify(v);
+    let b = $("<button>", json);
+    b.value = json;
+    b.onclick = e => console.log(e.target.value + ": " + type(JSON.parse(e.target.value)));
+    div.append(b);
   }
 }
+
+function uniqueAnswers() {
+  let count = 0;
+  let seen = {};
+  let answers = [];
+  while (count < 20) {
+    let v = g.number();
+    let json = JSON.stringify(v);
+    if (!(json in seen)) {
+      seen[json] = true;
+      count++;
+      answers.push(v);
+    }
+  }
+  return answers;
+}
+

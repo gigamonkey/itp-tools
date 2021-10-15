@@ -11,6 +11,9 @@ h1, h2 { font-weight: 300; }
   margin: auto;
   font-family: monospace;
   vertical-align: middle;
+  text-align: center;
+  padding: 20px;
+  //border: thin solid green;
 }
 
 .hole {
@@ -23,6 +26,13 @@ h1, h2 { font-weight: 300; }
   vertical-align: middle;
 }
 
+#answers {
+  width: 50%;
+  margin: auto;
+  font-family: monospace;
+  text-align: center;
+  //border: thin solid red;
+}
 #answers button {
   margin: 4px;
   padding: 6px;
