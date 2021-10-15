@@ -7,8 +7,6 @@ body {
 h1, h2 { font-weight: 300; }
 
 #question {
-  width: 25%;
-  margin: auto;
   font-family: monospace;
   vertical-align: middle;
   text-align: center;
@@ -26,9 +24,7 @@ h1, h2 { font-weight: 300; }
 }
 
 #answers {
-  width: 50%;
   height: 50px;
-  margin: auto;
   font-family: monospace;
   text-align: center;
   //border: thin solid red;
@@ -57,8 +53,8 @@ h1, h2 { font-weight: 300; }
 }
 
 col.functionCall { width: 40%; }
-col.got, col.expected { width: 25%; }
-col.result { width: 10%; }
+col.got, col.expected { width: 10%; }
+col.result { width: 40%; }
 
 th { 
   font-weight: 300;

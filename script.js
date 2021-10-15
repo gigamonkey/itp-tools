@@ -129,22 +129,23 @@ class Blank extends Value {
   blankValue() { return this.value; }
 }
 
-class NumberPlus {
-  constructor(a, b) {
+class NumberBinary {
+  constructor(a, b, op) {
     this.a = a;
     this.b = b;
+    this.op = op;
   }
   evaluate() {
-    return this.a.evaluate() + this.b.evaluate();
+    return this.op.fn(this.a.evaluate(), this.b.evaluate());
   }
   render(parent) {
     this.a.render(parent);
-    parent.append($(" + "));
+    parent.append($(" " + this.op.code + " "));
     this.b.render(parent);
   }
 
   fillBlank(value) {
-    return new NumberPlus(this.a.fillBlank(value), this.b.fillBlank(value));
+    return new this.constructor(this.a.fillBlank(value), this.b.fillBlank(value));
   }
 
   blankValue() {
@@ -153,8 +154,34 @@ class NumberPlus {
   }
 }
 
+class NumberPlus extends NumberBinary {
+  constructor(a, b) {
+    super(a, b, { fn: (a, b) => a + b, code: '+' });
+  }
+}
+
+class NumberMinus extends NumberBinary {
+  constructor(a, b) {
+    super(a, b, { fn: (a, b) => a - b, code: '-' });
+  }
+}
+
+class NumberMultiply extends NumberBinary {
+  constructor(a, b) {
+    super(a, b, { fn: (a, b) => a * b, code: '*' });
+  }
+}
+
+class NumberDivide extends NumberBinary {
+  constructor(a, b) {
+    super(a, b, { fn: (a, b) => a / b, code: '/' });
+  }
+}
+
+
 function forBlank(blank) {
-  return new NumberPlus(blank, new Value(g.valueOf("number")));
+  const clazz = g.choice([NumberPlus, NumberMinus, NumberMultiply, NumberDivide]);
+  return new clazz(blank, new Value(g.valueOf("number")));
 }
 
 // Get the type as far as we are concerned.
@@ -218,15 +245,24 @@ function onAnswer(e) {
   setQuestion();
 }
 
-function logAnswer(expr, answer) {
-  const answered = expr.fillBlank(answer);
-  const passed = answered.evaluate() === expr.evaluate();
+function logAnswer(expr, got) {
+  const expected = expr.blankValue();
+  const typeRight = type(got) === type(expected);
+  const valueRight = got === expected;
+  const passed = typeRight && valueRight;
   const row = $("#results").insertRow(0);
   row.className = passed ? "pass" : "fail";
   showExpression(expr, row.insertCell());;
-  row.insertCell().append($(JSON.stringify(answer)));
-  row.insertCell().append($(JSON.stringify(expr.blankValue())));
-  row.insertCell().append($(passed ? "✅" : "❌"));
+  row.insertCell().append($(JSON.stringify(got)));
+  row.insertCell().append($(JSON.stringify(expected)));
+  const resultCell = row.insertCell();
+  if (passed) {
+    resultCell.append($("✅"));
+  } else if (typeRight) {
+    resultCell.append("❌: right type but wrong value");
+  } else {
+    resultCell.append(`❌: expected a ${type(expected)}`);
+  }
 }
 
 function showExpression(expr, where) {
