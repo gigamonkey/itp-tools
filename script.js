@@ -146,7 +146,7 @@ class BinaryOp {
     this.op = op;
   }
   evaluate() {
-    return ops[this.op](this.left.evaluate(), this.right.evaluate());
+    return ops[this.op].fn(this.left.evaluate(), this.right.evaluate());
   }
   render(parent) {
     this.left.render(parent);
@@ -186,7 +186,7 @@ class PrefixOp {
   }
 
   evaluate() {
-    return ops[this.op](this.operand.evaluate());
+    return ops[this.op].fn(this.operand.evaluate());
   }
 
   render(parent) {
