@@ -3,23 +3,13 @@ import { shuffleArray } from "./shuffle.js";
 import { random as g } from "./random.js";
 import { Value, Blank, BinaryOp, PrefixOp } from "./expressions.js";
 
-// Basic plan.
-
-// Generate a bunch of random expressions whose complexity is based on
-// the current level. (E.g. initially just simple values, maybe of one type;
-// later more complex expressions.) These make up the palette for a level.
-
-// Levels (values):
-//  0: just numbers
-//  1: just strings and numbers for indices.
-//  2: just booleans
-//  3: numbers and strings
-//  4: homogeneous arrays
-//  5: numbers, strings, booleans, and homogenous arrays
-//  6: add heterogenous arrays but no nesting
-//  7: add nested heterogenous arrays
-//  8: arithmetic expressions
-//  9: string expressions
+// Basic functionality:
+//
+//  - Generate some number of potential answers.
+//  - Choose one at random and then create an expression using that answer.
+//  - Present the question with the answer blanked out.
+//  - User clicks on button to select answer and then we report whether it was correct.
+//  - Any answer that produces the same result is ok.
 
 let all_types = ["number", "string", "boolean", "array"];
 
@@ -105,34 +95,36 @@ function index(op) {
   };
 }
 
+// Rest of code exists to include === and !== but they tend to be uninteresting
+// so I took them out.
 let operatorsForType = {
-  number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">=", "===", "!=="],
-  string: ["+", "[]", "===", "!=="],
-  boolean: ["&&", "||", "!", "===", "!=="],
-  array: ["[]"], //, "===", "!=="],
-};
-
-const ops = {
-  "+": op((a, b) => a + b, sameType), // matches type
-  "-": op((a, b) => a - b, numeric), // number
-  "*": op((a, b) => a * b, numeric), // number
-  "/": op((a, b) => a / b, divide), // number
-  "%": op((a, b) => a % b, modulus), // number
-  "<": op((a, b) => a < b, numeric), // number
-  "<=": op((a, b) => a <= b, numeric), // number
-  ">": op((a, b) => a > b, numeric), // number
-  ">=": op((a, b) => a >= b, numeric), // number
-  "===": op((a, b) => a === b, any), // any
-  "!==": op((a, b) => a !== b, any), // any
-  "[]": op((a, b) => a[b], index), // depends on what's filled in
-  "&&": op((a, b) => a && b, boolean), // boolean
-  "||": op((a, b) => a || b, boolean), // boolean
-  "!": op((a) => !a, prefix), // boolean
+  number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">="],
+  string: ["+", "[]"],
+  boolean: ["&&", "||", "!"],
+  array: ["[]"],
 };
 
 function op(fn, constructor) {
   return { fn: fn, constructor: constructor };
 }
+const ops = {
+  "+": op((a, b) => a + b, sameType),
+  "-": op((a, b) => a - b, numeric),
+  "*": op((a, b) => a * b, numeric),
+  "/": op((a, b) => a / b, divide),
+  "%": op((a, b) => a % b, modulus),
+  "<": op((a, b) => a < b, numeric),
+  "<=": op((a, b) => a <= b, numeric),
+  ">": op((a, b) => a > b, numeric),
+  ">=": op((a, b) => a >= b, numeric),
+  "===": op((a, b) => a === b, any),
+  "!==": op((a, b) => a !== b, any),
+  "[]": op((a, b) => a[b], index),
+  "&&": op((a, b) => a && b, boolean),
+  "||": op((a, b) => a || b, boolean),
+  "!": op((a) => !a, prefix),
+};
+
 
 function forBlank(blankValue) {
   const operators = operatorsForType[type(blankValue)];
@@ -208,8 +200,12 @@ function logAnswer(expr, got) {
   // consider ? * 0 ==> 0.)
 
   // Things to check:
-  // - Was the selected answer an acceptable type?
-  // - Does evaluating the expression with the selected answer yield the same result.
+  //
+  // - Was the selected answer an acceptable type for the operator 
+  //   given the other value.
+  //
+  // - Does evaluating the expression with the selected answer
+  //   yield the same result.
   //
   // The former does not necessarily require that the answer is the same type
   // as the value in the blank--in an === or !== any value is a plausible type.

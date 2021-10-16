@@ -52,10 +52,12 @@ h1, h2 { font-weight: 300; }
   table-layout: fixed;
 }
 
+/*
 col.question { width: 25%; }
 col.answer { width: 30%; }
 col.notes { width: 25%; }
-col.result { width: 20%; }
+*/
+col.result { width: 50px; }
 
 
 th { 
