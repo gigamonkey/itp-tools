@@ -36,4 +36,32 @@ function withClass(className, e) {
   return e;
 }
 
-export { $, clear, withClass };
+/*
+ * Find a child matching a predicate.
+ */
+function findChild(e, fn) {
+  for (let c of e.children) {
+    console.log("Checking " + c);
+    if (fn(c)) {
+      return c;
+    }
+  }
+}
+
+/*
+ * Find a child matching a predicate.
+ */
+function findDescendant(e, fn) {
+  for (let c of e.children) {
+    if (fn(c)) {
+      return c;
+    } else {
+      let x = findDescendant(c, fn);
+      if (x !== undefined) {
+        return x;
+      }
+    }
+  }
+}
+
+export { $, clear, findChild, findDescendant, withClass };

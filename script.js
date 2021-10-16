@@ -1,4 +1,4 @@
-import { $, clear, withClass } from "./whjqah.js";
+import { $, clear, findChild, findDescendant, withClass } from "./whjqah.js";
 import { forBlank, type } from "./questions.js";
 import { random as g } from "./random.js";
 
@@ -21,6 +21,7 @@ let model = {
 };
 
 function init() {
+  $("#next").onclick = setQuestion;
   for (let i = 0; i < model.tiles; i++) {
     addTile(newAnswer());
   }
@@ -29,6 +30,7 @@ function init() {
 }
 
 function setQuestion() {
+  clear($("#commentary"));
   const answers = Object.values(model.currentAnswers);
   if (answers.length > 0) {
     let a = g.choice(answers);
@@ -46,13 +48,13 @@ function onAnswer(e) {
   e.target.parentElement.removeChild(e.target);
 
   const result = processAnswer(model.currentQuestion, answer);
-  logResult(result);
+  animateExpression(result, $("#question"));
+  //logResult(result);
   addTile(newAnswer());
-  hideTip();
-  setQuestion();
+  maybeHideTip();
 }
 
-function hideTip() {
+function maybeHideTip() {
   const tip = $("#tip");
 
   if (tip.style.display != "none") {
@@ -80,7 +82,6 @@ function hideTip() {
   }
 }
 
-
 function processAnswer(expr, answer) {
   // We can't just compare the answer we got to the answer
   // we used to create the question because there could be
@@ -101,7 +102,8 @@ function processAnswer(expr, answer) {
   // booleans to +, etc.)
   //
 
-  const expectedValue =  expr.evaluate();
+  const blankValue = expr.blankValue();
+  const expectedValue = expr.evaluate();
   const filled = expr.fillBlank(answer);
   const answeredValue = filled.evaluate();
   const typeOk = expr.okTypes.indexOf(type(answer)) != -1;
@@ -109,17 +111,61 @@ function processAnswer(expr, answer) {
 
   return {
     expr: expr,
-    inBlank: expr.blankValue(),
+    inBlank: blankValue,
     answer: answer,
     filled: filled,
     expectedValue: expectedValue,
     answeredValue: answeredValue,
     typeOk: typeOk,
+    exactType: type(blankValue) === type(answer),
     valueRight: valueRight,
     passed: typeOk && valueRight,
   };
 }
 
+function a(t) {
+  return (t === "array" ? "an " : "a ") + t;
+}
+
+function or(things) {
+  if (things.length == 1) {
+    return things[0];
+  } else if (things.length == 2) {
+    return things.join(" or ");
+  } else {
+    return things.slice(0, things.length - 1).join(", ") + ", or " + things[things.length - 1];
+  }
+}
+
+function addCommentary(result, where) {
+  if (!result.passed) {
+    if (!result.typeOk) {
+      where.append($(typeCommentary(result)));
+    } else {
+      if (result.exactType) {
+        where.append($("Value is the right type but the value itelf isn't quite right. "));
+      } else {
+        // Type is acceptable for the operator but not the right type
+        // in this specific case.
+        where.append(
+          $("Value is an ok type for the operator but in this case you probably needed " + a(type(result.blankValue)))
+        );
+      }
+    }
+
+    const p = $("<p>");
+    p.append(withClass("mono", $("<span>", JSON.stringify(result.inBlank))));
+    p.append($(" would have worked"));
+    where.append(p);
+  }
+}
+
+function typeCommentary(result) {
+  if (!results.typeOk) {
+    let expectation = or(result.expr.okTypes.map(a));
+    return `Should have been ${expectation}.`;
+  }
+}
 
 function logResult(result) {
   const row = $("#results").insertRow(0);
@@ -133,42 +179,111 @@ function logResult(result) {
     notesCell.append($("Looks good!"));
     resultCell.append($("✅"));
   } else {
-    if (result.typeOk) {
-      notesCell.append($("Value is an ok type for the operator but the value itelf isn't quite right. "));
-    } else {
-      let expectation;
-      if (result.expr.okTypes.length == 1) {
-        expectation = result.expr.okTypes[0];
-      } else {
-        expectation = `either ${result.expr.okTypes[0]} or ${result.expr.okTypes[1]}`;
-      }
-      notesCell.append($(`Wrong type of value. Should have been ${expectation}.`));
-    }
-    notesCell.append(withClass("mono", $("<span>", JSON.stringify(result.inBlank))));
-    notesCell.append($(" would have worked"));
+    addCommentary(result, notesCell);
     resultCell.append($("❌"));
   }
 }
 
+class Link {
+  constructor(fn, delay = 0, previous = null) {
+    this.fn = fn;
+    this.delay = delay;
+    this.previous = previous;
+  }
 
-function animateExpression() {
-  // blank out result of evaluation
-  // replace blank with the answer.
-  // show new evaluation (possibly a type error)
-  // display a green checkmark or a red X
+  after(delay, fn) {
+    return new Link(fn, delay, this);
+  }
+
+  run() {
+    const me = this.possiblyDelayed(this.fn);
+    if (this.previous) {
+      this.previous.runAndThen(me);
+    } else {
+      me();
+    }
+  }
+
+  runAndThen(next) {
+    let me = this.possiblyDelayed(() => {
+      this.fn();
+      next();
+    });
+    if (this.previous) {
+      this.previous.runAndThen(me);
+    } else {
+      me();
+    }
+  }
+
+  possiblyDelayed(fn) {
+    return this.delay === 0 ? fn : () => setTimeout(fn, this.delay);
+  }
 }
 
+function first(fn) {
+  return new Link(fn);
+}
+
+function animateExpression(result, where) {
+  // blank out result of evaluation
+  let hole = findDescendant(where, (c) => c.className == "hole");
+  let value = findDescendant(where, (c) => c.className == "value");
+
+  function clearValue() {
+    clear(value);
+  }
+  function fillAnswer() {
+    clear(hole).append(JSON.stringify(result.answer));
+  }
+  function fillResult() {
+    if (result.typeOk) {
+      value.append(JSON.stringify(result.answeredValue));
+    } else {
+      value.append($("<i>", "Wrong type"));
+    }
+  }
+  function checkmark() {
+    const green = $("✅");
+    const red = $("❌");
+    value.append($("  "));
+    value.append(result.passed ? green : red);
+    addCommentary(result, $("#commentary"));
+  }
+
+  first(clearValue).after(10, fillAnswer).after(500, fillResult).after(200, checkmark).run();
+  //.after(2000, setQuestion).run();
+
+  //animateRandomValues(value, 100, 100, result.answeredValue);
+}
+
+function animateRandomValues(where, rate, times, finalValue) {
+  let id;
+  let iters = 0;
+
+  function a() {
+    if (iters == times) {
+      clearInterval(id);
+      clear(where).append(JSON.stringify(finalValue));
+      setTimeout(setQuestion, 1000);
+    } else {
+      clear(where).append(JSON.stringify(g.value()));
+      iters++;
+    }
+  }
+
+  id = setInterval(a, rate);
+}
 
 function showExpression(expr, where) {
   const s1 = withClass("mono", $("<span>"));
   const s2 = withClass("mono", $("<span>"));
   expr.render(s1);
-  s2.append($(JSON.stringify(expr.evaluate())));
+  s2.append(withClass("value", $("<span>", JSON.stringify(expr.evaluate()))));
   where.append(s1);
   where.append($(" ⟹ "));
   where.append(s2);
 }
-
 
 function showFilledExpression(expr, where) {
   const s1 = withClass("mono", $("<span>"));
@@ -180,8 +295,6 @@ function showFilledExpression(expr, where) {
   where.append(s2);
 }
 
-
-
 function addTile(v) {
   let json = JSON.stringify(v);
   let b = $("<button>", json);
@@ -189,7 +302,6 @@ function addTile(v) {
   b.onclick = onAnswer;
   $("#answers").append(b);
 }
-
 
 function newAnswer() {
   for (let i = 0; i < 200; i++) {

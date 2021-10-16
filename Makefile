@@ -1,4 +1,4 @@
-all:
+pretty:
 	prettier -w *.js
 
 lint:

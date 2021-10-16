@@ -4,12 +4,15 @@ body {
   font-weight: 300;
 }
 
+div {
+    text-align: center;
+}
+
 h1, h2 { font-weight: 300; }
 
 #question {
   font-family: monospace;
   vertical-align: middle;
-  text-align: center;
   padding: 20px;
   font-size: 1.5em;
 }
@@ -25,7 +28,6 @@ h1, h2 { font-weight: 300; }
 
 #answers {
   font-family: monospace;
-  text-align: center;
   //border: thin solid red;
 }
 
@@ -45,14 +47,22 @@ h1, h2 { font-weight: 300; }
   color: white;
 }
 
-#tip {
-  font-style: italic;
-  text-align: center;
-  padding: 10px;
+#tip, #commentary {
   width: 50%;
   margin: auto;
+}
+
+#tip {
+  font-style: italic;
+  padding: 10px;
   border: thin solid red;
 }
+
+#commentary {
+  font-weight: 600;
+  padding: 10px;
+}
+
 
 
 #log {
@@ -74,7 +84,7 @@ col.notes { width: 25%; }
 col.result { width: 50px; }
 
 
-th { 
+th {
   font-weight: 300;
   background: rgba(0, 0, 0, 0.05);
   border-bottom: thin solid rgba(0, 0, 0, 0.2);
