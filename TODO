@@ -6,3 +6,4 @@
 Add expressions in answers (e.g. 3 + 2 could be the answer to 6 > ??? ==> true).
 Actually use leveling, adjust it upwards when enough questions are answered correctly.
 Add variables somehow. Possibly just a table of variable values and then some answers are variable names.
+- Maybe display log like a REPL: show the expression with the answer filled in, then what it evaluates to or "Type error" with some explanation. And maybe then the correct expression and what it evaluates to.
