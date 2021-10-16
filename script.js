@@ -84,19 +84,20 @@ function logAnswer(expr, got) {
   if (passed) {
     notesCell.append($("Looks good!"));
     resultCell.append($("✅"));
-  } else if (typeOk) {
-    notesCell.append($("Value is an ok type for the operator but the value itelf isn't quite right. "));
+  } else {
+    if (typeOk) {
+      notesCell.append($("Value is an ok type for the operator but the value itelf isn't quite right. "));
+    } else {
+      let expectation;
+      if (expr.okTypes.length == 1) {
+        expectation = expr.okTypes[0];
+      } else {
+        expectation = `either ${expr.okTypes[0]} or ${expr.okTypes[1]}`;
+      }
+      notesCell.append($(`Wrong type of value. Should have been ${expectation}.`));
+    }
     notesCell.append(withClass("mono", $("<span>", JSON.stringify(expr.blankValue()))));
     notesCell.append($(" would have worked"));
-    resultCell.append($("❌"));
-  } else {
-    let expectation;
-    if (expr.okTypes.length == 1) {
-      expectation = expr.okTypes[0];
-    } else {
-      expectation = `either ${expr.okTypes[0]} or ${expr.okTypes[1]}`;
-    }
-    notesCell.append($(`Wrong type of value. Should have been ${expectation}.`));
     resultCell.append($("❌"));
   }
 }
