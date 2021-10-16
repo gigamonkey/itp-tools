@@ -107,38 +107,58 @@ function logAnswer(expr, got) {
   // (I'm ignoring the legality of types after coercion so no numbers to && or
   // booleans to +, etc.)
   //
-  const typeOk = expr.okTypes.indexOf(type(got)) != -1;
-  const withGot = expr.fillBlank(got);
-  const valueRight = withGot.evaluate() === expr.evaluate();
-  const passed = typeOk && valueRight;
+  let result = processAnswer(expr, got);
 
   const row = $("#results").insertRow(0);
-  row.className = passed ? "pass" : "fail";
-  showExpression(expr, row.insertCell());
-  row.insertCell().append(withClass("mono", $("<span>", JSON.stringify(got))));
+  row.className = result.passed ? "pass" : "fail";
+  showExpression(result.expr, row.insertCell());
+  row.insertCell().append(withClass("mono", $("<span>", JSON.stringify(result.answer))));
   const notesCell = row.insertCell();
   const resultCell = row.insertCell();
 
-  if (passed) {
+  if (result.passed) {
     notesCell.append($("Looks good!"));
     resultCell.append($("✅"));
   } else {
-    if (typeOk) {
+    if (result.typeOk) {
       notesCell.append($("Value is an ok type for the operator but the value itelf isn't quite right. "));
     } else {
       let expectation;
-      if (expr.okTypes.length == 1) {
-        expectation = expr.okTypes[0];
+      if (result.expr.okTypes.length == 1) {
+        expectation = result.expr.okTypes[0];
       } else {
-        expectation = `either ${expr.okTypes[0]} or ${expr.okTypes[1]}`;
+        expectation = `either ${result.expr.okTypes[0]} or ${result.expr.okTypes[1]}`;
       }
       notesCell.append($(`Wrong type of value. Should have been ${expectation}.`));
     }
-    notesCell.append(withClass("mono", $("<span>", JSON.stringify(expr.blankValue()))));
+    notesCell.append(withClass("mono", $("<span>", JSON.stringify(result.inBlank))));
     notesCell.append($(" would have worked"));
     resultCell.append($("❌"));
   }
 }
+
+
+function processAnswer(expr, answer) {
+
+  const expectedValue =  expr.evaluate();
+  const filled = expr.fillBlank(answer);
+  const answeredValue = filled.evaluate();
+  const typeOk = expr.okTypes.indexOf(type(answer)) != -1;
+  const valueRight = answeredValue === expectedValue;
+
+  return {
+    expr: expr,
+    inBlank: expr.blankValue(),
+    answer: answer,
+    filled: filled,
+    expectedValue: expectedValue,
+    answeredValue: answeredValue,
+    typeOk: typeOk,
+    valueRight: valueRight,
+    passed: typeOk && valueRight,
+  };
+}
+
 
 function showExpression(expr, where) {
   const s1 = withClass("mono", $("<span>"));
@@ -149,6 +169,18 @@ function showExpression(expr, where) {
   where.append($(" ⟹ "));
   where.append(s2);
 }
+
+
+function showFilledExpression(expr, where) {
+  const s1 = withClass("mono", $("<span>"));
+  const s2 = withClass("mono", $("<span>"));
+  expr.render(s1);
+  s2.append($(JSON.stringify(expr.evaluate())));
+  where.append(s1);
+  where.append($(" ⟹ "));
+  where.append(s2);
+}
+
 
 
 function addTile(v) {
