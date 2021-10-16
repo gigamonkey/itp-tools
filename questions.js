@@ -164,4 +164,4 @@ function prefix(op) {
   return (blankValue) => new PrefixOp(new Blank(blankValue), op, ops[op].fn, ["boolean"]);
 }
 
-export { forBlank };
+export { forBlank, type };

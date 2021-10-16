@@ -1,5 +1,5 @@
 import { $, clear, withClass } from "./whjqah.js";
-import { forBlank } from "./questions.js";
+import { forBlank, type } from "./questions.js";
 import { random as g } from "./random.js";
 import { shuffleArray } from "./shuffle.js";
 
@@ -13,6 +13,9 @@ import { shuffleArray } from "./shuffle.js";
 
 //////////////////////////////////////////////////////////////////////
 // HTML
+
+let NUM_QUESTIONS = 4;
+
 
 let model = {
   currentAnswers: {},
@@ -127,7 +130,7 @@ function uniqueAnswers() {
   let count = 0;
   let iters = 0;
   let answers = {};
-  while (count < 20 && iters < 200) {
+  while (count < NUM_QUESTIONS && iters < 200) {
     let v = g.valueForLevel(model.level);
     let json = JSON.stringify(v);
     if (!(json in answers)) {
