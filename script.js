@@ -159,17 +159,16 @@ function or(things) {
 }
 
 function addCommentary(result, where) {
-  const green = $("✅");
+  const green = $("✅ ");
   const red = $("❌ ");
   const p = $("<p>");
+  where.append(p);
 
   if (result.passed) {
     p.append(green);
     p.append($("Correct!"));
   } else {
     p.append(red);
-    where.append(p);
-
     let got = JSON.stringify(result.answer);
     if (!result.typeOk) {
       let expectation = or(result.expr.okTypes.map(a));
@@ -252,26 +251,13 @@ function first(fn) {
 }
 
 function animateExpression(result, where) {
-  // blank out result of evaluation
   let hole = findDescendant(where, (c) => c.className == "hole");
   let value = findDescendant(where, (c) => c.className == "value");
 
-  function clearValue() {
-    clear(value);
-  }
-  function fillAnswer() {
-    clear(hole).append(JSON.stringify(result.answer));
-  }
-  function fillResult() {
-    if (result.typeOk) {
-      value.append(JSON.stringify(result.answeredValue));
-    } else {
-      value.append($("<i>", "Wrong type"));
-    }
-  }
   function checkmark() {
     const green = $("✅");
     if (result.passed) {
+      hole.parentElement.replaceChild($(JSON.stringify(result.answer)), hole);
       value.append($("  "));
       value.append(green);
       model.answeredCorrectly = true;
@@ -280,7 +266,7 @@ function animateExpression(result, where) {
     }
   }
 
-  first(fillAnswer).after(200, checkmark).after(1000, maybeSetQuestion).run();
+  first(checkmark).after(1500, maybeSetQuestion).run();
 }
 
 function showExpression(expr, where) {

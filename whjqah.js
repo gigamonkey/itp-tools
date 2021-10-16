@@ -41,7 +41,6 @@ function withClass(className, e) {
  */
 function findChild(e, fn) {
   for (let c of e.children) {
-    console.log("Checking " + c);
     if (fn(c)) {
       return c;
     }
