@@ -29,6 +29,12 @@ function init() {
   setQuestion();
 }
 
+function maybeSetQuestion() {
+  if (!$("#commentary").hasChildNodes()) {
+    setQuestion();
+  }
+}
+
 function setQuestion() {
   clear($("#commentary"));
   const answers = Object.values(model.currentAnswers);
@@ -147,9 +153,8 @@ function addCommentary(result, where) {
       } else {
         // Type is acceptable for the operator but not the right type
         // in this specific case.
-        where.append(
-          $("Value is an ok type for the operator but in this case you probably needed " + a(type(result.blankValue)))
-        );
+        let needed = a(type(result.inBlank));
+        where.append($(`Value is an acceptable type for the operator but in this case you probably needed ${needed}.`));
       }
     }
 
@@ -251,8 +256,12 @@ function animateExpression(result, where) {
     addCommentary(result, $("#commentary"));
   }
 
-  first(clearValue).after(10, fillAnswer).after(500, fillResult).after(200, checkmark).run();
-  //.after(2000, setQuestion).run();
+  first(clearValue)
+    .after(10, fillAnswer)
+    .after(500, fillResult)
+    .after(200, checkmark)
+    .after(1000, maybeSetQuestion)
+    .run();
 
   //animateRandomValues(value, 100, 100, result.answeredValue);
 }
