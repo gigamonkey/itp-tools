@@ -159,16 +159,26 @@ function or(things) {
 }
 
 function addCommentary(result, where) {
-  if (!result.passed) {
-    const p = $("<p>");
+  const green = $("✅");
+  const red = $("❌ ");
+  const p = $("<p>");
+
+  if (result.passed) {
+    p.append(green);
+    p.append($("Correct!"));
+  } else {
+    p.append(red);
     where.append(p);
 
     let got = JSON.stringify(result.answer);
     if (!result.typeOk) {
-      p.append($(typeCommentary(result)));
+      let expectation = or(result.expr.okTypes.map(a));
+      p.append(withClass("mono", $("<span>", got)));
+      p.append($(` is ${a(type(result.answer))}, not ${expectation}.`));
     } else {
       if (result.exactType) {
-        p.append($(`${got} is the right type but isn't quite the right value.`));
+        p.append(withClass("mono", $("<span>", got)));
+        p.append($(" is the right type but isn't quite the right value."));
       } else {
         let needed = a(type(result.inBlank));
         p.append(
@@ -180,14 +190,6 @@ function addCommentary(result, where) {
         );
       }
     }
-  }
-}
-
-function typeCommentary(result) {
-  if (!result.typeOk) {
-    let got = JSON.stringify(result.answer);
-    let expectation = or(result.expr.okTypes.map(a));
-    return `${got} is ${a(type(result.answer))}, not ${expectation}.`;
   }
 }
 
@@ -269,22 +271,16 @@ function animateExpression(result, where) {
   }
   function checkmark() {
     const green = $("✅");
-    const red = $("❌");
-    value.append($("  "));
-    value.append(result.passed ? green : red);
     if (result.passed) {
+      value.append($("  "));
+      value.append(green);
       model.answeredCorrectly = true;
     } else {
       addCommentary(result, $("#commentary"));
     }
   }
 
-  first(clearValue)
-    .after(10, fillAnswer)
-    .after(500, fillResult)
-    .after(200, checkmark)
-    .after(1000, maybeSetQuestion)
-    .run();
+  first(fillAnswer).after(200, checkmark).after(1000, maybeSetQuestion).run();
 }
 
 function showExpression(expr, where) {
