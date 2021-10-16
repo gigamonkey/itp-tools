@@ -32,6 +32,8 @@ function init() {
 function maybeSetQuestion() {
   if (!$("#commentary").hasChildNodes()) {
     setQuestion();
+  } else {
+    resetQuestion();
   }
 }
 
@@ -48,6 +50,10 @@ function setQuestion() {
   }
 }
 
+function resetQuestion() {
+  showExpression(model.currentQuestion, clear($("#question")));
+}
+
 function onAnswer(e) {
   const answer = JSON.parse(e.target.value);
   delete model.currentAnswers[e.target.value];
@@ -55,7 +61,6 @@ function onAnswer(e) {
 
   const result = processAnswer(model.currentQuestion, answer);
   animateExpression(result, $("#question"));
-  //logResult(result);
   addTile(newAnswer());
   maybeHideTip();
 }
@@ -145,30 +150,30 @@ function or(things) {
 
 function addCommentary(result, where) {
   if (!result.passed) {
+    const p = $("<p>");
+    where.append(p);
+
+    let got = JSON.stringify(result.answer);
     if (!result.typeOk) {
-      where.append($(typeCommentary(result)));
+      p.append($(typeCommentary(result)));
     } else {
       if (result.exactType) {
-        where.append($("Value is the right type but the value itelf isn't quite right. "));
+        p.append($(`${got} is the right type but isn't quite the right value.`));
       } else {
         // Type is acceptable for the operator but not the right type
         // in this specific case.
         let needed = a(type(result.inBlank));
-        where.append($(`Value is an acceptable type for the operator but in this case you probably needed ${needed}.`));
+        p.append($(`${got} is of an acceptable type for the operator but in this case you probably needed ${needed}.`));
       }
     }
-
-    const p = $("<p>");
-    p.append(withClass("mono", $("<span>", JSON.stringify(result.inBlank))));
-    p.append($(" would have worked"));
-    where.append(p);
   }
 }
 
 function typeCommentary(result) {
   if (!results.typeOk) {
+    let got = JSON.stringify(result.answer);
     let expectation = or(result.expr.okTypes.map(a));
-    return `Should have been ${expectation}.`;
+    return `${got} is not ${expectation}.`;
   }
 }
 
@@ -253,7 +258,15 @@ function animateExpression(result, where) {
     const red = $("❌");
     value.append($("  "));
     value.append(result.passed ? green : red);
-    addCommentary(result, $("#commentary"));
+    if (result.passed) {
+      clear($("#commentary"));
+    } else {
+      addCommentary(result, $("#commentary"));
+    }
+  }
+
+  function maybeClear() {
+    if (result.passed) clear($("#commentary"));
   }
 
   first(clearValue)
@@ -262,8 +275,6 @@ function animateExpression(result, where) {
     .after(200, checkmark)
     .after(1000, maybeSetQuestion)
     .run();
-
-  //animateRandomValues(value, 100, 100, result.answeredValue);
 }
 
 function animateRandomValues(where, rate, times, finalValue) {
