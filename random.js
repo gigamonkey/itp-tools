@@ -37,7 +37,7 @@ class Random {
     return r;
   }
 
-  arrayofLength(len) {
+  arrayOfLength(len) {
     return Array(len).fill().map(this.arrayTypeFunction().bind(this));
   }
 

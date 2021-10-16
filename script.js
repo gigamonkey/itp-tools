@@ -14,11 +14,10 @@ import { shuffleArray } from "./shuffle.js";
 //////////////////////////////////////////////////////////////////////
 // HTML
 
-let NUM_QUESTIONS = 4;
-
 let model = {
   currentAnswers: {},
   currentQuestion: null,
+  tiles: 4,
   level: 3,
 };
 
@@ -29,19 +28,7 @@ function init() {
   setQuestion();
 }
 
-function populateAnswers(currentAnswers) {
-  const answers = Object.keys(currentAnswers);
-  shuffleArray(answers);
 
-  const div = $("#answers");
-  for (const json of answers) {
-    let v = answers[json];
-    let b = $("<button>", json);
-    b.value = json;
-    b.onclick = onAnswer;
-    div.append(b);
-  }
-}
 
 function setQuestion() {
   const answers = Object.values(model.currentAnswers);
@@ -60,6 +47,7 @@ function onAnswer(e) {
   delete model.currentAnswers[e.target.value];
   e.target.parentElement.removeChild(e.target);
   logAnswer(model.currentQuestion, answer);
+  addTile(newAnswer());
   setQuestion();
 }
 
@@ -128,7 +116,7 @@ function uniqueAnswers() {
   let count = 0;
   let iters = 0;
   let answers = {};
-  while (count < NUM_QUESTIONS && iters < 200) {
+  while (count < model.tiles && iters < 200) {
     let v = g.valueForLevel(model.level);
     let json = JSON.stringify(v);
     if (!(json in answers)) {
@@ -138,6 +126,34 @@ function uniqueAnswers() {
     iters++;
   }
   return answers;
+}
+
+function populateAnswers(currentAnswers) {
+  const answers = Object.keys(currentAnswers);
+  for (const json of shuffleArray(answers)) {
+    addTile(currentAnswers[json]);
+  }
+}
+
+function addTile(v) {
+  let json = JSON.stringify(v);
+  let b = $("<button>", json)
+  b.value = json;
+  b.onclick = onAnswer;
+  $("#answers").append(b);
+}
+
+
+function newAnswer() {
+  for (let i = 0; i < 200; i++) {
+    let v = g.valueForLevel(model.level);
+    let json = JSON.stringify(v);
+    if (!(json in model.currentAnswers)) {
+      model.currentAnswers[json] = v;
+      return v;
+    }
+  }
+  throw Error("Couldn't find an unused value!");
 }
 
 document.addEventListener("DOMContentLoaded", init);
