@@ -1,0 +1,8 @@
+- Maybe add a version where the answers are just types.
+- Add scrore board.
+- Add some kind of animation on selecting the answers.
+- Possibly hide the log and only display on request and maybe only ones that were wrong.
+- Show what wrong answers would have evaluated to (or that they wouldn't because of a type mismattch.)
+Add expressions in answers (e.g. 3 + 2 could be the answer to 6 > ??? ==> true).
+Actually use leveling, adjust it upwards when enough questions are answered correctly.
+Add variables somehow. Possibly just a table of variable values and then some answers are variable names.
