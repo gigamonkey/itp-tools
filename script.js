@@ -51,8 +51,42 @@ function onAnswer(e) {
 }
 
 function hideTip() {
-  $("#tip").style.display = "none";
+  const tip = $("#tip");
+
+  if (tip.style.display != "none") {
+    let iters = 50;
+    let h = tip.clientHeight;
+    let w = tip.clientWidth;
+    let hd = h / iters;
+    let wd = w / iters;
+
+    let id = null;
+    function shrinkTip() {
+      tip.innerHTML = "";
+      if (iters == 0) {
+        tip.style.display = "none";
+        clearInterval(id);
+      } else {
+        iters--;
+        h -= hd;
+        w -= wd;
+        tip.style.height = h + "px";
+        tip.style.width = w + "px";
+      }
+    }
+    id = setInterval(shrinkTip, 10);
+  }
 }
+
+function animateExpression() {
+  // blank out result of evaluation
+  // replace blank with the answer.
+  // show new evaluation (possibly a type error)
+  // display a green checkmark or a red X
+}
+
+
+
 
 function logAnswer(expr, got) {
   // We can't just compare the answer we got to the answer
