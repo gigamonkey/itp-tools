@@ -1,0 +1,2 @@
+all:
+	prettier -w *.js
