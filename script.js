@@ -47,7 +47,12 @@ function onAnswer(e) {
   e.target.parentElement.removeChild(e.target);
   logAnswer(model.currentQuestion, answer);
   addTile(newAnswer());
+  hideTip();
   setQuestion();
+}
+
+function hideTip() {
+  $("#tip").style.display = "none";
 }
 
 function logAnswer(expr, got) {

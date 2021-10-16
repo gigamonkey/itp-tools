@@ -41,6 +41,15 @@ h1, h2 { font-weight: 300; }
   color: white;
 }
 
+#tip {
+  font-style: italic;
+  text-align: center;
+  padding: 10px;
+  width: 50%;
+  margin: auto;
+}
+
+
 #log {
   margin-top: 40px;
 }
