@@ -22,13 +22,12 @@ let model = {
 };
 
 function init() {
-  model.currentAnswers = uniqueAnswers();
-  populateAnswers(model.currentAnswers);
+  for (let i = 0; i < model.tiles; i++) {
+    addTile(newAnswer());
+  }
   clear($("#results"));
   setQuestion();
 }
-
-
 
 function setQuestion() {
   const answers = Object.values(model.currentAnswers);
@@ -112,28 +111,6 @@ function showExpression(expr, where) {
   where.append(s2);
 }
 
-function uniqueAnswers() {
-  let count = 0;
-  let iters = 0;
-  let answers = {};
-  while (count < model.tiles && iters < 200) {
-    let v = g.valueForLevel(model.level);
-    let json = JSON.stringify(v);
-    if (!(json in answers)) {
-      answers[json] = v;
-      count++;
-    }
-    iters++;
-  }
-  return answers;
-}
-
-function populateAnswers(currentAnswers) {
-  const answers = Object.keys(currentAnswers);
-  for (const json of shuffleArray(answers)) {
-    addTile(currentAnswers[json]);
-  }
-}
 
 function addTile(v) {
   let json = JSON.stringify(v);
