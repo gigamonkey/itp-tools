@@ -16,7 +16,7 @@ h1, h2 { font-weight: 300; }
 
 .hole {
   padding: 2px;
-  width: 1em;
+  //width: 1em;
   border: thin solid rgba(0, 0, 0, 0.2);
   display: inline-block;
   text-align: center;
@@ -28,12 +28,16 @@ h1, h2 { font-weight: 300; }
   text-align: center;
   //border: thin solid red;
 }
+
+
 #answers button {
   margin: 4px;
   padding: 6px;
-  border: none;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 255, 0.1);
+  border: thin solid rgba(0, 0, 0, 0.2);
   font-family: monospace;
+  border-radius: 5px;
+  box-shadow: 5px 5px rgba(255, 0, 0, 0.1);
 }
 
 #answers button.selected {

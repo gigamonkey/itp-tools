@@ -75,7 +75,7 @@ class Value extends Expression {
  */
 class Blank extends Value {
   render(parent) {
-    parent.append(withClass("hole", $("<span>", "?")));
+    parent.append(withClass("hole", $("<span>", "???")));
   }
   fillBlank(value) {
     return new Value(value);
