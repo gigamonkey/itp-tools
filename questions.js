@@ -149,9 +149,8 @@ function index(op) {
     if (t === "string" || t === "array") {
       return blankOnLeft(blankValue, g.int(0, blankValue.length), op, ["string", "array"]);
     } else {
-      // FIXME: move to generator and add possibility of getting array
-      let s = "abcdefghijklmnopqrstuvwxyz".substring(0, Math.floor(blankValue * 1.5));
-      return blankOnRight(s, blankValue, op, ["number"]);
+      let otherValue = g.stringOrArray(Math.floor(blankValue * 1.5));
+      return blankOnRight(otherValue, blankValue, op, ["number"]);
     }
   };
 }

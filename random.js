@@ -1,5 +1,7 @@
 let types = ["number", "string", "boolean", "array"];
 
+let alphabet = "abcdefghijklmnopqrstuvwxyz";
+
 let minNumber = 0;
 let maxNumber = 10;
 let words = ["food", "orange", "duck", "computer", "grue"];
@@ -23,9 +25,24 @@ class Random {
   }
 
   array() {
-    return Array(this.int(maxArrayLength) + 1)
-      .fill()
-      .map(this.arrayTypeFunction().bind(this));
+    // No empty arrays because we generate arrays to be indexed into.
+    return this.arrayOfLength(this.int(maxArrayLength) + 1);
+  }
+
+  stringOfLength(len) {
+    let r = "";
+    for (let i = 0; i < len; i++) {
+      r += alphabet[i % alphabet.length];
+    }
+    return r;
+  }
+
+  arrayofLength(len) {
+    return Array(len).fill().map(this.arrayTypeFunction().bind(this));
+  }
+
+  stringOrArray(len) {
+    return this.boolean() ? this.stringOfLength(len) : this.arrayofLength(len);
   }
 
   value() {

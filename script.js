@@ -16,9 +16,9 @@ import { shuffleArray } from "./shuffle.js";
 
 let NUM_QUESTIONS = 4;
 
-
 let model = {
   currentAnswers: {},
+  currentQuestion: null,
   level: 3,
 };
 
@@ -51,14 +51,12 @@ function setQuestion() {
     model.currentQuestion = expr;
     showExpression(expr, clear($("#question")));
   } else {
-    //model.level++;
     init();
   }
 }
 
 function onAnswer(e) {
   const answer = JSON.parse(e.target.value);
-  const answered = model.currentQuestion.fillBlank(answer);
   delete model.currentAnswers[e.target.value];
   e.target.parentElement.removeChild(e.target);
   logAnswer(model.currentQuestion, answer);
