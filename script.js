@@ -13,6 +13,82 @@ import { Value, Blank, BinaryOp, PrefixOp } from "./expressions.js";
 
 let all_types = ["number", "string", "boolean", "array"];
 
+/*
+ * Our definition of the type of different kinds of values. Mostly the
+ * same as Javascript's except we call arrays arrays.
+ */
+function type(value) {
+  let t = typeof value;
+  switch (t) {
+    case "number":
+    case "string":
+    case "boolean":
+      return t;
+    default:
+      return Array.isArray(value) ? "array" : "unknown";
+  }
+}
+
+/*
+ * What operators can be applied to a value of the given type?
+ *
+ * The rest of code exists to include === and !== but they tend to be
+ * uninteresting so I took them out. To add them as possibilities,
+ * just add them to one or more lists below. Whatever you do, don't
+ * add them to boolean as we definitely don't want to model testing
+ * boolean values for equality/inequality.
+ */
+let operatorsForType = {
+  number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">="],
+  string: ["+", "[]"],
+  boolean: ["&&", "||", "!"],
+  array: ["[]"],
+};
+
+function op(fn, factory) {
+  return { fn: fn, factory: factory };
+}
+
+const ops = {
+  "+": op((a, b) => a + b, sameType),
+  "-": op((a, b) => a - b, numeric),
+  "*": op((a, b) => a * b, numeric),
+  "/": op((a, b) => a / b, divide),
+  "%": op((a, b) => a % b, modulus),
+  "<": op((a, b) => a < b, numeric),
+  "<=": op((a, b) => a <= b, numeric),
+  ">": op((a, b) => a > b, numeric),
+  ">=": op((a, b) => a >= b, numeric),
+  "===": op((a, b) => a === b, any),
+  "!==": op((a, b) => a !== b, any),
+  "[]": op((a, b) => a[b], index),
+  "&&": op((a, b) => a && b, boolean),
+  "||": op((a, b) => a || b, boolean),
+  "!": op((a) => !a, prefix),
+};
+
+/*
+ * Given a value to be put in the blank, generate a random expression
+ * that works for that type. The various factory methods are
+ * responsible for generating a random value of the correct type for
+ * the other value (for binary ops) and for initializing the Op object
+ * with the appropriate function to compute the result of evaluating
+ * the expression and the list of ok types for possible answers.
+ * (Which is not always the same as the type of the blank value since
+ * some operators can be used with different types.)
+ */
+function forBlank(blankValue) {
+  const operators = operatorsForType[type(blankValue)];
+  const op = g.choice(operators);
+  return ops[op].factory(op)(blankValue);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Helpers for factory methods
+
+/*
+ * Put the blank value in on side or another of a BinaryOp at random.
+ */
 function pickASide(blankValue, otherValue, op, okTypes) {
   if (Math.random() < 0.5) {
     return blankOnLeft(blankValue, otherValue, op, okTypes);
@@ -29,17 +105,8 @@ function blankOnRight(left, right, op, okTypes) {
   return new BinaryOp(new Value(left), new Blank(right), op, ops[op].fn, okTypes);
 }
 
-function numeric(op) {
-  return (blankValue) => pickASide(blankValue, g.number(), op, ["number"]);
-}
-
-function any(op) {
-  return (blankValue) => pickASide(blankValue, g.value(), op, all_types);
-}
-
-function boolean(op) {
-  return (blankValue) => pickASide(blankValue, g.boolean(), op, ["boolean"]);
-}
+//////////////////////////////////////////////////////////////////////
+// Actual factory methods.
 
 function sameType(op) {
   return (blankValue) => {
@@ -48,8 +115,8 @@ function sameType(op) {
   };
 }
 
-function prefix(op) {
-  return (blankValue) => new PrefixOp(new Blank(blankValue), op, ops[op].fn, ["boolean"]);
+function numeric(op) {
+  return (blankValue) => pickASide(blankValue, g.number(), op, ["number"]);
 }
 
 function divide(op) {
@@ -82,6 +149,10 @@ function modulus(op) {
   };
 }
 
+function any(op) {
+  return (blankValue) => pickASide(blankValue, g.value(), op, all_types);
+}
+
 function index(op) {
   return (blankValue) => {
     let t = type(blankValue);
@@ -95,55 +166,16 @@ function index(op) {
   };
 }
 
-// Rest of code exists to include === and !== but they tend to be uninteresting
-// so I took them out.
-let operatorsForType = {
-  number: ["+", "-", "*", "/", "%", "<", "<=", ">", ">="],
-  string: ["+", "[]"],
-  boolean: ["&&", "||", "!"],
-  array: ["[]"],
-};
-
-function op(fn, constructor) {
-  return { fn: fn, constructor: constructor };
-}
-const ops = {
-  "+": op((a, b) => a + b, sameType),
-  "-": op((a, b) => a - b, numeric),
-  "*": op((a, b) => a * b, numeric),
-  "/": op((a, b) => a / b, divide),
-  "%": op((a, b) => a % b, modulus),
-  "<": op((a, b) => a < b, numeric),
-  "<=": op((a, b) => a <= b, numeric),
-  ">": op((a, b) => a > b, numeric),
-  ">=": op((a, b) => a >= b, numeric),
-  "===": op((a, b) => a === b, any),
-  "!==": op((a, b) => a !== b, any),
-  "[]": op((a, b) => a[b], index),
-  "&&": op((a, b) => a && b, boolean),
-  "||": op((a, b) => a || b, boolean),
-  "!": op((a) => !a, prefix),
-};
-
-
-function forBlank(blankValue) {
-  const operators = operatorsForType[type(blankValue)];
-  const op = g.choice(operators);
-  return ops[op].constructor(op)(blankValue);
+function boolean(op) {
+  return (blankValue) => pickASide(blankValue, g.boolean(), op, ["boolean"]);
 }
 
-// Get the type as far as we are concerned.
-function type(value) {
-  let t = typeof value;
-  switch (t) {
-    case "number":
-    case "string":
-    case "boolean":
-      return t;
-    default:
-      return Array.isArray(value) ? "array" : "unknown";
-  }
+function prefix(op) {
+  return (blankValue) => new PrefixOp(new Blank(blankValue), op, ops[op].fn, ["boolean"]);
 }
+
+//////////////////////////////////////////////////////////////////////
+// HTML
 
 let model = {
   currentAnswers: {},
@@ -201,7 +233,7 @@ function logAnswer(expr, got) {
 
   // Things to check:
   //
-  // - Was the selected answer an acceptable type for the operator 
+  // - Was the selected answer an acceptable type for the operator
   //   given the other value.
   //
   // - Does evaluating the expression with the selected answer
