@@ -63,9 +63,6 @@ function resetQuestion() {
 
 function onAnswer(e) {
   const answer = JSON.parse(e.target.value);
-  //delete model.currentAnswers[e.target.value];
-  //e.target.parentElement.removeChild(e.target);
-
   const result = processAnswer(model.currentQuestion, answer);
   if (!result.passed) {
     disableTile(e.target);
