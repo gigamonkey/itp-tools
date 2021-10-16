@@ -1,4 +1,4 @@
-import { $, clear, findChild, findDescendant, withClass } from "./whjqah.js";
+import { $, clear, findDescendant, withClass } from "./whjqah.js";
 import { forBlank, type } from "./questions.js";
 import { random as g } from "./random.js";
 
@@ -16,21 +16,26 @@ import { random as g } from "./random.js";
 let model = {
   currentAnswers: {},
   currentQuestion: null,
+  answeredCorrectly: false,
   tiles: 4,
-  level: 3,
+  level: 3, // N.B. we're not doing anything with this at the moment.
 };
 
 function init() {
-  $("#next").onclick = setQuestion;
-  for (let i = 0; i < model.tiles; i++) {
-    addTile(newAnswer());
-  }
   clear($("#results"));
   setQuestion();
 }
 
+function newTiles() {
+  clear($("#answers"));
+  model.currentAnswers = {};
+  for (let i = 0; i < model.tiles; i++) {
+    addTile(newAnswer());
+  }
+}
+
 function maybeSetQuestion() {
-  if (!$("#commentary").hasChildNodes()) {
+  if (model.answeredCorrectly) {
     setQuestion();
   } else {
     resetQuestion();
@@ -39,6 +44,8 @@ function maybeSetQuestion() {
 
 function setQuestion() {
   clear($("#commentary"));
+  newTiles();
+  model.answeredCorrectly = false;
   const answers = Object.values(model.currentAnswers);
   if (answers.length > 0) {
     let a = g.choice(answers);
@@ -56,12 +63,14 @@ function resetQuestion() {
 
 function onAnswer(e) {
   const answer = JSON.parse(e.target.value);
-  delete model.currentAnswers[e.target.value];
-  e.target.parentElement.removeChild(e.target);
+  //delete model.currentAnswers[e.target.value];
+  //e.target.parentElement.removeChild(e.target);
 
   const result = processAnswer(model.currentQuestion, answer);
+  if (!result.passed) {
+    disableTile(e.target);
+  }
   animateExpression(result, $("#question"));
-  addTile(newAnswer());
   maybeHideTip();
 }
 
@@ -135,6 +144,7 @@ function processAnswer(expr, answer) {
 }
 
 function a(t) {
+  // Hard wired for the type names. Kludge.
   return (t === "array" ? "an " : "a ") + t;
 }
 
@@ -160,20 +170,24 @@ function addCommentary(result, where) {
       if (result.exactType) {
         p.append($(`${got} is the right type but isn't quite the right value.`));
       } else {
-        // Type is acceptable for the operator but not the right type
-        // in this specific case.
         let needed = a(type(result.inBlank));
-        p.append($(`${got} is of an acceptable type for the operator but in this case you probably needed ${needed}.`));
+        p.append(
+          $(
+            `${got}, ${a(
+              type(got)
+            )}, is of an acceptable type for the operator but in this case you probably needed ${needed}.`
+          )
+        );
       }
     }
   }
 }
 
 function typeCommentary(result) {
-  if (!results.typeOk) {
+  if (!result.typeOk) {
     let got = JSON.stringify(result.answer);
     let expectation = or(result.expr.okTypes.map(a));
-    return `${got} is not ${expectation}.`;
+    return `${got} is ${a(type(result.answer))}, not ${expectation}.`;
   }
 }
 
@@ -259,14 +273,10 @@ function animateExpression(result, where) {
     value.append($("  "));
     value.append(result.passed ? green : red);
     if (result.passed) {
-      clear($("#commentary"));
+      model.answeredCorrectly = true;
     } else {
       addCommentary(result, $("#commentary"));
     }
-  }
-
-  function maybeClear() {
-    if (result.passed) clear($("#commentary"));
   }
 
   first(clearValue)
@@ -275,24 +285,6 @@ function animateExpression(result, where) {
     .after(200, checkmark)
     .after(1000, maybeSetQuestion)
     .run();
-}
-
-function animateRandomValues(where, rate, times, finalValue) {
-  let id;
-  let iters = 0;
-
-  function a() {
-    if (iters == times) {
-      clearInterval(id);
-      clear(where).append(JSON.stringify(finalValue));
-      setTimeout(setQuestion, 1000);
-    } else {
-      clear(where).append(JSON.stringify(g.value()));
-      iters++;
-    }
-  }
-
-  id = setInterval(a, rate);
 }
 
 function showExpression(expr, where) {
@@ -321,6 +313,11 @@ function addTile(v) {
   b.value = json;
   b.onclick = onAnswer;
   $("#answers").append(b);
+}
+
+function disableTile(t) {
+  t.className = "disabled";
+  t.onclick = null;
 }
 
 function newAnswer() {

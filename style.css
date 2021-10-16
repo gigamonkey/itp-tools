@@ -4,9 +4,7 @@ body {
   font-weight: 300;
 }
 
-div {
-    text-align: center;
-}
+div { text-align: center; }
 
 h1, h2 { font-weight: 300; }
 
@@ -19,7 +17,6 @@ h1, h2 { font-weight: 300; }
 
 .hole {
   padding: 2px;
-  //width: 1em;
   border: thin solid rgba(0, 0, 0, 0.2);
   display: inline-block;
   text-align: center;
@@ -27,10 +24,9 @@ h1, h2 { font-weight: 300; }
 }
 
 #answers {
-  font-family: monospace;
-  //border: thin solid red;
+    font-family: monospace;
+    padding: 20px;
 }
-
 
 #answers button {
   margin: 4px;
@@ -42,9 +38,9 @@ h1, h2 { font-weight: 300; }
   box-shadow: 5px 5px rgba(255, 0, 0, 0.1);
 }
 
-#answers button.selected {
-  background: blue;
-  color: white;
+#answers button.disabled {
+  background: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0;
 }
 
 #tip, #commentary {
@@ -54,13 +50,9 @@ h1, h2 { font-weight: 300; }
 
 #tip {
   font-style: italic;
-  padding: 10px;
-  border: thin solid red;
 }
 
 #commentary {
-  font-weight: 600;
-  padding: 10px;
 }
 
 
