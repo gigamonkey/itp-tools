@@ -44,7 +44,9 @@ function onAnswer(e) {
   const answer = JSON.parse(e.target.value);
   delete model.currentAnswers[e.target.value];
   e.target.parentElement.removeChild(e.target);
-  logAnswer(model.currentQuestion, answer);
+
+  const result = processAnswer(model.currentQuestion, answer);
+  logResult(result);
   addTile(newAnswer());
   hideTip();
   setQuestion();
@@ -78,17 +80,8 @@ function hideTip() {
   }
 }
 
-function animateExpression() {
-  // blank out result of evaluation
-  // replace blank with the answer.
-  // show new evaluation (possibly a type error)
-  // display a green checkmark or a red X
-}
 
-
-
-
-function logAnswer(expr, got) {
+function processAnswer(expr, answer) {
   // We can't just compare the answer we got to the answer
   // we used to create the question because there could be
   // multiple answers that would get the same result (e.g.
@@ -107,8 +100,28 @@ function logAnswer(expr, got) {
   // (I'm ignoring the legality of types after coercion so no numbers to && or
   // booleans to +, etc.)
   //
-  let result = processAnswer(expr, got);
 
+  const expectedValue =  expr.evaluate();
+  const filled = expr.fillBlank(answer);
+  const answeredValue = filled.evaluate();
+  const typeOk = expr.okTypes.indexOf(type(answer)) != -1;
+  const valueRight = answeredValue === expectedValue;
+
+  return {
+    expr: expr,
+    inBlank: expr.blankValue(),
+    answer: answer,
+    filled: filled,
+    expectedValue: expectedValue,
+    answeredValue: answeredValue,
+    typeOk: typeOk,
+    valueRight: valueRight,
+    passed: typeOk && valueRight,
+  };
+}
+
+
+function logResult(result) {
   const row = $("#results").insertRow(0);
   row.className = result.passed ? "pass" : "fail";
   showExpression(result.expr, row.insertCell());
@@ -138,25 +151,11 @@ function logAnswer(expr, got) {
 }
 
 
-function processAnswer(expr, answer) {
-
-  const expectedValue =  expr.evaluate();
-  const filled = expr.fillBlank(answer);
-  const answeredValue = filled.evaluate();
-  const typeOk = expr.okTypes.indexOf(type(answer)) != -1;
-  const valueRight = answeredValue === expectedValue;
-
-  return {
-    expr: expr,
-    inBlank: expr.blankValue(),
-    answer: answer,
-    filled: filled,
-    expectedValue: expectedValue,
-    answeredValue: answeredValue,
-    typeOk: typeOk,
-    valueRight: valueRight,
-    passed: typeOk && valueRight,
-  };
+function animateExpression() {
+  // blank out result of evaluation
+  // replace blank with the answer.
+  // show new evaluation (possibly a type error)
+  // display a green checkmark or a red X
 }
 
 
