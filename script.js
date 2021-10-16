@@ -1,7 +1,6 @@
 import { $, clear, withClass } from "./whjqah.js";
 import { forBlank, type } from "./questions.js";
 import { random as g } from "./random.js";
-import { shuffleArray } from "./shuffle.js";
 
 // Basic functionality:
 //
@@ -120,7 +119,7 @@ function showExpression(expr, where) {
 
 function addTile(v) {
   let json = JSON.stringify(v);
-  let b = $("<button>", json)
+  let b = $("<button>", json);
   b.value = json;
   b.onclick = onAnswer;
   $("#answers").append(b);

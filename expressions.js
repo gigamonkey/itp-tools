@@ -1,9 +1,12 @@
-import { $, clear, withClass } from "./whjqah.js";
+/*eslint no-unused-vars: ["error", { "args": "none" }]*/
+
+import { $, withClass } from "./whjqah.js";
 
 /*
  * Expressions possibly containing a blanked out value.
  */
 class Expression {
+
   /*
    * Evaluate the expression producing an actual Javascript value.
    */
