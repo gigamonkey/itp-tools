@@ -1,8 +1,8 @@
 /*
  * Quick and dirty helper for async function calling.
- * 
+ *
  *   first(aFunction).after(100, anotherFunction).after(20, aThird).run();
- * 
+ *
  * will call aFunction immediately arranging to start anotherFunction 100ms
  * after it returns, and the aThird 20ms after anotherFunction finishes.
  */
@@ -10,7 +10,6 @@
 function first(fn) {
   return new Link(fn);
 }
-
 
 /*
  * Under the covers implementation.

@@ -18,7 +18,7 @@ let model = {
   currentAnswers: {},
   currentQuestion: null,
   answeredCorrectly: false,
-  currentFilter: 'all',
+  currentFilter: "all",
   tiles: 4,
   level: 3, // N.B. we're not doing anything with this at the moment.
   correct: 0,
@@ -29,7 +29,7 @@ let model = {
 function init() {
   clear($("#results"));
   $("#toggle_info").onclick = visibilityToggler("#info");
-  $("#close_info").onclick = e => $("#info").style.display = "none";
+  $("#close_info").onclick = (e) => ($("#info").style.display = "none");
   $("#toggle_results").onclick = visibilityToggler("#log");
   $("#results_header").onclick = changeFilter;
   setQuestion();
@@ -39,10 +39,10 @@ function visibilityToggler(id) {
   return function (e) {
     const element = $(id);
     element.style.display = element.style.display == "none" ? "block" : "none";
-  }
+  };
 }
 
-let filters = ['all', 'pass', 'fail'];
+let filters = ["all", "pass", "fail"];
 let filterLabels = {
   all: "All",
   pass: "✅",
@@ -61,7 +61,7 @@ function changeFilter(e) {
 }
 
 function rowVisible(filter, className) {
-  return filter === 'all' || filter === className;
+  return filter === "all" || filter === className;
 }
 
 function newTiles() {
@@ -123,15 +123,13 @@ function plural(word, n) {
   }
 }
 
-
 function updateScore() {
   let a = model.asked;
   let c = model.correct;
   let t = model.tries;
-  let accuracy = Math.round(100 * c/t);
+  let accuracy = Math.round((100 * c) / t);
 
   $("#score").innerHTML = `${accuracy}% accuracy over ${a} ${plural("question", a)}.`;
-
 }
 
 function maybeHideTip() {
@@ -248,13 +246,14 @@ function logResult(result) {
   const row = $("#results").insertRow(0);
   row.className = result.passed ? "pass" : "fail";
 
-  let [ok, question, notes] = Array(3).fill().map(() => row.insertCell());
+  let [ok, question, notes] = Array(3)
+    .fill()
+    .map(() => row.insertCell());
 
   ok.append($(result.passed ? "✅" : "❌"));
   showExpression(result.expr, question);
   addCommentary(result, notes);
 }
-
 
 function animateExpression(result, where) {
   let hole = findDescendant(where, (c) => c.className == "hole");
