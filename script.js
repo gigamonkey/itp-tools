@@ -18,6 +18,7 @@ let model = {
   currentAnswers: {},
   currentQuestion: null,
   answeredCorrectly: false,
+  currentFilter: 'all',
   tiles: 4,
   level: 3, // N.B. we're not doing anything with this at the moment.
 };
@@ -25,6 +26,7 @@ let model = {
 function init() {
   clear($("#results"));
   $("#toggle_results").onclick = toggleResults;
+  $("#results_header").onclick = changeFilter;
   setQuestion();
 }
 
@@ -37,6 +39,28 @@ function toggleResults(e) {
     log.style.display = "none";
     e.target.innerText = "Show history";
   }
+}
+
+let filters = ['all', 'pass', 'fail'];
+let filterLabels = {
+  all: "All",
+  pass: "✅",
+  fail: "❌",
+};
+
+function changeFilter(e) {
+  let f = filters[(filters.indexOf(model.currentFilter) + 1) % filters.length];
+  let result = $("#results");
+  for (let row = result.firstChild; row; row = row.nextSibling) {
+    let c = row.className;
+    row.style.display = rowVisible(f, c) ? "table-row" : "none";
+  }
+  e.target.innerText = filterLabels[f];
+  model.currentFilter = f;
+}
+
+function rowVisible(filter, className) {
+  return filter === 'all' || filter === className;
 }
 
 function newTiles() {
@@ -81,6 +105,7 @@ function onAnswer(e) {
     disableTile(e.target);
   }
   animateExpression(result, $("#question"));
+  logResult(result);
   maybeHideTip();
 }
 
@@ -173,21 +198,21 @@ function addCommentary(result, where, prefix) {
   if (prefix) p.append(prefix);
   where.append(p);
 
-  if (result.passed) {
-    p.append($("Correct!"));
-  } else {
-    let got = JSON.stringify(result.answer);
-    p.append(withClass("mono", $("<span>", got)));
+  p.append(withClass("mono", $("<span>", JSON.stringify(result.answer))));
 
+  if (result.passed) {
+    p.append($(" is correct!"));
+  } else {
+    let answerType = type(result.answer);
     if (!result.typeOk) {
       let expectation = or(result.expr.okTypes.map(a));
-      p.append($(` is ${a(type(result.answer))}, not ${expectation}.`));
+      p.append($(` is ${a(answerType)}, not ${expectation}.`));
     } else {
       if (result.exactType) {
         p.append($(" is the right type but isn't quite the right value."));
       } else {
         let needed = a(type(result.inBlank));
-        p.append($(`, ${a(type(got))}, is of an acceptable type for the operator `));
+        p.append($(`, ${a(answerType)}, is of an acceptable type for the operator `));
         p.append(`but in this case you probably needed ${needed}.`);
       }
     }
@@ -197,20 +222,13 @@ function addCommentary(result, where, prefix) {
 function logResult(result) {
   const row = $("#results").insertRow(0);
   row.className = result.passed ? "pass" : "fail";
-  showExpression(result.expr, row.insertCell());
-  row.insertCell().append(withClass("mono", $("<span>", JSON.stringify(result.answer))));
-  const notesCell = row.insertCell();
-  const resultCell = row.insertCell();
 
-  if (result.passed) {
-    notesCell.append($("Looks good!"));
-    resultCell.append($("✅"));
-  } else {
-    addCommentary(result, notesCell);
-    resultCell.append($("❌"));
-  }
+  let [ok, question, notes] = Array(3).fill().map(() => row.insertCell());
+
+  ok.append($(result.passed ? "✅" : "❌"));
+  showExpression(result.expr, question);
+  addCommentary(result, notes);
 }
-
 
 
 function animateExpression(result, where) {

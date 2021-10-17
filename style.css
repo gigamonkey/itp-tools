@@ -63,11 +63,6 @@ h1, h2 { font-weight: 300; }
   font-style: italic;
 }
 
-#commentary {
-}
-
-
-
 #log {
   margin-top: 40px;
 }
@@ -76,16 +71,10 @@ h1, h2 { font-weight: 300; }
 #log table {
   margin: auto;
   width: 80%;
-  table-layout: fixed;
+  /*table-layout: fixed;*/
 }
 
-/*
-col.question { width: 25%; }
-col.answer { width: 30%; }
-col.notes { width: 25%; }
-*/
-col.result { width: 50px; }
-
+col.result { width: 1.5em; }
 
 th {
   font-weight: 300;
@@ -95,9 +84,11 @@ th {
 td, th { padding: 10px; }
 th { text-align: center; }
 td { text-align: left; }
-td:last-child { text-align: center; }
+td:first-child { text-align: center; }
 
 tr.pass { background: rgba(100, 255, 100, 0.2); }
 tr.fail { background: rgba(255, 100, 100, 0.2); }
+
+#results_header  { text-decoration: underline dotted grey; }
 
 .mono { font-family: monospace; }
