@@ -232,7 +232,8 @@ function addCommentary(result, where, prefix) {
       p.append($(` is ${a(answerType)}, not ${expectation}.`));
     } else {
       if (result.exactType) {
-        p.append($(" is the right type but isn't quite the right value."));
+        p.append($(" is the right type but isn't quite the right value. "));
+        showExpression(result.filled, p);
       } else {
         let needed = a(type(result.inBlank));
         p.append($(`, ${a(answerType)}, is of an acceptable type for the operator `));
