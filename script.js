@@ -25,19 +25,17 @@ let model = {
 
 function init() {
   clear($("#results"));
-  $("#toggle_results").onclick = toggleResults;
+  $("#toggle_info").onclick = visibilityToggler("#info");
+  $("#close_info").onclick = e => $("#info").style.display = "none";
+  $("#toggle_results").onclick = visibilityToggler("#log");
   $("#results_header").onclick = changeFilter;
   setQuestion();
 }
 
-function toggleResults(e) {
-  const log = $("#log");
-  if (log.style.display == "none") {
-    log.style.display = "block";
-    e.target.innerText = "Hide history";
-  } else {
-    log.style.display = "none";
-    e.target.innerText = "Show history";
+function visibilityToggler(id) {
+  return function (e) {
+    const element = $(id);
+    element.style.display = element.style.display == "none" ? "block" : "none";
   }
 }
 

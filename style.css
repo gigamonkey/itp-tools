@@ -12,6 +12,18 @@ h1, h2 { font-weight: 300; }
   text-align: right;
 }
 
+#info {
+  text-align: left;
+  border: 1px solid grey;
+  padding: 3px;
+  margin: 20px; 
+}
+
+#instructions {
+  text-align: left;
+  padding: 5px 20px 20px;
+}
+
 #toolbar button {
   margin: 4px;
   padding: 6px;
@@ -27,11 +39,14 @@ h1, h2 { font-weight: 300; }
 }
 
 .hole {
-  padding: 2px;
   border: thin solid rgba(0, 0, 0, 0.2);
   display: inline-block;
   text-align: center;
   vertical-align: middle;
+}
+
+#question .hole {
+    padding: 2px;
 }
 
 #answers {
