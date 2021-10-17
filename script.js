@@ -21,6 +21,9 @@ let model = {
   currentFilter: 'all',
   tiles: 4,
   level: 3, // N.B. we're not doing anything with this at the moment.
+  correct: 0,
+  asked: 0,
+  tries: 0,
 };
 
 function init() {
@@ -80,16 +83,13 @@ function maybeSetQuestion() {
 function setQuestion() {
   clear($("#commentary"));
   newTiles();
+  model.asked++;
   model.answeredCorrectly = false;
   const answers = Object.values(model.currentAnswers);
-  if (answers.length > 0) {
-    let a = g.choice(answers);
-    let expr = forBlank(a);
-    model.currentQuestion = expr;
-    showExpression(expr, clear($("#question")));
-  } else {
-    init();
-  }
+  let a = g.choice(answers);
+  let expr = forBlank(a);
+  model.currentQuestion = expr;
+  showExpression(expr, clear($("#question")));
 }
 
 function resetQuestion() {
@@ -97,14 +97,41 @@ function resetQuestion() {
 }
 
 function onAnswer(e) {
+  model.tries++;
   const answer = JSON.parse(e.target.value);
   const result = processAnswer(model.currentQuestion, answer);
   if (!result.passed) {
     disableTile(e.target);
+  } else {
+    model.correct++;
   }
+  updateScore();
   animateExpression(result, $("#question"));
   logResult(result);
   maybeHideTip();
+}
+
+function plural(word, n) {
+  if (n === 1) {
+    return word;
+  } else {
+    if (word[word.length - 1] == "y") {
+      return word.substring(0, word.length - 1) + "ies";
+    } else {
+      return word + "s";
+    }
+  }
+}
+
+
+function updateScore() {
+  let a = model.asked;
+  let c = model.correct;
+  let t = model.tries;
+  let accuracy = Math.round(100 * c/t);
+
+  $("#score").innerHTML = `${accuracy}% accuracy over ${a} ${plural("question", a)}.`;
+
 }
 
 function maybeHideTip() {
