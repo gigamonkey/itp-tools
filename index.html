@@ -8,6 +8,9 @@
   <link href="style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
+  <div id="toolbar">
+    <button id="toggle_results">Show history</button>
+  </div>
   <div id="question"></div>
   <div id="answers"></div>
   <div id="commentary"></div>
@@ -17,17 +20,17 @@
   <div id="log" style="display: none">
     <table>
       <colgroup>
+        <col class="result">
         <col class="question">
         <col class="answer">
         <col class="notes">
-        <col class="result">
       </colgroup>
       <thead>
         <tr>
+          <th></th>
           <th>Question</th>
-          <th>You chose</th>
+          <th>Answer</th>
           <th>Notes</th>
-          <th>Ok?</th>
         </tr>
       </thead>
       <tbody id="results"></tbody>

@@ -1,6 +1,7 @@
 import { $, clear, findDescendant, withClass } from "./whjqah.js";
 import { forBlank, type } from "./questions.js";
 import { random as g } from "./random.js";
+import { first } from "./async.js";
 
 // Basic functionality:
 //
@@ -23,7 +24,19 @@ let model = {
 
 function init() {
   clear($("#results"));
+  $("#toggle_results").onclick = toggleResults;
   setQuestion();
+}
+
+function toggleResults(e) {
+  const log = $("#log");
+  if (log.style.display == "none") {
+    log.style.display = "block";
+    e.target.innerText = "Hide history";
+  } else {
+    log.style.display = "none";
+    e.target.innerText = "Show history";
+  }
 }
 
 function newTiles() {
@@ -155,35 +168,27 @@ function or(things) {
   }
 }
 
-function addCommentary(result, where) {
-  const green = $("✅ ");
-  const red = $("❌ ");
+function addCommentary(result, where, prefix) {
   const p = $("<p>");
+  if (prefix) p.append(prefix);
   where.append(p);
 
   if (result.passed) {
-    p.append(green);
     p.append($("Correct!"));
   } else {
-    p.append(red);
     let got = JSON.stringify(result.answer);
+    p.append(withClass("mono", $("<span>", got)));
+
     if (!result.typeOk) {
       let expectation = or(result.expr.okTypes.map(a));
-      p.append(withClass("mono", $("<span>", got)));
       p.append($(` is ${a(type(result.answer))}, not ${expectation}.`));
     } else {
       if (result.exactType) {
-        p.append(withClass("mono", $("<span>", got)));
         p.append($(" is the right type but isn't quite the right value."));
       } else {
         let needed = a(type(result.inBlank));
-        p.append(
-          $(
-            `${got}, ${a(
-              type(got)
-            )}, is of an acceptable type for the operator but in this case you probably needed ${needed}.`
-          )
-        );
+        p.append($(`, ${a(type(got))}, is of an acceptable type for the operator `));
+        p.append(`but in this case you probably needed ${needed}.`);
       }
     }
   }
@@ -206,60 +211,19 @@ function logResult(result) {
   }
 }
 
-class Link {
-  constructor(fn, delay = 0, previous = null) {
-    this.fn = fn;
-    this.delay = delay;
-    this.previous = previous;
-  }
 
-  after(delay, fn) {
-    return new Link(fn, delay, this);
-  }
-
-  run() {
-    const me = this.possiblyDelayed(this.fn);
-    if (this.previous) {
-      this.previous.runAndThen(me);
-    } else {
-      me();
-    }
-  }
-
-  runAndThen(next) {
-    let me = this.possiblyDelayed(() => {
-      this.fn();
-      next();
-    });
-    if (this.previous) {
-      this.previous.runAndThen(me);
-    } else {
-      me();
-    }
-  }
-
-  possiblyDelayed(fn) {
-    return this.delay === 0 ? fn : () => setTimeout(fn, this.delay);
-  }
-}
-
-function first(fn) {
-  return new Link(fn);
-}
 
 function animateExpression(result, where) {
   let hole = findDescendant(where, (c) => c.className == "hole");
   let value = findDescendant(where, (c) => c.className == "value");
 
   function checkmark() {
-    const green = $("✅");
     if (result.passed) {
       hole.parentElement.replaceChild($(JSON.stringify(result.answer)), hole);
-      value.append($("  "));
-      value.append(green);
+      value.append($(" ✅"));
       model.answeredCorrectly = true;
     } else {
-      addCommentary(result, $("#commentary"));
+      addCommentary(result, $("#commentary"), $("❌ "));
     }
   }
 

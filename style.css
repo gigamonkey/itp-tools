@@ -8,6 +8,17 @@ div { text-align: center; }
 
 h1, h2 { font-weight: 300; }
 
+#toolbar {
+  text-align: right;
+}
+
+#toolbar button {
+  margin: 4px;
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border: thin solid rgba(0, 0, 0, 0.2);
+}
+
 #question {
   font-family: monospace;
   vertical-align: middle;
