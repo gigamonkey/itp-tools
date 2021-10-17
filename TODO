@@ -1,6 +1,6 @@
 - Deal with array out of bounds rather than returning undefined.
 
-- Disable wrong answers and let them try a different answer.
+x Disable wrong answers and let them try a different answer.
 
 - Show all the values that would have worked.
 
@@ -9,11 +9,11 @@
 
 - Maybe add a version where the answers are just types.
 
-- Add scrore board.
+x Add scrore board.
 
-- Add some kind of animation on selecting the answers.
+x Add some kind of animation on selecting the answers.
 
-- Possibly hide the log and only display on request and maybe only
+x Possibly hide the log and only display on request and maybe only
   ones that were wrong.
 
 - Show what wrong answers would have evaluated to (or that they
@@ -28,7 +28,7 @@
 - Add variables somehow. Possibly just a table of variable values and
   then some answers are variable names.
 
-- Maybe display log like a REPL: show the expression with the answer
+? Maybe display log like a REPL: show the expression with the answer
   filled in, then what it evaluates to or "Type error" with some
   explanation. And maybe then the correct expression and what it
   evaluates to.
