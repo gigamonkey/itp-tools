@@ -1,9 +1,11 @@
 import { $, clear, findDescendant, withClass } from "./whjqah.js";
-import { forBlank, type } from "./questions.js";
+import { type, valueExpression, allTypes } from "./questions.js";
 import { random as g } from "./random.js";
 import { first } from "./async.js";
 import { Value } from "./expressions.js";
 
+// level 0: single values
+// level 1: two values and an operator. Choose an operator. Choose value for the types.
 
 //////////////////////////////////////////////////////////////////////
 // HTML
@@ -76,7 +78,7 @@ function setQuestion() {
   typeTiles();
   model.asked++;
   model.answeredCorrectly = false;
-  let v = new Value(g.value());
+  let v = valueExpression(0, allTypes);
   model.currentQuestion = v;
   showValue(v, clear($("#question")));
 }
@@ -97,6 +99,7 @@ function onAnswer(e) {
   }
   updateScore();
   animateExpression(result, $("#question"));
+  logResult(result);
   maybeHideTip();
 }
 
@@ -153,23 +156,8 @@ function processAnswer(question, answer) {
   return {
     expr: question,
     answer: answer,
-    passed: type(question.evaluate()) == answer
-  }
-}
-
-function a(t) {
-  // Hard wired for the type names. Kludge.
-  return (t === "array" ? "an " : "a ") + t;
-}
-
-function or(things) {
-  if (things.length == 1) {
-    return things[0];
-  } else if (things.length == 2) {
-    return things.join(" or ");
-  } else {
-    return things.slice(0, things.length - 1).join(", ") + ", or " + things[things.length - 1];
-  }
+    passed: type(question.evaluate()) == answer,
+  };
 }
 
 function addCommentary(result, where, prefix) {
@@ -199,7 +187,6 @@ function logResult(result) {
   addCommentary(result, notes);
 }
 
-
 function animateExpression(result, where) {
   function checkmark() {
     if (result.passed) {
@@ -220,7 +207,7 @@ function showValue(value, where) {
 
 function addTile(v) {
   let b = $("<button>", v);
-  b.value = v
+  b.value = v;
   b.onclick = onAnswer;
   $("#answers").append(b);
 }

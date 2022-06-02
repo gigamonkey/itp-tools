@@ -1,7 +1,7 @@
 import { Value, Blank, BinaryOp, PrefixOp } from "./expressions.js";
 import { random as g } from "./random.js";
 
-let all_types = ["number", "string", "boolean", "array"];
+let allTypes = ["number", "string", "boolean", "array"];
 
 /*
  * Our definition of the type of different kinds of values. Mostly the
@@ -73,6 +73,21 @@ function forBlank(blankValue) {
   return ops[op].factory(op)(blankValue);
 }
 
+/*
+ * Make a random expression of one of the types given.
+ */
+function valueExpression(maxDepth, types) {
+  if (maxDepth == 0) {
+    return new Value(g.oneOf(types));
+  } else {
+    // Pick a random op that can produce one of the desired types.
+    // Figure out what kind of values the op needs. Generate random
+    // values of the necessary types with depth one less than current
+    // and build.
+    throw Error("nyi");
+  }
+}
+
 //////////////////////////////////////////////////////////////////////
 // Helpers for factory methods
 
@@ -140,7 +155,7 @@ function modulus(op) {
 }
 
 function any(op) {
-  return (blankValue) => pickASide(blankValue, g.value(), op, all_types);
+  return (blankValue) => pickASide(blankValue, g.value(), op, allTypes);
 }
 
 function index(op) {
@@ -163,4 +178,4 @@ function prefix(op) {
   return (blankValue) => new PrefixOp(new Blank(blankValue), op, ops[op].fn, ["boolean"]);
 }
 
-export { forBlank, type };
+export { forBlank, type, valueExpression, allTypes };

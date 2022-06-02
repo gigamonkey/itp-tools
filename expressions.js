@@ -131,12 +131,11 @@ class BinaryOp extends Expression {
   nonBlankValue() {
     //return this.left.nonBlankValue() ?? this.right.nonBlankValue();
     return defined(this.left.nonBlankValue(), this.right.nonBlankValue());
-
   }
 }
 
 function defined(a, b) {
-  return (a !== null && a !== undefined) ? a : b;
+  return a !== null && a !== undefined ? a : b;
 }
 
 class PrefixOp extends Expression {
