@@ -69,6 +69,9 @@ class Value extends Expression {
   nonBlankValue() {
     return this.value;
   }
+  stringify() {
+    this.value = JSON.stringify(this.value);
+  }
 }
 
 /*

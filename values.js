@@ -79,6 +79,7 @@ function setQuestion() {
   model.asked++;
   model.answeredCorrectly = false;
   let v = valueExpression(0, allTypes);
+  if (typeof v.value !== "string" && Math.random() < 0.2) v.stringify();
   model.currentQuestion = v;
   showValue(v, clear($("#question")));
 }
