@@ -13,6 +13,17 @@ body {
   width: fit-content;
 }
 
+#question {
+  font-size: 25px;
+  text-align: center;
+  width: 100%;
+  padding: 25px 0;
+}
+
+#question > p {
+  margin-top: 0.5em;
+}
+
 #board {
   display: flex;
   flex-direction: column;
@@ -32,11 +43,25 @@ body {
   flex-grow: 0;
   justify-content: center;
   align-items: center;
-  height: 105px;
-  width: 105px;
-  border: 1px solid grey;
+  border-color: grey;
   font-size: 16px;
   font-family: monospace;
+}
+
+.box,
+.spacer {
+  height: 105px;
+  width: 105px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.spacer {
+  border-color: transparent;
+}
+
+.box.correct {
+  background: rgba(200, 128, 255, 0.5);
 }
 
 .codeLink {
