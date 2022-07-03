@@ -1,6 +1,31 @@
 import { $ } from "./whjqah.js";
 import { Variable, BooleanAnd, BooleanOr, BooleanEquals, BooleanNotEquals, BooleanNot } from "./booleans.js";
 
+class Bingo {
+  constructor() {
+    this.rows = [[], [], [], []];
+    this.columns = [[], [], [], []];
+    this.diagonals = [[], []];
+  }
+
+  track(row, col) {
+    this.rows[row].push([row, col]);
+    this.columns[col].push([row, col]);
+    if (row === col) {
+      this.diagonals[0].push([row, col]);
+    }
+    if (col + row === 3) {
+      this.diagonals[1].push([row, col])
+    }
+  }
+
+  hasBingo() {
+    return this.rows.some((r) => r.length === 4) ||
+      this.columns.some((c) => c.length === 4) ||
+      this.diagonals.some((d) => d.length === 4);
+  }
+}
+
 const ops = [BooleanAnd, BooleanOr, BooleanEquals, BooleanNotEquals];
 const a = new Variable("a");
 const b = new Variable("b");
@@ -12,6 +37,14 @@ const flip = () => Math.random() < 0.5;
 const choices = ops.flatMap((op) => andNot(a).flatMap((left) => andNot(b).map((right) => new op(left, right))));
 
 const board = $("#board");
+
+// The values of a and b and the desired value
+let question = null;
+
+// The positions that have been correctly identified
+let correct = [];
+
+let bingos = new Bingo();
 
 const shuffled = (xs) => {
   // Based on pseudo code from
@@ -39,11 +72,19 @@ const fillBoard = () => {
       cell.classList.add("box");
       cell.innerText = expr.code();
       cell.onclick = (e) => {
-        if (expr.evaluate(values) === values.want) {
-          cell.classList.add("correct");
-          question();
-        } else {
-          shake(cell);
+        if (!cell.classList.contains("correct")) {
+          if (expr.evaluate(question) === question.want) {
+            cell.classList.add("correct");
+            bingos.track(i, j);
+            correct.push([i, j]);
+            if (bingos.hasBingo()) {
+              $("#question").innerText = 'Bingo!';
+            } else {
+              nextQuestion();
+            }
+          } else {
+            shake(cell);
+          }
         }
       };
       row.appendChild(cell);
@@ -94,18 +135,19 @@ const shake = (cell) => {
   requestAnimationFrame(move);
 };
 
-let values = null;
 
-const question = () => {
+const nextQuestion = () => {
   $("#question").replaceChildren();
-  values = { a: flip(), b: flip(), want: flip() };
+  question = { a: flip(), b: flip(), want: flip() };
   const ab = $("<p>");
-  ab.innerHTML = `<code>a</code> is <code>${values.a}</code>; <code>b</code> is <code>${values.b}</code>`;
+  ab.innerHTML = `<code>a</code> is <code>${question.a}</code>; <code>b</code> is <code>${question.b}</code>`;
   const v = $("<p>");
-  v.innerHTML = `Looking for <code>${values.want}</code>.`;
+  v.innerHTML = `Looking for <code>${question.want}</code>.`;
   $("#question").appendChild(ab);
   $("#question").appendChild(v);
 };
 
+
+
 fillBoard();
-question();
+nextQuestion();
