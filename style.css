@@ -1,12 +1,17 @@
 body {
-  margin: .5in;
+  margin: 0.5in;
   font-family: "Gill Sans", sans-serif;
   font-weight: 300;
 }
 
-div { text-align: center; }
+div {
+  text-align: center;
+}
 
-h1, h2 { font-weight: 300; }
+h1,
+h2 {
+  font-weight: 300;
+}
 
 #toolbar {
   text-align: right;
@@ -51,12 +56,12 @@ h1, h2 { font-weight: 300; }
 }
 
 #question .hole {
-    padding: 2px;
+  padding: 2px;
 }
 
 #answers {
-    font-family: monospace;
-    padding: 20px;
+  font-family: monospace;
+  padding: 20px;
 }
 
 #answers button {
@@ -74,7 +79,8 @@ h1, h2 { font-weight: 300; }
   box-shadow: 0 0;
 }
 
-#tip, #commentary {
+#tip,
+#commentary {
   width: 50%;
   margin: auto;
 }
@@ -87,28 +93,46 @@ h1, h2 { font-weight: 300; }
   margin-top: 40px;
 }
 
-
 #log table {
   margin: auto;
   width: 80%;
   /*table-layout: fixed;*/
 }
 
-col.result { width: 1.5em; }
+col.result {
+  width: 1.5em;
+}
 
 th {
   font-weight: 300;
   background: rgba(0, 0, 0, 0.05);
   border-bottom: thin solid rgba(0, 0, 0, 0.2);
 }
-td, th { padding: 10px; }
-th { text-align: center; }
-td { text-align: left; }
-td:first-child { text-align: center; }
+td,
+th {
+  padding: 10px;
+}
+th {
+  text-align: center;
+}
+td {
+  text-align: left;
+}
+td:first-child {
+  text-align: center;
+}
 
-tr.pass { background: rgba(100, 255, 100, 0.2); }
-tr.fail { background: rgba(255, 100, 100, 0.2); }
+tr.pass {
+  background: rgba(100, 255, 100, 0.2);
+}
+tr.fail {
+  background: rgba(255, 100, 100, 0.2);
+}
 
-#results_header  { text-decoration: underline dotted grey; }
+#results_header {
+  text-decoration: underline dotted grey;
+}
 
-.mono { font-family: monospace; }
+.mono {
+  font-family: monospace;
+}

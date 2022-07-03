@@ -20,8 +20,8 @@ files += list.svg
 
 
 pretty:
-	prettier -w *.js
-	tidy -i -w 80 -m *.html
+	prettier -w *.js *.css
+	tidy -config .tidyconfig *.html
 
 lint:
 	npx eslint *.js

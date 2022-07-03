@@ -3,7 +3,9 @@ class Variable {
     this.name = name;
   }
 
-  code() { return this.name; }
+  code() {
+    return this.name;
+  }
 
   evaluate(env) {
     return env[this.name];
@@ -15,10 +17,13 @@ class BooleanValue {
     this.value = value;
   }
 
-  code() { return this.value; }
+  code() {
+    return this.value;
+  }
 
-  evaluate(env) { return this.value; }
-
+  evaluate(env) {
+    return this.value;
+  }
 }
 
 class BooleanAnd {
@@ -27,13 +32,14 @@ class BooleanAnd {
     this.right = right;
   }
 
-  code() { return `${this.left.code()} && ${this.right.code()}`; }
+  code() {
+    return `${this.left.code()} && ${this.right.code()}`;
+  }
 
   evaluate(env) {
     return this.left.evaluate(env) && this.right.evaluate(env);
   }
 }
-
 
 class BooleanOr {
   constructor(left, right) {
@@ -41,7 +47,9 @@ class BooleanOr {
     this.right = right;
   }
 
-  code() { return `${this.left.code()} || ${this.right.code()}`; }
+  code() {
+    return `${this.left.code()} || ${this.right.code()}`;
+  }
 
   evaluate(env) {
     return this.left.evaluate(env) || this.right.evaluate(env);
@@ -54,7 +62,9 @@ class BooleanEquals {
     this.right = right;
   }
 
-  code() { return `${this.left.code()} === ${this.right.code()}`; }
+  code() {
+    return `${this.left.code()} === ${this.right.code()}`;
+  }
 
   evaluate(env) {
     return this.left.evaluate(env) === this.right.evaluate(env);
@@ -67,7 +77,9 @@ class BooleanNotEquals {
     this.right = right;
   }
 
-  code() { return `${this.left.code()} !== ${this.right.code()}`; }
+  code() {
+    return `${this.left.code()} !== ${this.right.code()}`;
+  }
 
   evaluate(env) {
     return this.left.evaluate(env) !== this.right.evaluate(env);
@@ -79,13 +91,14 @@ class BooleanNot {
     this.operand = operand;
   }
 
-  code() { return `!${this.operand.code()}`; }
+  code() {
+    return `!${this.operand.code()}`;
+  }
 
   evaluate(env) {
     return !this.operand.evaluate(env);
   }
 }
-
 
 const randomValue = () => new BooleanValue(Math.random() < 0.5);
 const randomOp = () => [BooleanAnd, BooleanOr][Math.floor(Math.random() * 2)];
@@ -93,16 +106,14 @@ const randomOp = () => [BooleanAnd, BooleanOr][Math.floor(Math.random() * 2)];
 const a = new Variable("a");
 const b = new Variable("b");
 
-const choices =
-      [BooleanAnd, BooleanOr, BooleanEquals, BooleanNotEquals].flatMap((op) =>
-        [a, new BooleanNot(a)].flatMap((left) =>
-          [b, new BooleanNot(b)].map((right) => new op(left, right))));
-
+const choices = [BooleanAnd, BooleanOr, BooleanEquals, BooleanNotEquals].flatMap((op) =>
+  [a, new BooleanNot(a)].flatMap((left) => [b, new BooleanNot(b)].map((right) => new op(left, right)))
+);
 
 const board = document.getElementById("board");
 
 const shuffled = (xs) => {
-  const sxs = []
+  const sxs = [];
   for (let i = 0; i < xs.length; i++) {
     let j = Math.floor(Math.random() * (i + 1)); // 0 <= j <= i
     if (j !== i) {
@@ -112,7 +123,7 @@ const shuffled = (xs) => {
     sxs[j] = xs[i];
   }
   return sxs;
-}
+};
 
 const cs = shuffled(choices);
 
