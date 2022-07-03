@@ -2,27 +2,27 @@ import { $ } from "./whjqah.js";
 import { Variable, BooleanAnd, BooleanOr, BooleanEquals, BooleanNotEquals, BooleanNot } from "./booleans.js";
 
 class Bingo {
-  constructor() {
-    this.rows = [[], [], [], []];
-    this.columns = [[], [], [], []];
-    this.diagonals = [[], []];
+  constructor(size) {
+    this.rows = Array(size).fill(0);
+    this.columns = Array(size).fill(0);
+    this.diagonals = Array(2).fill(0);
   }
 
   track(row, col) {
-    this.rows[row].push([row, col]);
-    this.columns[col].push([row, col]);
+    this.rows[row]++;
+    this.columns[col]++;
     if (row === col) {
-      this.diagonals[0].push([row, col]);
+      this.diagonals[0]++;
     }
     if (col + row === 3) {
-      this.diagonals[1].push([row, col])
+      this.diagonals[1]++;
     }
   }
 
   hasBingo() {
-    return this.rows.some((r) => r.length === 4) ||
-      this.columns.some((c) => c.length === 4) ||
-      this.diagonals.some((d) => d.length === 4);
+    return this.rows.some((r) => r === 4) ||
+      this.columns.some((c) => c === 4) ||
+      this.diagonals.some((d) => d === 4);
   }
 }
 
