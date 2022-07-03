@@ -1,9 +1,12 @@
 files := index.html
+files += bingo.html
 files += values.html
 
+files += bingo.css
 files += style.css
 
 files += async.js
+files += bingo.js
 files += expressions.js
 files += questions.js
 files += random.js
@@ -15,8 +18,6 @@ files += close.svg
 files += info.svg
 files += list.svg
 
-webdir := ~/web/www.gigamonkeys.com/misc/js-games/
-
 
 pretty:
 	prettier -w *.js
@@ -27,4 +28,4 @@ lint:
 
 
 publish:
-	cp $(files) $(webdir)
+	./publish.sh $(files)

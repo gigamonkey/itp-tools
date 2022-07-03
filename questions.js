@@ -5,7 +5,7 @@ let allTypes = ["number", "string", "boolean", "array"];
 
 /*
  * Our definition of the type of different kinds of values. Mostly the
- * same as Javascript's except we call arrays arrays.
+ * same as Javascript's except we call arrays arrays rather than objects.
  */
 function type(value) {
   let t = typeof value;
