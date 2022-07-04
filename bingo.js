@@ -49,16 +49,17 @@ let bingos = new Bingo();
 const shuffled = (xs) => {
   // Based on pseudo code from
   // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_%22inside-out%22_algorithm
-  const sxs = [];
+  
+  const shuffled = [];
   for (let i = 0; i < xs.length; i++) {
     let j = Math.floor(Math.random() * (i + 1)); // 0 <= j <= i
     if (j !== i) {
       // if j != i then j < i so this is safe.
-      sxs[i] = sxs[j];
+      shuffled[i] = shuffled[j];
     }
-    sxs[j] = xs[i];
+    shuffled[j] = xs[i];
   }
-  return sxs;
+  return shuffled;
 };
 
 const fillBoard = () => {
@@ -94,18 +95,14 @@ const fillBoard = () => {
 };
 
 const shake = (cell) => {
-  const rect = cell.getBoundingClientRect();
   const parent = cell.parentElement;
+  const rect = cell.getBoundingClientRect();
 
   const spacer = $("<span>");
   spacer.classList.add("spacer");
+  parent.insertBefore(spacer, cell);
 
-  cell.style.setProperty("position", "absolute");
-  cell.style.setProperty("left", `${rect.x}px`);
-  cell.style.setProperty("top", `${rect.y}px`);
-
-  parent.replaceChild(spacer, cell);
-  parent.appendChild(cell);
+  makeAbsolute(cell, rect);
 
   let ts = Date.now();
   let startTs = ts;
@@ -117,24 +114,35 @@ const shake = (cell) => {
   const move = () => {
     const now = Date.now();
     const elapsed = now - ts;
+    ts = now;
+
     pos += (goingLeft ? -1 : 1) * elapsed * pxPerMilli;
     cell.style.left = `${pos}px`;
     if (Math.abs(pos - start) >= 2) {
       goingLeft = !goingLeft;
     }
-    ts = now;
     if (now - startTs < 500) {
       requestAnimationFrame(move);
     } else {
-      cell.style.removeProperty("position");
-      cell.style.removeProperty("left");
-      cell.style.removeProperty("top");
+      makeUnabsolute(cell);
       parent.replaceChild(cell, spacer);
     }
   };
   requestAnimationFrame(move);
 };
 
+const makeAbsolute = (e, rect) => {
+  e.style.setProperty("position", "absolute");
+  e.style.setProperty("left", `${rect.x}px`);
+  e.style.setProperty("top", `${rect.y}px`);
+};
+
+const makeUnabsolute = (e) => {
+  e.style.removeProperty("position");
+  e.style.removeProperty("left");
+  e.style.removeProperty("top");
+
+};
 
 const nextQuestion = () => {
   $("#question").replaceChildren();
@@ -146,8 +154,6 @@ const nextQuestion = () => {
   $("#question").appendChild(ab);
   $("#question").appendChild(v);
 };
-
-
 
 fillBoard();
 nextQuestion();
