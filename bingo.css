@@ -45,14 +45,31 @@ body {
   justify-content: center;
   align-items: center;
   border-color: grey;
-  font-size: 16px;
   font-family: monospace;
+}
+
+.box {
+  font-size: 12px;
+}
+
+@media (min-width: 400px) {
+  .box {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 600px) {
+  .box {
+    font-size: 16px;
+  }
 }
 
 .box,
 .spacer {
-  width: 105px;
-  height: 105px;
+  width: calc(min(20vw, 15vh));
+  height: calc(min(20vw, 15vh));
+  max-width: 105px;
+  max-height: 105px;
   border-width: 1px;
   border-style: solid;
 }
