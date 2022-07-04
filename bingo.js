@@ -71,7 +71,6 @@ const fillBoard = () => {
       cell.classList.add("box");
       cell.innerText = expr.code();
       cell.onclick = (e) => {
-        goFullscreen();
         if (!cell.classList.contains("correct")) {
           if (expr.evaluate(question) === question.want) {
             cell.classList.add("correct");
@@ -152,19 +151,6 @@ const nextQuestion = () => {
   $("#question").appendChild(ab);
   $("#question").appendChild(v);
 };
-
-const goFullscreen = () => {
-  if (!document.fullscreenElement) {
-    document
-      .querySelector("body")
-      .requestFullscreen({ navigationUI: "hide" })
-      .catch((err) => {
-        alert(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`);
-      });
-  }
-};
-
-// document.exitFullscreen();
 
 fillBoard();
 nextQuestion();
