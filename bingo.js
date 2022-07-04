@@ -20,9 +20,7 @@ class Bingo {
   }
 
   hasBingo() {
-    return this.rows.some((r) => r === 4) ||
-      this.columns.some((c) => c === 4) ||
-      this.diagonals.some((d) => d === 4);
+    return this.rows.some((r) => r === 4) || this.columns.some((c) => c === 4) || this.diagonals.some((d) => d === 4);
   }
 }
 
@@ -49,7 +47,7 @@ let bingos = new Bingo();
 const shuffled = (xs) => {
   // Based on pseudo code from
   // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#The_%22inside-out%22_algorithm
-  
+
   const shuffled = [];
   for (let i = 0; i < xs.length; i++) {
     let j = Math.floor(Math.random() * (i + 1)); // 0 <= j <= i
@@ -73,13 +71,14 @@ const fillBoard = () => {
       cell.classList.add("box");
       cell.innerText = expr.code();
       cell.onclick = (e) => {
+        goFullscreen();
         if (!cell.classList.contains("correct")) {
           if (expr.evaluate(question) === question.want) {
             cell.classList.add("correct");
             bingos.track(i, j);
             correct.push([i, j]);
             if (bingos.hasBingo()) {
-              $("#question").innerText = 'Bingo!';
+              $("#question").innerText = "Bingo!";
             } else {
               nextQuestion();
             }
@@ -141,7 +140,6 @@ const makeUnabsolute = (e) => {
   e.style.removeProperty("position");
   e.style.removeProperty("left");
   e.style.removeProperty("top");
-
 };
 
 const nextQuestion = () => {
@@ -154,6 +152,19 @@ const nextQuestion = () => {
   $("#question").appendChild(ab);
   $("#question").appendChild(v);
 };
+
+const goFullscreen = () => {
+  if (!document.fullscreenElement) {
+    document
+      .querySelector("body")
+      .requestFullscreen({ navigationUI: "hide" })
+      .catch((err) => {
+        alert(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`);
+      });
+  }
+};
+
+// document.exitFullscreen();
 
 fillBoard();
 nextQuestion();
