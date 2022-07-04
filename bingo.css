@@ -9,8 +9,9 @@ html {
 }
 
 body {
-  margin: 50px auto;
+  margin: auto;
   width: fit-content;
+  padding: 20px;
 }
 
 #question {
@@ -50,8 +51,8 @@ body {
 
 .box,
 .spacer {
-  height: 105px;
   width: 105px;
+  height: 105px;
   border-width: 1px;
   border-style: solid;
 }
