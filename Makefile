@@ -1,12 +1,9 @@
 files := index.html
-files += bingo.html
 files += values.html
 
-files += bingo.css
 files += style.css
 
 files += async.js
-files += bingo.js
 files += expressions.js
 files += questions.js
 files += random.js
@@ -18,6 +15,8 @@ files += close.svg
 files += info.svg
 files += list.svg
 
+files += bingo.*
+files += booleans.js
 
 pretty:
 	prettier -w *.js *.css
@@ -29,3 +28,7 @@ lint:
 
 publish:
 	./publish.sh $(files)
+
+
+clean:
+	find . -name '*~' -delete
