@@ -6,11 +6,13 @@ import { Octokit } from "@octokit/rest";
 // stash access token in cookie? And check if it still works before authing again?
 //
 
+const REPO_NAME = "itp";
+
 const scopes = ["repo", "user"];
 const site_id = "1d7e043c-5d02-47fa-8ba8-9df0662ba82b";
 
 // FIXME: Not exactly pro-style, but will do for now.
-const token = localStorage.getItem('githubToken');
+const token = localStorage.getItem("githubToken");
 
 const authenticate = async () => {
   if (token !== undefined) {
@@ -23,16 +25,14 @@ const authenticate = async () => {
           reject(err);
         }
         console.log(`Got token via OAuth: ${data.token}`);
-        localStorage.setItem('githubToken', data.token);
+        localStorage.setItem("githubToken", data.token);
         resolve(new Octokit({ auth: data.token }));
       });
     });
   }
 };
 
-
 class Repo {
-
   constructor(octokit, user, name) {
     this.octokit = octokit;
     this.user = user;
@@ -65,7 +65,7 @@ class Repo {
   }
 
   getFile(path, ref) {
-    return octokit.request("GET /repos/{owner}/{name}/contents/{path}", {
+    return this.octokit.request("GET /repos/{owner}/{name}/contents/{path}", {
       owner: this.owner,
       name: this.name,
       path,
@@ -82,10 +82,6 @@ class Repo {
   }
 }
 
-const octokit = await authenticate().catch((error) => false);
-
-const u = await octokit.rest.users.getAuthenticated().catch((e) => false);
-
 const toJSON = (r) => JSON.stringify(r, null, 2);
 
 // Simulated file content.
@@ -93,12 +89,14 @@ const fileContent = toJSON({ foo: "bar", baz: "quux" });
 
 let out = "";
 
-const myRepo = new Repo(octokit, u.data, 'itp');
+const myRepo = await authenticate()
+  .then((octokit) => octokit.rest.users.getAuthenticated().then((user) => new Repo(octokit, user.data, REPO_NAME)))
+  .catch((e) => false);
 
-if (u && myRepo) {
+if (myRepo) {
   out += `Repo. owner: ${myRepo.owner}; name: ${myRepo.name}; user.name: ${myRepo.user.name}; user.login: ${myRepo.user.login}\n\n`;
-  const owner = u.data.login;
-  const repo = "itp";
+  const owner = myRepo.owner;
+  const repo = myRepo.name;
 
   const x = await myRepo.ensureRepo();
 
@@ -160,7 +158,7 @@ if (u && myRepo) {
     out += "Couldn't find main.";
   }
 } else {
-  out += "Couldn't get user!";
+  out += "Couldn't get repo!";
 }
 
 document.getElementById("stuff").innerText = out;
