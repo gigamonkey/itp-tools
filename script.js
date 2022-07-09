@@ -47,6 +47,11 @@ const ensureRepo = (octokit, owner, repo) => {
     });
 };
 
+const getFile = (owner, repo, path, ref) =>
+  octokit.request("GET /repos/{owner}/{repo}/contents/{path}", { owner, repo, path, ref });
+
+const getRef = (owner, repo, ref) => octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", { owner, repo, ref });
+
 const octokit = await authenticate().catch((error) => false);
 
 const u = await octokit.rest.users.getAuthenticated().catch((e) => false);
@@ -60,18 +65,15 @@ let out = "";
 
 if (u) {
   out += `User name: ${u.data.name}; login: ${u.data.login}`;
-  const repo = { owner: u.data.login, repo: "itp" };
+  const owner = u.data.login;
+  const repo = "itp";
 
-  const x = await ensureRepo(octokit, u.data.login, "itp");
-
-  console.log(x);
+  const x = await ensureRepo(octokit, owner, repo);
 
   out += x.created ? "// Created repo." : "// Found existing repo.";
   out += toJSON(x.repo);
 
-  const file = await octokit
-    .request("GET /repos/{owner}/{repo}/contents/{path}", { ...repo, path: "config.json", ref: "checkpoints" })
-    .catch(false);
+  const file = await getFile(u.data.login, "itp", "config.json", "checkpoints").catch((e) => false);
 
   if (file) {
     out += "\n\n// Found file\n";
@@ -81,7 +83,8 @@ if (u) {
       out += "\n\n// Updating file";
       out += await octokit
         .request("PUT /repos/{owner}/{repo}/contents/{path}", {
-          ...repo,
+          owner,
+          repo,
           path: "config.json",
           message: "Making config file",
           content: btoa(fileContent),
@@ -94,7 +97,8 @@ if (u) {
     out += "\n\n// Creating file";
     out += await octokit
       .request("PUT /repos/{owner}/{repo}/contents/{path}", {
-        ...repo,
+        owner,
+        repo,
         path: "config.json",
         message: "Making config file",
         content: btoa(fileContent),
@@ -102,13 +106,8 @@ if (u) {
       .then(toJSON);
   }
 
-  const main = await octokit
-    .request("GET /repos/{owner}/{repo}/git/ref/{ref}", { ...repo, ref: "heads/main" })
-    .catch((e) => false);
-
-  const checkpoints = await octokit
-    .request("GET /repos/{owner}/{repo}/git/ref/{ref}", { ...repo, ref: "heads/checkpoints" })
-    .catch((e) => false);
+  const main = await getRef(owner, repo, "heads/main").catch((e) => false);
+  const checkpoints = await getRef(owner, repo, "heads/checkpoints").catch((e) => false);
 
   if (main) {
     out += `\nmain: ${toJSON(main)}\n`;
