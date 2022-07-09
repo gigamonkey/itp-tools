@@ -9,20 +9,45 @@ import { Octokit } from "@octokit/rest";
 const scopes = ["repo", "user"];
 const site_id = "1d7e043c-5d02-47fa-8ba8-9df0662ba82b";
 
-const authWithGitHub = async () => {
-  return new Promise((resolve, reject) => {
-    new netlify({ site_id }).authenticate({ provider: "github", scope: scopes }, (err, data) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(data);
+const token = undefined;
+
+const authenticate = async () => {
+  if (token !== undefined) {
+    return Promise.resolve(new Octokit({ auth: token }));
+  } else {
+    return new Promise((resolve, reject) => {
+      new netlify({ site_id }).authenticate({ provider: "github", scope: scopes }, (err, data) => {
+        if (err) {
+          reject(err);
+        }
+        console.log(data.token);
+        resolve(new Octokit({ auth: data.token }));
+      });
     });
-  });
+  }
 };
 
-const octokit = await authWithGitHub()
-  .then((data) => new Octokit({ auth: data.token }))
-  .catch((error) => false);
+const getRepo = (octokit, owner, repo) => octokit.request("GET /repos/{owner}/{repo}", { owner, repo });
+
+const makeRepo = (octokit, name) => octokit.request("POST /user/repos", { name });
+
+const ensureRepo = (octokit, owner, repo) => {
+  return getRepo(octokit, owner, repo)
+    .then((r) => {
+      console.log(`Found repo`);
+      return { repo: r, created: false };
+    })
+    .catch((e) => {
+      if (e.status === 404) {
+        console.log(`Repo ${owner}/${repo} does not exist. Creating.'`);
+        return { repo: makeRepo(octokit, repo), created: true };
+      } else {
+        throw e;
+      }
+    });
+};
+
+const octokit = await authenticate().catch((error) => false);
 
 const u = await octokit.rest.users.getAuthenticated().catch((e) => false);
 
@@ -37,18 +62,12 @@ if (u) {
   out += `User name: ${u.data.name}; login: ${u.data.login}`;
   const repo = { owner: u.data.login, repo: "itp" };
 
-  const foundRepo = await octokit
-    .request("GET /repos/{owner}/{repo}", repo)
-    .then(toJSON)
-    .catch((e) => false);
+  const x = await ensureRepo(octokit, u.data.login, "itp");
 
-  if (foundRepo) {
-    out += "\n\n// found repository\n";
-    out += foundRepo;
-  } else {
-    out += "\n\n// created repository\n";
-    out += await octokit.request("POST /user/repos", { name: "itp" }).then(toJSON);
-  }
+  console.log(x);
+
+  out += x.created ? "// Created repo." : "// Found existing repo.";
+  out += toJSON(x.repo);
 
   const file = await octokit
     .request("GET /repos/{owner}/{repo}/contents/{path}", { ...repo, path: "config.json", ref: "checkpoints" })
