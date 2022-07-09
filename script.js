@@ -9,10 +9,12 @@ import { Octokit } from "@octokit/rest";
 const scopes = ["repo", "user"];
 const site_id = "1d7e043c-5d02-47fa-8ba8-9df0662ba82b";
 
-const token = undefined;
+// FIXME: Not exactly pro-style, but will do for now.
+const token = localStorage.getItem('githubToken');
 
 const authenticate = async () => {
   if (token !== undefined) {
+    console.log(`Using stored token: ${token}`);
     return Promise.resolve(new Octokit({ auth: token }));
   } else {
     return new Promise((resolve, reject) => {
@@ -20,7 +22,8 @@ const authenticate = async () => {
         if (err) {
           reject(err);
         }
-        console.log(data.token);
+        console.log(`Got token via OAuth: ${data.token}`);
+        localStorage.setItem('githubToken', data.token);
         resolve(new Octokit({ auth: data.token }));
       });
     });
@@ -79,33 +82,6 @@ class Repo {
   }
 }
 
-
-
-const getRepo = (octokit, owner, repo) => octokit.request("GET /repos/{owner}/{repo}", { owner, repo });
-
-const makeRepo = (octokit, name) => octokit.request("POST /user/repos", { name });
-
-const ensureRepo = (octokit, owner, repo) => {
-  return getRepo(octokit, owner, repo)
-    .then((r) => {
-      console.log(`Found repo`);
-      return { repo: r, created: false };
-    })
-    .catch((e) => {
-      if (e.status === 404) {
-        console.log(`Repo ${owner}/${repo} does not exist. Creating.'`);
-        return { repo: makeRepo(octokit, repo), created: true };
-      } else {
-        throw e;
-      }
-    });
-};
-
-const getFile = (owner, repo, path, ref) =>
-  octokit.request("GET /repos/{owner}/{repo}/contents/{path}", { owner, repo, path, ref });
-
-const getRef = (owner, repo, ref) => octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", { owner, repo, ref });
-
 const octokit = await authenticate().catch((error) => false);
 
 const u = await octokit.rest.users.getAuthenticated().catch((e) => false);
@@ -124,12 +100,12 @@ if (u && myRepo) {
   const owner = u.data.login;
   const repo = "itp";
 
-  const x = await ensureRepo(octokit, owner, repo);
+  const x = await myRepo.ensureRepo();
 
   out += x.created ? "// Created repo." : "// Found existing repo.";
   out += toJSON(x.repo);
 
-  const file = await getFile(u.data.login, "itp", "config.json", "checkpoints").catch((e) => false);
+  const file = await myRepo.getFile("config.json", "checkpoints").catch((e) => false);
 
   if (file) {
     out += "\n\n// Found file\n";
@@ -162,8 +138,8 @@ if (u && myRepo) {
       .then(toJSON);
   }
 
-  const main = await getRef(owner, repo, "heads/main").catch((e) => false);
-  const checkpoints = await getRef(owner, repo, "heads/checkpoints").catch((e) => false);
+  const main = await myRepo.getRef("heads/main").catch((e) => false);
+  const checkpoints = await myRepo.getRef("heads/checkpoints").catch((e) => false);
 
   if (main) {
     out += `\nmain: ${toJSON(main)}\n`;
