@@ -1,26 +1,67 @@
 import { request } from "@octokit/request";
-import { Octokit } from "@octokit/core";
+import { Octokit } from "@octokit/rest";
 
-const token = <FILL THIS IN>;
+const token = "<FILL THIS IN>";
+const octokit = new Octokit({ auth: token });
 
-const octokit = new Octokit({auth: token});
+const fileContent = "{}";
 
-const foo = await octokit.request('POST /user/repos', {"name": "itp"});
+const toJSON = (r) => JSON.stringify(r, null, 2);
 
-console.log(foo);
+let out = "";
 
-const oneRepo = async (name) => {
-  return await request("GET /repos/{user}/{name}", {
-    headers: {
-      authorization: `token ${token}`,
-    },
-    user: "gigamonkey",
-    name: name,
-  })
-    .then((r) => JSON.stringify(r, null, 2))
-    .catch((e) => "No such repo.");
-};
+const u = await octokit.rest.users.getAuthenticated().catch((e) => false);
 
-const result = await oneRepo("estimation");
+if (u) {
+  out += `User name: ${u.data.name}; login: ${u.data.login}`;
+  const repo = { owner: u.data.login, repo: "itp" };
 
-document.getElementById("stuff").innerText = result;
+  const foundRepo = await octokit
+    .request("GET /repos/{owner}/{repo}", repo)
+    .then(toJSON)
+    .catch((e) => false);
+
+  if (foundRepo) {
+    out += "\n\n// found repository\n";
+    out += foundRepo;
+  } else {
+    out += "\n\n// created repository\n";
+    out += await octokit.request("POST /user/repos", { name: "itp" }).then(toJSON);
+  }
+
+  const file = await octokit
+    .request("GET /repos/{owner}/{repo}/contents/{path}", { ...repo, path: "config.json" })
+    .catch(false);
+
+  if (file) {
+    out += "\n\n// Found file\n";
+    out += toJSON(file);
+
+    if (atob(file.data.content) !== fileContent) {
+      out += "\n\n// Updating file";
+      out += await octokit
+        .request("PUT /repos/{owner}/{repo}/contents/{path}", {
+          ...repo,
+          path: "config.json",
+          message: "Making config file",
+          content: btoa(fileContent),
+          sha: file.data.sha,
+        })
+        .then(toJSON);
+    }
+  } else {
+    out += "\n\n// Creating file";
+    out += await octokit
+      .request("PUT /repos/{owner}/{repo}/contents/{path}", {
+        ...repo,
+        path: "config.json",
+        message: "Making config file",
+        content: btoa(fileContent),
+      })
+      .then(toJSON);
+  }
+} else {
+  out += "Couldn't get user!";
+}
+
+document.getElementById("stuff").innerText = out;
