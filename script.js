@@ -41,11 +41,15 @@ class Repo {
   }
 
   getRepo() {
-    return this.octokit.request("GET /repos/{owner}/{name}", { owner: this.owner, name: this.name });
+    const { owner, name, ...rest } = this;
+    const url = "GET /repos/{owner}/{name}";
+    return this.octokit.request(url, { owner, name });
   }
 
   makeRepo() {
-    return this.octokit.request("POST /user/repos", { name: this.name });
+    const { name, ...rest } = this;
+    const url = "POST /user/repos";
+    return this.octokit.request(url, { name });
   }
 
   ensureRepo() {
@@ -65,90 +69,83 @@ class Repo {
   }
 
   getFile(path, ref) {
-    return this.octokit.request("GET /repos/{owner}/{name}/contents/{path}", {
-      owner: this.owner,
-      name: this.name,
-      path,
-      ref,
-    });
+    const { owner, name, ...rest } = this;
+    const url = "GET /repos/{owner}/{name}/contents/{path}";
+    return this.octokit.request(url, { owner, name, path, ref });
+  }
+
+  createFile(path, message, content, branch) {
+    const { owner, name, ...rest } = this;
+    const url = "PUT /repos/{owner}/{name}/contents/{path}";
+    return this.octokit.request(url, { owner, name, path, message, content, branch });
+  }
+
+  updateFile(path, message, content, sha, branch) {
+    const { owner, name, ...rest } = this;
+    const url = "PUT /repos/{owner}/{name}/contents/{path}";
+    return this.octokit.request(url, { owner, name, path, message, content, sha, branch });
   }
 
   getRef(ref) {
-    return this.octokit.request("GET /repos/{owner}/{name}/git/ref/{ref}", {
-      owner: this.owner,
-      name: this.name,
-      ref,
-    });
+    const { owner, name, ...rest } = this;
+    const url = "GET /repos/{owner}/{name}/git/ref/{ref}";
+    return this.octokit.request(url, { owner, name, ref });
+  }
+
+  makeRef(ref, sha) {
+    const { owner, name, ...rest } = this;
+    const url = "POST /repos/{owner}/{name}/git/refs";
+    return this.octokit.request(url, { owner, name, ref, ref, sha });
   }
 }
 
 const toJSON = (r) => JSON.stringify(r, null, 2);
 
 // Simulated file content.
-const fileContent = toJSON({ foo: "bar", baz: "quux" });
+const fileContent = toJSON({ foo: "bar", baz: "quux", another: 42 });
 
 let out = "";
 
-const myRepo = await authenticate()
+const repo = await authenticate()
   .then((octokit) => octokit.rest.users.getAuthenticated().then((user) => new Repo(octokit, user.data, REPO_NAME)))
   .catch((e) => false);
 
-if (myRepo) {
-  out += `Repo. owner: ${myRepo.owner}; name: ${myRepo.name}; user.name: ${myRepo.user.name}; user.login: ${myRepo.user.login}\n\n`;
-  const owner = myRepo.owner;
-  const repo = myRepo.name;
+if (repo) {
+  out += `Repo. owner: ${repo.owner}; name: ${repo.name}; user.name: ${repo.user.name}; user.login: ${repo.user.login}\n\n`;
+  const owner = repo.owner;
+  const repo = repo.name;
 
-  const x = await myRepo.ensureRepo();
+  const x = await repo.ensureRepo();
 
-  out += x.created ? "// Created repo." : "// Found existing repo.";
+  out += x.created ? "// Created repo.\n" : "// Found existing repo.\n";
   out += toJSON(x.repo);
 
-  const file = await myRepo.getFile("config.json", "checkpoints").catch((e) => false);
+  const file = await repo.getFile("config.json", "checkpoints").catch((e) => false);
 
   if (file) {
     out += "\n\n// Found file\n";
     out += toJSON(file);
 
     if (atob(file.data.content) !== fileContent) {
-      out += "\n\n// Updating file";
-      out += await octokit
-        .request("PUT /repos/{owner}/{repo}/contents/{path}", {
-          owner,
-          repo,
-          path: "config.json",
-          message: "Making config file",
-          content: btoa(fileContent),
-          sha: file.data.sha,
-          branch: "checkpoints",
-        })
+      out += "\n\n// Updating file\n";
+      out += await repo
+        .updateFile("config.json", "Updating config file", btoa(fileContent), file.data.sha, "checkpoints")
         .then(toJSON);
     }
   } else {
-    out += "\n\n// Creating file";
-    out += await octokit
-      .request("PUT /repos/{owner}/{repo}/contents/{path}", {
-        owner,
-        repo,
-        path: "config.json",
-        message: "Making config file",
-        content: btoa(fileContent),
-      })
-      .then(toJSON);
+    out += "\n\n// Creating file\n";
+    out += await repo.createFile("config.json", "Making config file", btoa(fileContent), "main").then(toJSON);
   }
 
-  const main = await myRepo.getRef("heads/main").catch((e) => false);
-  const checkpoints = await myRepo.getRef("heads/checkpoints").catch((e) => false);
+  const main = await repo.getRef("heads/main").catch((e) => false);
+  const checkpoints = await repo.getRef("heads/checkpoints").catch((e) => false);
 
   if (main) {
     out += `\nmain: ${toJSON(main)}\n`;
 
     if (!checkpoints) {
-      out += await octokit
-        .request("POST /repos/{owner}/{repo}/git/refs", {
-          ...repo,
-          ref: "refs/heads/checkpoints",
-          sha: main.data.object.sha,
-        })
+      out += await repo
+        .makeRef("refs/heads/checkpoints", main.data.object.sha)
         .then((checkpoints) => `\ncheckpoints:${toJSON(checkpoints)}\n`)
         .catch((error) => `Couldn't make checkpoints: ${error}`);
     } else {
