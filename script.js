@@ -112,8 +112,6 @@ const repo = await authenticate()
 
 if (repo) {
   out += `Repo. owner: ${repo.owner}; name: ${repo.name}; user.name: ${repo.user.name}; user.login: ${repo.user.login}\n\n`;
-  const owner = repo.owner;
-  const repo = repo.name;
 
   const x = await repo.ensureRepo();
 
