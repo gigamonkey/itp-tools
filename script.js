@@ -1,16 +1,33 @@
 import { request } from "@octokit/request";
 import { Octokit } from "@octokit/rest";
+import netlify from "netlify-auth-providers";
 
-const token = "<FILL THIS IN>";
-const octokit = new Octokit({ auth: token });
+// Simulated file content.
+const fileContent = "{foo: 'bar'}";
 
-const fileContent = "{}";
+const scopes = ["repo", "user"];
+const site_id = "1d7e043c-5d02-47fa-8ba8-9df0662ba82b";
+
+const authWithGitHub = async () => {
+  return new Promise((resolve, reject) => {
+    new netlify({ site_id }).authenticate({ provider: "github", scope: scopes }, (err, data) => {
+      if (err) {
+        reject(err);
+      }
+      resolve(data);
+    });
+  });
+};
+
+const octokit = await authWithGitHub()
+  .then((data) => new Octokit({ auth: data.token }))
+  .catch((error) => false);
+
+const u = await octokit.rest.users.getAuthenticated().catch((e) => false);
 
 const toJSON = (r) => JSON.stringify(r, null, 2);
 
 let out = "";
-
-const u = await octokit.rest.users.getAuthenticated().catch((e) => false);
 
 if (u) {
   out += `User name: ${u.data.name}; login: ${u.data.login}`;
