@@ -27,6 +27,60 @@ const authenticate = async () => {
   }
 };
 
+
+class Repo {
+
+  constructor(octokit, user, name) {
+    this.octokit = octokit;
+    this.user = user;
+    this.owner = this.user.login;
+    this.name = name;
+  }
+
+  getRepo() {
+    return this.octokit.request("GET /repos/{owner}/{name}", { owner: this.owner, name: this.name });
+  }
+
+  makeRepo() {
+    return this.octokit.request("POST /user/repos", { name: this.name });
+  }
+
+  ensureRepo() {
+    return this.getRepo()
+      .then((r) => {
+        console.log(`Found repo`);
+        return { repo: r, created: false };
+      })
+      .catch((e) => {
+        if (e.status === 404) {
+          console.log(`Repo ${owner}/${repo} does not exist. Creating.'`);
+          return { repo: this.makeRepo(), created: true };
+        } else {
+          throw e;
+        }
+      });
+  }
+
+  getFile(path, ref) {
+    return octokit.request("GET /repos/{owner}/{name}/contents/{path}", {
+      owner: this.owner,
+      name: this.name,
+      path,
+      ref,
+    });
+  }
+
+  getRef(ref) {
+    return this.octokit.request("GET /repos/{owner}/{name}/git/ref/{ref}", {
+      owner: this.owner,
+      name: this.name,
+      ref,
+    });
+  }
+}
+
+
+
 const getRepo = (octokit, owner, repo) => octokit.request("GET /repos/{owner}/{repo}", { owner, repo });
 
 const makeRepo = (octokit, name) => octokit.request("POST /user/repos", { name });
@@ -63,8 +117,10 @@ const fileContent = toJSON({ foo: "bar", baz: "quux" });
 
 let out = "";
 
-if (u) {
-  out += `User name: ${u.data.name}; login: ${u.data.login}`;
+const myRepo = new Repo(octokit, u.data, 'itp');
+
+if (u && myRepo) {
+  out += `Repo. owner: ${myRepo.owner}; name: ${myRepo.name}; user.name: ${myRepo.user.name}; user.login: ${myRepo.user.login}\n\n`;
   const owner = u.data.login;
   const repo = "itp";
 
