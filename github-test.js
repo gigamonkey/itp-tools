@@ -1,4 +1,4 @@
-import { Repo, authenticate } from "./github.js";
+import { Repo, authenticate } from "./modules/github.js";
 
 const REPO_NAME = "itp";
 
