@@ -6,7 +6,7 @@ import { Octokit } from "@octokit/rest";
 // stash access token in cookie? And check if it still works before authing again?
 //
 
-const REPO_NAME = "itp3";
+const REPO_NAME = "itp";
 
 const scopes = ["repo", "user"];
 const site_id = "1d7e043c-5d02-47fa-8ba8-9df0662ba82b";
