@@ -9,7 +9,7 @@ esbuild_opts += --loader:.ttf=file
 esbuild_opts += --minify
 esbuild_opts += --outdir=./js
 esbuild_opts += --sourcemap
-esbuild_opts += --format=esm
+#esbuild_opts += --format=esm # This seems to mess up Monaco.
 
 worker_entry_points := vs/language/json/json.worker.js
 worker_entry_points += vs/language/css/css.worker.js
@@ -17,7 +17,10 @@ worker_entry_points += vs/language/html/html.worker.js
 worker_entry_points += vs/language/typescript/ts.worker.js
 worker_entry_points += vs/editor/editor.worker.js
 
-all: js/web.js $(addprefix js/, $(worker_entry_points))
+built_js := $(addprefix js/,$(js_source))
+built_js += $(addprefix js/, $(worker_entry_points))
+
+all:  $(built_js)
 
 setup:
 	npm install
@@ -25,20 +28,19 @@ setup:
 js/%.js: ./node_modules/monaco-editor/esm/%.js
 	$(esbuild) $< $(esbuild_opts) --outbase=./node_modules/monaco-editor/esm/
 
-foo: $(addprefix js/,$(js_source))
+foo:
 
 js/%.js: %.js
 	$(esbuild) $< $(esbuild_opts)
 
 pretty:
-	prettier -w *.js *.css
+	prettier -w *.js css/*.css
 	tidy -config .tidyconfig *.html
 
 lint:
 	npx eslint *.js
 
-build:
-	$(esbuild) $(js_source) $(esbuild_opts)
+build: $(built_js)
 
 serve:
 	$(esbuild) $(js_source) $(esbuild_opts) --servedir=.
