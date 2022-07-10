@@ -1,7 +1,4 @@
-files := $(wildcard *.html)
-files += $(wildcard *.css)
-files += $(wildcard *.png)
-files += $(wildcard *.woff2)
+files := $(shell git ls-files *.js *.html *.css *.svg *.png *.woff2)
 files += js
 
 esbuild := ./node_modules/.bin/esbuild
@@ -25,12 +22,15 @@ setup:
 js/%.js: ./node_modules/monaco-editor/esm/%.js
 	$(esbuild) $< $(esbuild_opts) --outbase=./node_modules/monaco-editor/esm/
 
-js/web.js: web.js
-	$(esbuild) web.js $(esbuild_opts)
+js/%.js: %.js$
+	$(esbuild) $< $(esbuild_opts)
 
 pretty:
 	prettier -w *.js *.css
 	tidy -config .tidyconfig *.html
+
+lint:
+	npx eslint *.js
 
 serve:
 	$(esbuild) web.js $(esbuild_opts) --servedir=.
@@ -46,4 +46,4 @@ pristine:
 	git clean -fdx
 
 
-.PHONY: setup pretty serve publish clean pristine
+.PHONY: setup pretty lint serve publish clean pristine
