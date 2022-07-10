@@ -141,4 +141,9 @@ class Repo {
   }
 }
 
-export { Repo, authenticate };
+const repo = async (siteId, scopes, repoName) => {
+  return authenticate(siteId, scopes)
+    .then((octokit) => octokit.rest.users.getAuthenticated().then((user) => new Repo(octokit, user.data, repoName)))
+}
+
+export { repo };

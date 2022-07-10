@@ -1,4 +1,4 @@
-import { Repo, authenticate } from "./modules/github.js";
+import * as github from "./modules/github.js";
 
 const REPO_NAME = "itp";
 
@@ -13,9 +13,7 @@ const test = async () => {
 
   let out = "";
 
-  const repo = await authenticate(siteId, scopes)
-    .then((octokit) => octokit.rest.users.getAuthenticated().then((user) => new Repo(octokit, user.data, REPO_NAME)))
-    .catch((e) => false);
+  const repo = await github.repo(siteId, scopes, REPO_NAME).catch((e) => false);
 
   if (repo) {
     out += `Repo. owner: ${repo.owner}; name: ${repo.name}; user.name: ${repo.user.name}; user.login: ${repo.user.login}\n\n`;
