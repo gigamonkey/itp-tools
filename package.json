@@ -1,0 +1,31 @@
+{
+  "name": "itp-tools",
+  "version": "1.0.0",
+  "description": "Various web tools for Intro to Programming",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Peter Seibel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gigamonkey/itp-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gigamonkey/itp-tools/issues"
+  },
+  "homepage": "https://github.com/gigamonkey/itp-tools#readme",
+  "dependencies": {
+    "@octokit/core": "^4.0.4",
+    "@octokit/request": "^6.0.2",
+    "@octokit/rest": "^19.0.3",
+    "acorn": "^8.7.1",
+    "monaco-editor": "^0.33.0",
+    "netlify-auth-providers": "^1.0.0-alpha5"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.48",
+    "eslint": "^8.0.1"
+  }
+}
