@@ -6,7 +6,7 @@ import { Octokit } from "@octokit/rest";
 // stash access token in cookie? And check if it still works before authing again?
 //
 
-const REPO_NAME = "itp";
+const REPO_NAME = "itp3";
 
 const scopes = ["repo", "user"];
 const site_id = "1d7e043c-5d02-47fa-8ba8-9df0662ba82b";
@@ -31,6 +31,9 @@ const authenticate = async () => {
   }
 };
 
+/*
+ * Thin wrapper over the GitHub API for doing things with a repo.
+ */
 class Repo {
   constructor(octokit, user, name) {
     this.octokit = octokit;
@@ -57,7 +60,7 @@ class Repo {
       .catch((e) => {
         if (e.status === 404) {
           console.log(`Repo ${this.owner}/${this.name} does not exist. Creating.'`);
-          return this.makeRepo().then((repo) => ({repo, created: true}));
+          return this.makeRepo().then((repo) => ({ repo, created: true }));
         } else {
           throw e;
         }
@@ -93,7 +96,7 @@ class Repo {
         if (atob(file.data.content) !== atob(content)) {
           return this.updateFile(path, updateMessage, content, file.data.sha, branch).then((f) => wrap(f, true, false));
         } else {
-          return Promise.resolve(wrap(file, false, false));
+          return wrap(file, false, false);
         }
       })
       .catch((e) => {
@@ -114,14 +117,44 @@ class Repo {
   makeRef(ref, sha) {
     const { owner, name, ...rest } = this;
     const url = "POST /repos/{owner}/{name}/git/refs";
-    return this.octokit.request(url, { owner, name, ref, ref, sha });
+    return this.octokit.request(url, { owner, name, ref: `refs/${ref}`, sha });
+  }
+
+  updateRef(ref, sha) {
+    const { owner, name, ...rest } = this;
+    const url = "PATCH /repos/{owner}/{name}/git/refs/{ref}";
+    return this.octokit.request(url, { owner, name, ref, sha, forced: true });
+  }
+
+  deleteRef(ref) {
+    const { owner, name, ...rest } = this;
+    const url = "DELETE /repos/{owner}/{name}/git/refs/{ref}";
+    return this.octokit.request(url, { owner, name, ref });
+  }
+
+  ensureRefSha(ref, sha) {
+    return this.getRef(ref)
+      .then((existing) => {
+        if (existing.data.object.sha !== sha) {
+          return this.updateRef(ref, sha).then((moved) => ({ ref: moved, moved: true, created: false }));
+        } else {
+          return { ref: existing, moved: false, created: false };
+        }
+      })
+      .catch((e) => {
+        if (e.status === 404) {
+          return this.makeRef(ref, sha).then((r) => ({ ref: r, moved: false, created: true }));
+        } else {
+          throw e;
+        }
+      });
   }
 }
 
 const toJSON = (r) => JSON.stringify(r, null, 2);
 
 // Simulated file content.
-const fileContent = toJSON({ foo: "bar", baz: "quux", another: 44 });
+const fileContent = toJSON({ foo: "bar", baz: "quux", another: 45 });
 
 let out = "";
 
@@ -137,6 +170,24 @@ if (repo) {
   out += x.created ? "// Created repo.\n" : "// Found existing repo.\n";
   out += toJSON(x.repo);
 
+  // Have to create a file to create the first ref and thus the first branch.
+  const { file, updated, created } = await repo.ensureFileContents(
+    "config4.json",
+    "Making config file",
+    "Updating config file",
+    btoa(fileContent),
+    "main"
+  );
+
+  if (created) {
+    out += "\n// Created file\n";
+  } else if (updated) {
+    out += "\n// Updated file\n";
+  } else {
+    out += "\n// File already existed with correct contents.\n";
+  }
+  out += toJSON(file);
+
   const main = await repo.getRef("heads/main").catch((e) => false);
   const checkpoints = await repo.getRef("heads/checkpoints").catch((e) => false);
 
@@ -145,29 +196,12 @@ if (repo) {
 
     if (!checkpoints) {
       out += await repo
-        .makeRef("refs/heads/checkpoints", main.data.object.sha)
+        .makeRef("heads/checkpoints", main.data.object.sha)
         .then((checkpoints) => `\ncheckpoints:${toJSON(checkpoints)}\n`)
         .catch((error) => `Couldn't make checkpoints: ${error}`);
     } else {
       out += `\ncheckpoints already exists: ${toJSON(checkpoints)}\n`;
     }
-
-    const { file, updated, created } = await repo.ensureFileContents(
-      "config4.json",
-      "Making config file",
-      "Updating config file",
-      btoa(fileContent),
-      "main"
-    );
-
-    if (created) {
-      out += "\n// Created file\n";
-    } else if (updated) {
-      out += "\n// Updated file\n";
-    } else {
-      out += "\n// File already existed with correct contents.\n";
-    }
-    out += toJSON(file);
   } else {
     out += "Couldn't find main.";
   }
