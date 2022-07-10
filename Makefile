@@ -1,7 +1,9 @@
 files := $(shell git ls-files *.js *.html *.css *.svg *.png *.woff2)
 files += js
 
-js_source = $(wildcard *.js)
+js_source := github-test.js
+js_source += repl.js
+js_source += new-repl.js
 
 esbuild := ./node_modules/.bin/esbuild
 esbuild_opts := --bundle
@@ -20,15 +22,13 @@ worker_entry_points += vs/editor/editor.worker.js
 built_js := $(addprefix js/,$(js_source))
 built_js += $(addprefix js/, $(worker_entry_points))
 
-all:  $(built_js)
+all:  build
 
 setup:
 	npm install
 
 js/%.js: ./node_modules/monaco-editor/esm/%.js
 	$(esbuild) $< $(esbuild_opts) --outbase=./node_modules/monaco-editor/esm/
-
-foo:
 
 js/%.js: %.js
 	$(esbuild) $< $(esbuild_opts)
