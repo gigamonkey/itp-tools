@@ -37,6 +37,9 @@ pretty:
 lint:
 	npx eslint *.js
 
+build:
+	$(esbuild) $(js_source) $(esbuild_opts)
+
 serve:
 	$(esbuild) $(js_source) $(esbuild_opts) --servedir=.
 
