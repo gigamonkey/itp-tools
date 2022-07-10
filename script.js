@@ -16,7 +16,6 @@ const token = localStorage.getItem("githubToken");
 
 const authenticate = async () => {
   if (token !== undefined) {
-    console.log(`Using stored token: ${token}`);
     return Promise.resolve(new Octokit({ auth: token }));
   } else {
     return new Promise((resolve, reject) => {
@@ -54,14 +53,11 @@ class Repo {
 
   ensureRepo() {
     return this.getRepo()
-      .then((r) => {
-        console.log(`Found repo`);
-        return { repo: r, created: false };
-      })
+      .then((repo) => ({ repo, created: false }))
       .catch((e) => {
         if (e.status === 404) {
-          console.log(`Repo ${owner}/${repo} does not exist. Creating.'`);
-          return { repo: this.makeRepo(), created: true };
+          console.log(`Repo ${this.owner}/${this.name} does not exist. Creating.'`);
+          return this.makeRepo().then((repo) => ({repo, created: true}));
         } else {
           throw e;
         }
@@ -86,6 +82,29 @@ class Repo {
     return this.octokit.request(url, { owner, name, path, message, content, sha, branch });
   }
 
+  ensureFileContents(path, createMessage, updateMessage, content, branch) {
+    const wrap = (file, updated, created) => ({ file, updated, created });
+
+    return this.getFile(path, branch)
+      .then((file) => {
+        // N.B. the base64 encoded content can apparently have line breaks in it
+        // or something that means the same actual content can be encoded into
+        // unequal strings so we need to decode to compare contents.
+        if (atob(file.data.content) !== atob(content)) {
+          return this.updateFile(path, updateMessage, content, file.data.sha, branch).then((f) => wrap(f, true, false));
+        } else {
+          return Promise.resolve(wrap(file, false, false));
+        }
+      })
+      .catch((e) => {
+        if (e.status === 404) {
+          return this.createFile(path, createMessage, content, branch).then((f) => wrap(f, false, true));
+        } else {
+          throw e;
+        }
+      });
+  }
+
   getRef(ref) {
     const { owner, name, ...rest } = this;
     const url = "GET /repos/{owner}/{name}/git/ref/{ref}";
@@ -102,7 +121,7 @@ class Repo {
 const toJSON = (r) => JSON.stringify(r, null, 2);
 
 // Simulated file content.
-const fileContent = toJSON({ foo: "bar", baz: "quux", another: 42 });
+const fileContent = toJSON({ foo: "bar", baz: "quux", another: 44 });
 
 let out = "";
 
@@ -118,23 +137,6 @@ if (repo) {
   out += x.created ? "// Created repo.\n" : "// Found existing repo.\n";
   out += toJSON(x.repo);
 
-  const file = await repo.getFile("config.json", "checkpoints").catch((e) => false);
-
-  if (file) {
-    out += "\n\n// Found file\n";
-    out += toJSON(file);
-
-    if (atob(file.data.content) !== fileContent) {
-      out += "\n\n// Updating file\n";
-      out += await repo
-        .updateFile("config.json", "Updating config file", btoa(fileContent), file.data.sha, "checkpoints")
-        .then(toJSON);
-    }
-  } else {
-    out += "\n\n// Creating file\n";
-    out += await repo.createFile("config.json", "Making config file", btoa(fileContent), "main").then(toJSON);
-  }
-
   const main = await repo.getRef("heads/main").catch((e) => false);
   const checkpoints = await repo.getRef("heads/checkpoints").catch((e) => false);
 
@@ -149,6 +151,23 @@ if (repo) {
     } else {
       out += `\ncheckpoints already exists: ${toJSON(checkpoints)}\n`;
     }
+
+    const { file, updated, created } = await repo.ensureFileContents(
+      "config4.json",
+      "Making config file",
+      "Updating config file",
+      btoa(fileContent),
+      "main"
+    );
+
+    if (created) {
+      out += "\n// Created file\n";
+    } else if (updated) {
+      out += "\n// Updated file\n";
+    } else {
+      out += "\n// File already existed with correct contents.\n";
+    }
+    out += toJSON(file);
   } else {
     out += "Couldn't find main.";
   }
