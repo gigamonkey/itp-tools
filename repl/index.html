@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Javascript REPL</title>
+  <link href="style.css" media="all" rel="stylesheet" type="text/css">
+  <link href="./js/web.css" media="all" rel="stylesheet" type="text/css">
+  <script src="./js/web.js" type="module"></script>
+</head>
+<body>
+  <div id="container">
+    <div id="left">
+      <p>Put definitions here.</p>
+      <div id="input"></div>
+      <div id="toolbar">
+        <span id="minibuffer"></span> <button id="submit">Reload code</button>
+      </div>
+    </div>
+    <div id="right">
+      <p>Evaluate expressions here.</p>
+      <div autofocus="" id="repl" tabindex="0">
+        <div>
+          <span class="prompt" id="prompt">»&nbsp;</span><span contenteditable="true" id="cursor"></span>
+        </div>
+      </div>
+      <p class="codeLink"><a href="https://github.com/gigamonkey/repl"><img alt="GitHub" height="12" src=
+      "GitHub-Mark-32px.png" width="12"></a> <a href=
+      "https://github.com/gigamonkey/repl">https://github.com/gigamonkey/repl</a></p>
+    </div>
+  </div>
+</body>
+</html>
