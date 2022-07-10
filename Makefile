@@ -1,12 +1,15 @@
 files := $(shell git ls-files *.js *.html *.css *.svg *.png *.woff2)
 files += js
 
+js_source = $(wildcard *.js)
+
 esbuild := ./node_modules/.bin/esbuild
 esbuild_opts := --bundle
 esbuild_opts += --loader:.ttf=file
 esbuild_opts += --minify
 esbuild_opts += --outdir=./js
 esbuild_opts += --sourcemap
+esbuild_opts += --format=esm
 
 worker_entry_points := vs/language/json/json.worker.js
 worker_entry_points += vs/language/css/css.worker.js
@@ -22,7 +25,9 @@ setup:
 js/%.js: ./node_modules/monaco-editor/esm/%.js
 	$(esbuild) $< $(esbuild_opts) --outbase=./node_modules/monaco-editor/esm/
 
-js/%.js: %.js$
+foo: $(addprefix js/,$(js_source))
+
+js/%.js: %.js
 	$(esbuild) $< $(esbuild_opts)
 
 pretty:
@@ -33,7 +38,7 @@ lint:
 	npx eslint *.js
 
 serve:
-	$(esbuild) web.js $(esbuild_opts) --servedir=.
+	$(esbuild) $(js_source) $(esbuild_opts) --servedir=.
 
 publish: all
 	./publish.sh $(files)
