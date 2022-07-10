@@ -1,0 +1,138 @@
+body {
+  margin: 0.5in;
+  font-family: "Gill Sans", sans-serif;
+  font-weight: 300;
+}
+
+div {
+  text-align: center;
+}
+
+h1,
+h2 {
+  font-weight: 300;
+}
+
+#toolbar {
+  text-align: right;
+  padding-bottom: 20px;
+}
+
+#score {
+  float: left;
+}
+
+#info {
+  text-align: left;
+  border: 1px solid grey;
+  padding: 3px;
+  margin: 20px;
+}
+
+#instructions {
+  text-align: left;
+  padding: 5px 20px 20px;
+}
+
+#toolbar button {
+  margin: 4px;
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border: thin solid rgba(0, 0, 0, 0.2);
+}
+
+#question {
+  font-family: monospace;
+  vertical-align: middle;
+  padding: 20px;
+  font-size: 1.5em;
+}
+
+.hole {
+  border: thin solid rgba(0, 0, 0, 0.2);
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#question .hole {
+  padding: 2px;
+}
+
+#answers {
+  font-family: monospace;
+  padding: 20px;
+}
+
+#answers button {
+  margin: 4px;
+  padding: 6px;
+  background: rgba(0, 0, 255, 0.1);
+  border: thin solid rgba(0, 0, 0, 0.2);
+  font-family: monospace;
+  border-radius: 5px;
+  box-shadow: 5px 5px rgba(255, 0, 0, 0.1);
+}
+
+#answers button.disabled {
+  background: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0;
+}
+
+#tip,
+#commentary {
+  width: 50%;
+  margin: auto;
+}
+
+#tip {
+  font-style: italic;
+}
+
+#log {
+  margin-top: 40px;
+}
+
+#log table {
+  margin: auto;
+  width: 80%;
+  /*table-layout: fixed;*/
+}
+
+col.result {
+  width: 1.5em;
+}
+
+th {
+  font-weight: 300;
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom: thin solid rgba(0, 0, 0, 0.2);
+}
+td,
+th {
+  padding: 10px;
+}
+th {
+  text-align: center;
+}
+td {
+  text-align: left;
+}
+td:first-child {
+  text-align: center;
+}
+
+tr.pass {
+  background: rgba(100, 255, 100, 0.2);
+}
+tr.fail {
+  background: rgba(255, 100, 100, 0.2);
+}
+
+#results_header {
+  text-decoration: underline dotted grey;
+}
+
+.mono {
+  font-family: monospace;
+}

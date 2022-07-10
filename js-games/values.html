@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="HTML Tidy for HTML5 for Apple macOS version 5.8.0" name="generator">
+  <meta charset="utf-8">
+  <meta content="width=device-width" name="viewport">
+  <title>JS Games</title>
+  <link href="style.css" rel="stylesheet" type="text/css"><!-- Nice icons from https://icons.getbootstrap.com/ -->
+</head>
+<body>
+  <div id="toolbar"><span id="score"></span> <img alt="info icon" height="16" id="toggle_info" src="info.svg" width=
+  "16"> <img alt="list icon" height="16" id="toggle_results" src="list.svg" width="16"></div>
+  <div id="info" style="display:none">
+    <div style="text-align: right"><img alt="close icon" height="16" id="close_info" src="close.svg" width="16"></div>
+    <div id="instructions">
+      <p>This game is designed to help you make sure you understand four of the main value types in Javascript:
+      numbers, strings, booleans and arrays and the operators that operate on them.</p>
+      <p>You will be presented with a question in the from of a Javascript expression whose type (number, string,
+      boolean, or array) you need to determine. Click the button containing the correct type.</p>
+      <p>To see a log of all your answers, click the <img alt="list icon" height="14" src="list.svg" width="14"> icon
+      above. You can click it again to hide the log. N.B. the log and your score are reset if you close or reload the
+      page.</p>
+    </div>
+  </div>
+  <div id="question"></div>
+  <div id="answers"></div>
+  <div id="commentary"></div>
+  <div id="tip">
+    Choose the type of the expression above. Click the <img alt="info icon" height="14" src="info.svg" width="14">
+    above for more info.
+  </div>
+  <div id="log" style="display: none">
+    <table>
+      <colgroup>
+        <col class="result">
+        <col class="question">
+        <col class="notes">
+      </colgroup>
+      <thead>
+        <tr>
+          <th id="results_header">All</th>
+          <th>Question</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="results"></tbody>
+    </table>
+  </div>
+  <script src="values.js" type="module"></script>
+</body>
+</html>
