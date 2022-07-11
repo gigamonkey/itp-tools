@@ -53,13 +53,13 @@ class Repl {
 
     this.div.onpaste = (e) => {
       const data = e.clipboardData.getData('text/plain');
-      for (let c of data) {
+      data.forEach((c) => {
         const x = { key: c, ctrlKey: false, metaKey: false, altKey: false };
-        const b = getBinding(x);
+        const b = this.keybindings.getBinding(x);
         if (b) {
           b.call(this, x);
         }
-      }
+      });
     };
   }
 
@@ -75,7 +75,7 @@ class Repl {
     const div = document.createElement('div');
     div.append(span('prompt', '»'));
     div.append(span('bol'));
-    //div.append(span("token")); // FIXME: actually use this.
+    // div.append(span("token")); // FIXME: actually use this.
     div.append(this.cursor);
     div.append(span('eol'));
     this.div.append(div);
@@ -88,7 +88,7 @@ class Repl {
     this.cursor.parentElement.insertBefore(document.createTextNode(x.key), this.cursor);
   }
 
-  backspace(x) {
+  backspace() {
     const last = this.cursor.previousSibling;
     if (last.nodeType === 3) {
       // TEXT_NODE
@@ -100,12 +100,12 @@ class Repl {
     }
   }
 
-  enter(x) {
+  enter() {
     this.cursor.parentElement.removeChild(this.cursor);
     this.divAndPrompt();
   }
 
-  left(x) {
+  left() {
     const e = this.cursor.previousSibling;
     if (e.nodeType === 3) {
       if (e.length === 1) {
@@ -114,7 +114,7 @@ class Repl {
     }
   }
 
-  right(x) {
+  right() {
     const e = this.cursor.nextSibling;
     if (e.nodeType === 3) {
       if (e.length === 1) {
@@ -123,12 +123,12 @@ class Repl {
     }
   }
 
-  bol(x) {
+  bol() {
     const bol = this.cursor.parentElement.querySelector('.bol');
     this.cursor.parentElement.insertBefore(this.cursor, bol.nextSibling);
   }
 
-  eol(x) {
+  eol() {
     const eol = this.cursor.parentElement.querySelector('.eol');
     this.cursor.parentElement.insertBefore(this.cursor, eol);
   }
@@ -139,7 +139,7 @@ class Repl {
 
 class Keybindings {
   static descriptor(x) {
-    let keys = [];
+    const keys = [];
     // Note: Alt and Meta are likely different on different OSes.
     // If we actually use bindings for either of those may need to
     // provide an option to flip their meaning.
@@ -160,16 +160,17 @@ class Keybindings {
 
   getBinding(e) {
     const descriptor = Keybindings.descriptor(e);
+
     if (descriptor in this.bindings) {
       console.log(`${descriptor} is bound`);
       return this.bindings[descriptor];
-    } else if (descriptor.length === 1) {
+    }
+    if (descriptor.length === 1) {
       console.log(`Using default binding for ${descriptor}`);
       return this.defaultBinding;
-    } else {
-      console.log(`No binding for ${descriptor}`);
-      return false;
     }
+    console.log(`No binding for ${descriptor}`);
+    return false;
   }
 }
 
