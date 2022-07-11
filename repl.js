@@ -28,6 +28,9 @@ window.MonacoEnvironment = {
   },
 };
 
+// Set when we connect to github.
+let repo = null;
+
 const cursor = document.getElementById('cursor');
 const minibuffer = document.getElementById('minibuffer');
 const prompt = document.getElementById('prompt');
@@ -256,6 +259,24 @@ const replEnter = (e) => {
   }
 };
 
+
+const connectToGithub = async () => {
+  const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
+
+  // Set global used by loadCode
+  repo = await github.repo(siteId, ['repo', 'user'], 'itp');
+
+  // FIXME: not clear exactly what to do if there is already content in the
+  // editor when we connect to repo. Could immediately save it but that might
+  // stomp on what's in the repo. Could prompt to save. Blech.
+  if (editor.getValue() === '') {
+    repo.getFile('for-repl.js', 'main').then((file) => {
+      editor.setValue(atob(file.data.content));
+      loadCode();
+    });
+  }
+};
+
 const editor = monaco.editor.create(document.getElementById('input'), {
   language: 'javascript',
   automaticLayout: true,
@@ -283,16 +304,4 @@ repl.onfocus = () => cursor.focus();
 cursor.onkeydown = replEnter;
 cursor.focus();
 
-const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
-const scopes = ['repo', 'user'];
-
-let repo = null;
-
-github.repo(siteId, scopes, 'itp').then((r) => {
-  repo = r;
-
-  repo.getFile('for-repl.js', 'main').then((file) => {
-    editor.setValue(atob(file.data.content));
-    loadCode();
-  });
-});
+connectToGithub();
