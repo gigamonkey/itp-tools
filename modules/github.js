@@ -2,10 +2,10 @@ import Netlify from 'netlify-auth-providers';
 import { Octokit } from '@octokit/rest';
 
 // FIXME: Not exactly pro-style, but will do for now.
-const token = localStorage.getItem('githubToken');
+const token = sessionStorage.getItem('githubToken');
 
 const authenticate = async (siteId, scopes) => {
-  if (token !== undefined) {
+  if (token !== null) {
     return Promise.resolve(new Octokit({ auth: token }));
   }
   return new Promise((resolve, reject) => {
@@ -16,7 +16,7 @@ const authenticate = async (siteId, scopes) => {
           reject(err);
         }
         console.log(`Got token via OAuth: ${data.token}`);
-        localStorage.setItem('githubToken', data.token);
+        sessionStorage.setItem('githubToken', data.token);
         resolve(new Octokit({ auth: data.token }));
       },
     );
