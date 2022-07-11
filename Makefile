@@ -34,7 +34,7 @@ js/%.js: %.js
 	$(esbuild) $< $(esbuild_opts)
 
 pretty:
-	prettier -w *.js css/*.css
+	prettier -w *.js modules/*.js css/*.css
 	tidy -config .tidyconfig *.html
 
 lint:
