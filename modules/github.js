@@ -1,5 +1,5 @@
 import Netlify from 'netlify-auth-providers';
-import { Octokit } from '@octokit/rest';
+import { Octokit } from '@octokit/core';
 
 // FIXME: Not exactly pro-style, but will do for now.
 const token = sessionStorage.getItem('githubToken');
@@ -168,7 +168,7 @@ class Repo {
 
 const repo = async (siteId, scopes, repoName) =>
   authenticate(siteId, scopes).then((octokit) =>
-    octokit.rest.users.getAuthenticated().then((user) => new Repo(octokit, user.data, repoName)),
+    octokit.request('GET /user').then((user) => new Repo(octokit, user.data, repoName)),
   );
 
 export default { repo };
