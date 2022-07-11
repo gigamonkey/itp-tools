@@ -1,6 +1,6 @@
 import * as acorn from 'acorn';
 import * as monaco from 'monaco-editor';
-import * as github from './modules/github';
+import github from './modules/github';
 
 window.MonacoEnvironment = {
   getWorkerUrl(moduleId, label) {

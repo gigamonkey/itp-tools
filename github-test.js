@@ -1,4 +1,4 @@
-import * as github from './modules/github';
+import github from './modules/github';
 
 const REPO_NAME = 'itp';
 
