@@ -60,7 +60,17 @@ class Repo {
   getFile(path, ref) {
     const { owner, name, ...rest } = this;
     const url = "GET /repos/{owner}/{name}/contents/{path}";
-    return this.octokit.request(url, { owner, name, path, ref });
+    return this.octokit.request(url, {
+      owner,
+      name,
+      path,
+      ref,
+      headers: {
+        // Magic to defeat caching since the actual object pointed to by the path
+        // can change if ref is a branch name.
+        "If-None-Match": "",
+      },
+    });
   }
 
   createFile(path, message, content, branch) {
@@ -101,7 +111,16 @@ class Repo {
   getRef(ref) {
     const { owner, name, ...rest } = this;
     const url = "GET /repos/{owner}/{name}/git/ref/{ref}";
-    return this.octokit.request(url, { owner, name, ref });
+    return this.octokit.request(url, {
+      owner,
+      name,
+      ref,
+      headers: {
+        // Magic to defeat caching since the actual object pointed to by the ref
+        // can change if it is branch name.
+        "If-None-Match": "", // Magic to defeat caching.
+      },
+    });
   }
 
   makeRef(ref, sha) {
@@ -142,8 +161,9 @@ class Repo {
 }
 
 const repo = async (siteId, scopes, repoName) => {
-  return authenticate(siteId, scopes)
-    .then((octokit) => octokit.rest.users.getAuthenticated().then((user) => new Repo(octokit, user.data, repoName)))
-}
+  return authenticate(siteId, scopes).then((octokit) =>
+    octokit.rest.users.getAuthenticated().then((user) => new Repo(octokit, user.data, repoName))
+  );
+};
 
 export { repo };
