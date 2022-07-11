@@ -12,4 +12,4 @@
 
 - Make set of files to load data driven.
 
-- Look into using lighter octokit modules (or making better use of octokit.rest)
+- Factor repl.js into some modules.
