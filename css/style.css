@@ -1,6 +1,6 @@
 @font-face {
-  font-family: "source-code-pro";
-  src: url("../fonts/SourceCodePro-VariableFont_wght.woff2");
+  font-family: 'source-code-pro';
+  src: url('../fonts/SourceCodePro-VariableFont_wght.woff2');
 }
 
 * {
@@ -9,7 +9,7 @@
 }
 
 body {
-  font-family: Menlo, Monaco, "Courier New", monospace;
+  font-family: Menlo, Monaco, 'Courier New', monospace;
   font-size: 12px;
   text-align: center;
   height: 100vh;
@@ -19,7 +19,7 @@ body {
 p {
   padding: 0;
   margin: 0;
-  font-family: "Gill Sans", sans-serif;
+  font-family: 'Gill Sans', sans-serif;
   text-align: left;
   font-size: 16px;
 }
@@ -91,7 +91,7 @@ div.message {
   flex-grow: 1;
 }
 
-*[contenteditable="true"] {
+*[contenteditable='true'] {
   outline: unset;
 }
 

@@ -1,20 +1,20 @@
-import netlify from "netlify-auth-providers";
-import { Octokit } from "@octokit/rest";
+import netlify from 'netlify-auth-providers';
+import { Octokit } from '@octokit/rest';
 
 // FIXME: Not exactly pro-style, but will do for now.
-const token = localStorage.getItem("githubToken");
+const token = localStorage.getItem('githubToken');
 
 const authenticate = async (site_id, scopes) => {
   if (token !== undefined) {
     return Promise.resolve(new Octokit({ auth: token }));
   } else {
     return new Promise((resolve, reject) => {
-      new netlify({ site_id }).authenticate({ provider: "github", scope: scopes }, (err, data) => {
+      new netlify({ site_id }).authenticate({ provider: 'github', scope: scopes }, (err, data) => {
         if (err) {
           reject(err);
         }
         console.log(`Got token via OAuth: ${data.token}`);
-        localStorage.setItem("githubToken", data.token);
+        localStorage.setItem('githubToken', data.token);
         resolve(new Octokit({ auth: data.token }));
       });
     });
@@ -34,13 +34,13 @@ class Repo {
 
   getRepo() {
     const { owner, name, ...rest } = this;
-    const url = "GET /repos/{owner}/{name}";
+    const url = 'GET /repos/{owner}/{name}';
     return this.octokit.request(url, { owner, name });
   }
 
   makeRepo() {
     const { name, ...rest } = this;
-    const url = "POST /user/repos";
+    const url = 'POST /user/repos';
     return this.octokit.request(url, { name });
   }
 
@@ -59,7 +59,7 @@ class Repo {
 
   getFile(path, ref) {
     const { owner, name, ...rest } = this;
-    const url = "GET /repos/{owner}/{name}/contents/{path}";
+    const url = 'GET /repos/{owner}/{name}/contents/{path}';
     return this.octokit.request(url, {
       owner,
       name,
@@ -68,20 +68,20 @@ class Repo {
       headers: {
         // Magic to defeat caching since the actual object pointed to by the path
         // can change if ref is a branch name.
-        "If-None-Match": "",
+        'If-None-Match': '',
       },
     });
   }
 
   createFile(path, message, content, branch) {
     const { owner, name, ...rest } = this;
-    const url = "PUT /repos/{owner}/{name}/contents/{path}";
+    const url = 'PUT /repos/{owner}/{name}/contents/{path}';
     return this.octokit.request(url, { owner, name, path, message, content, branch });
   }
 
   updateFile(path, message, content, sha, branch) {
     const { owner, name, ...rest } = this;
-    const url = "PUT /repos/{owner}/{name}/contents/{path}";
+    const url = 'PUT /repos/{owner}/{name}/contents/{path}';
     return this.octokit.request(url, { owner, name, path, message, content, sha, branch });
   }
 
@@ -110,7 +110,7 @@ class Repo {
 
   getRef(ref) {
     const { owner, name, ...rest } = this;
-    const url = "GET /repos/{owner}/{name}/git/ref/{ref}";
+    const url = 'GET /repos/{owner}/{name}/git/ref/{ref}';
     return this.octokit.request(url, {
       owner,
       name,
@@ -118,26 +118,26 @@ class Repo {
       headers: {
         // Magic to defeat caching since the actual object pointed to by the ref
         // can change if it is branch name.
-        "If-None-Match": "", // Magic to defeat caching.
+        'If-None-Match': '', // Magic to defeat caching.
       },
     });
   }
 
   makeRef(ref, sha) {
     const { owner, name, ...rest } = this;
-    const url = "POST /repos/{owner}/{name}/git/refs";
+    const url = 'POST /repos/{owner}/{name}/git/refs';
     return this.octokit.request(url, { owner, name, ref: `refs/${ref}`, sha });
   }
 
   updateRef(ref, sha) {
     const { owner, name, ...rest } = this;
-    const url = "PATCH /repos/{owner}/{name}/git/refs/{ref}";
+    const url = 'PATCH /repos/{owner}/{name}/git/refs/{ref}';
     return this.octokit.request(url, { owner, name, ref, sha, forced: true });
   }
 
   deleteRef(ref) {
     const { owner, name, ...rest } = this;
-    const url = "DELETE /repos/{owner}/{name}/git/refs/{ref}";
+    const url = 'DELETE /repos/{owner}/{name}/git/refs/{ref}';
     return this.octokit.request(url, { owner, name, ref });
   }
 
@@ -162,7 +162,7 @@ class Repo {
 
 const repo = async (siteId, scopes, repoName) => {
   return authenticate(siteId, scopes).then((octokit) =>
-    octokit.rest.users.getAuthenticated().then((user) => new Repo(octokit, user.data, repoName))
+    octokit.rest.users.getAuthenticated().then((user) => new Repo(octokit, user.data, repoName)),
   );
 };
 

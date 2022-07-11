@@ -38,7 +38,7 @@ pretty:
 	tidy -config .tidyconfig *.html
 
 lint:
-	npx eslint *.js
+	npx eslint *.js modules/*.js
 
 build: $(built_js)
 

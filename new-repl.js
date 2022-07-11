@@ -15,7 +15,7 @@
 // - Token colorizing.
 
 const span = (clazz, html) => {
-  const s = document.createElement("span");
+  const s = document.createElement('span');
   s.classList.add(clazz);
   if (html !== undefined) s.innerHTML = html;
   return s;
@@ -24,7 +24,7 @@ const span = (clazz, html) => {
 class Repl {
   constructor(div) {
     this.div = div;
-    this.cursor = span("cursor", "&nbsp;");
+    this.cursor = span('cursor', '&nbsp;');
     this.keybindings = new Keybindings();
 
     this.keybindings.bind({
@@ -32,8 +32,8 @@ class Repl {
       Enter: this.enter,
       ArrowLeft: this.left,
       ArrowRight: this.right,
-      "Control-a": this.bol,
-      "Control-e": this.eol,
+      'Control-a': this.bol,
+      'Control-e': this.eol,
     });
 
     this.keybindings.bindDefault(this.selfInsert);
@@ -52,7 +52,7 @@ class Repl {
     };
 
     this.div.onpaste = (e) => {
-      const data = e.clipboardData.getData("text/plain");
+      const data = e.clipboardData.getData('text/plain');
       for (let c of data) {
         const x = { key: c, ctrlKey: false, metaKey: false, altKey: false };
         const b = getBinding(x);
@@ -72,12 +72,12 @@ class Repl {
    * Make the div containing a prompt and the cursor.
    */
   divAndPrompt() {
-    const div = document.createElement("div");
-    div.append(span("prompt", "»"));
-    div.append(span("bol"));
+    const div = document.createElement('div');
+    div.append(span('prompt', '»'));
+    div.append(span('bol'));
     //div.append(span("token")); // FIXME: actually use this.
     div.append(this.cursor);
-    div.append(span("eol"));
+    div.append(span('eol'));
     this.div.append(div);
   }
 
@@ -124,12 +124,12 @@ class Repl {
   }
 
   bol(x) {
-    const bol = this.cursor.parentElement.querySelector(".bol");
+    const bol = this.cursor.parentElement.querySelector('.bol');
     this.cursor.parentElement.insertBefore(this.cursor, bol.nextSibling);
   }
 
   eol(x) {
-    const eol = this.cursor.parentElement.querySelector(".eol");
+    const eol = this.cursor.parentElement.querySelector('.eol');
     this.cursor.parentElement.insertBefore(this.cursor, eol);
   }
 }
@@ -143,11 +143,11 @@ class Keybindings {
     // Note: Alt and Meta are likely different on different OSes.
     // If we actually use bindings for either of those may need to
     // provide an option to flip their meaning.
-    if (x.ctrlKey) keys.push("Control");
-    if (x.altKey) keys.push("Alt");
-    if (x.metaKey) keys.push("Meta");
+    if (x.ctrlKey) keys.push('Control');
+    if (x.altKey) keys.push('Alt');
+    if (x.metaKey) keys.push('Meta');
     if (keys.indexOf(x.key) === -1) keys.push(x.key);
-    return keys.join("-");
+    return keys.join('-');
   }
 
   bind(bindings) {
@@ -173,4 +173,4 @@ class Keybindings {
   }
 }
 
-new Repl(document.getElementById("repl")).start();
+new Repl(document.getElementById('repl')).start();
