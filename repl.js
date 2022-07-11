@@ -1,9 +1,9 @@
 import * as acorn from 'acorn';
-import * as github from './modules/github.js';
 import * as monaco from 'monaco-editor';
+import * as github from './modules/github';
 
-self.MonacoEnvironment = {
-  getWorkerUrl: function (moduleId, label) {
+window.MonacoEnvironment = {
+  getWorkerUrl(moduleId, label) {
     switch (label) {
       case 'json':
         return './js/vs/language/json/json.worker.js';
@@ -28,21 +28,31 @@ self.MonacoEnvironment = {
   },
 };
 
-const input = document.getElementById('input');
-const repl = document.getElementById('repl');
 const cursor = document.getElementById('cursor');
-const prompt = document.getElementById('prompt');
 const minibuffer = document.getElementById('minibuffer');
-
-const stringify = (args) => args.map(String).join(' ');
+const prompt = document.getElementById('prompt');
+const repl = document.getElementById('repl');
+const submit = document.getElementById('submit');
 
 const replConsole = {
-  log: (...text) => log(stringify(text)),
-  info: (...text) => log(`INFO: ${stringify(text)}`),
-  warn: (...text) => log(`WARN: ${stringify(text)}`),
-  error: (...text) => log(`ERROR: ${stringify(text)}`),
-  debug: (...text) => log(`DEBUG: ${stringify(text)}`),
+  log(...text) {
+    log(stringify(text));
+  },
+  info(...text) {
+    log(`INFO: ${stringify(text)}`);
+  },
+  warn(...text) {
+    log(`WARN: ${stringify(text)}`);
+  },
+  error(...text) {
+    log(`ERROR: ${stringify(text)}`);
+  },
+  debug(...text) {
+    log(`DEBUG: ${stringify(text)}`);
+  },
 };
+
+const stringify = (args) => args.map(String).join(' ');
 
 /*
  * Put the prompt and the cursor at the end of the repl, ready for more input.
@@ -97,24 +107,24 @@ const pretty = (v) => {
   // This could be a lot better but I'd have to write an actual recursive pretty
   // printer.
   if (v === null || v === undefined) {
-    return x + '';
-  } else {
-    switch (v.constructor.name) {
-      case 'Boolean':
-      case 'Function':
-      case 'Number':
-      case 'String':
-        return v.toString();
+    return String(v);
+  }
 
-      case 'Array':
-      case 'Object':
-        // ideally we'd use Javascript syntax (i.e. no quotes on properties that
-        // don't need them but this will do for now.
-        return JSON.stringify(v);
+  switch (v.constructor.name) {
+    case 'Boolean':
+    case 'Function':
+    case 'Number':
+    case 'String':
+      return v.toString();
 
-      default:
-        return `${v.constructor.name} ${JSON.stringify(v)}`;
-    }
+    case 'Array':
+    case 'Object':
+      // ideally we'd use Javascript syntax (i.e. no quotes on properties that
+      // don't need them but this will do for now.
+      return JSON.stringify(v);
+
+    default:
+      return `${v.constructor.name} ${JSON.stringify(v)}`;
   }
 };
 
@@ -125,7 +135,9 @@ const replError = (text) => toRepl(textNode(text), 'error');
 const message = (text, fade) => {
   minibuffer.innerText = text;
   if (fade) {
-    setTimeout(() => (minibuffer.innerText = ''), fade);
+    setTimeout(() => {
+      minibuffer.innerText = '';
+    }, fade);
   }
 };
 
@@ -147,7 +159,6 @@ const showError = (msg, source, line, column, error) => {
   } else {
     replError(errormsg);
   }
-  return true;
 };
 
 /*
@@ -215,7 +226,7 @@ const checkKeyBindings = (e) => {
 const isExpression = (code) => {
   try {
     const parsed = acorn.parse(code, { ecmaVersion: 2022 });
-    return parsed.body.length === 1 && parsed.body[0].type == 'ExpressionStatement';
+    return parsed.body.length === 1 && parsed.body[0].type === 'ExpressionStatement';
   } catch (e) {
     return false;
   }
@@ -268,9 +279,9 @@ const editor = monaco.editor.create(document.getElementById('input'), {
 
 let iframe = newIframe();
 window.onkeydown = checkKeyBindings;
-window.onresize = (e) => editor.layout({ width: 0, height: 0 });
+window.onresize = () => editor.layout({ width: 0, height: 0 });
 submit.onclick = loadCode;
-repl.onfocus = (e) => cursor.focus();
+repl.onfocus = () => cursor.focus();
 cursor.onkeydown = replEnter;
 cursor.focus();
 

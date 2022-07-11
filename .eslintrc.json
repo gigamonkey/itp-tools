@@ -1,7 +1,8 @@
 {
   "extends": "airbnb-base",
    "rules": {
-     "no-console": "off"
+     "no-console": "off",
+     "no-use-before-define": "off"
    },
   "env": {
     "browser": true
