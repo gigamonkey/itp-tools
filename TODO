@@ -1,5 +1,15 @@
+- Add a "connect to github" button or checkbox on REPL page if there's no token.
+
 - Provide button to log into Github.
 
 - Make version of bouncing ball that has the code in an editor.
 
 - Finish new-repl and replace REPL with it.
+
+- Move "Saving" indicator into web page.
+
+- Show SHA subtly somewhere in web page.
+
+- Make set of files to load data driven.
+
+- Look into using lighter octokit modules (or making better use of octokit.rest)
