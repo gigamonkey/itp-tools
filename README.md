@@ -13,5 +13,5 @@ code on a branch per assignment and then teach them how to use the GitHub
 website to create a PR to merge each assignment back to `main` so I can leave
 comments on their PRs in the normal way.)
 
-At the moment a slightly old version of the REPL without the GitHub intergation
+At the moment a slightly old version of the REPL without the GitHub integration
 is live here https://gigamonkeys.com/misc/repl/.
