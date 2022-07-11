@@ -1,4 +1,5 @@
 import * as acorn from "acorn";
+import * as github from "./modules/github.js";
 import * as monaco from "monaco-editor";
 
 self.MonacoEnvironment = {
@@ -181,6 +182,27 @@ const evaluate = (code, source) => {
  */
 const loadCode = () => {
   const code = editor.getValue();
+  console.log(`code: ${code}`);
+  if (repo !== null) {
+    repo.ensureFileContents("for-repl.js", "Creating", "Updating", btoa(code), "main").then((f) => {
+      if (f.updated) {
+        console.log("Update saved on Github");
+        console.log(`Commit: ${f.file.data.commit.sha}`);
+        console.log(`Content: ${f.file.data.content.sha}`);
+        repo.getRef("heads/main").then((r) => {
+          console.log(`main after update: ${r.data.object.sha}`);
+        });
+      } else if (f.created) {
+        console.log("New file saved on Github");
+        console.log(`Content: ${f.file.data.sha}`);
+      } else {
+        console.log("No changes to be saved.");
+      }
+      repo.getFile("for-repl.js", "main").then((file) => {
+        console.log(`Fetched: ${file.data.sha}`);
+      });
+    });
+  }
   if (iframe !== null) {
     iframe.parentNode.removeChild(iframe);
   }
@@ -238,7 +260,7 @@ const replEnter = (e) => {
 };
 
 const editor = monaco.editor.create(document.getElementById("input"), {
-  value: ["let x = 10;", "", "const fib = (n) => n < 2 ? n : fib(n - 2) + fib(n - 1);"].join("\n"),
+  //value: ["let x = 10;", "", "const fib = (n) => n < 2 ? n : fib(n - 2) + fib(n - 1);"].join("\n"),
   language: "javascript",
   automaticLayout: true,
 
@@ -266,4 +288,21 @@ submit.onclick = loadCode;
 repl.onfocus = (e) => cursor.focus();
 cursor.onkeydown = replEnter;
 cursor.focus();
-loadCode();
+
+const siteId = "1d7e043c-5d02-47fa-8ba8-9df0662ba82b";
+const scopes = ["repo", "user"];
+
+let repo = null;
+
+github.repo(siteId, scopes, "itp").then((r) => {
+  repo = r;
+
+  repo.getRef("heads/main").then((r) => {
+    console.log(`main at load: ${r.data.object.sha}`);
+  });
+  repo.getFile("for-repl.js", "main").then((file) => {
+    console.log(file.data.sha);
+    editor.setValue(atob(file.data.content));
+    loadCode();
+  });
+});
