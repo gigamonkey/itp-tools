@@ -182,25 +182,11 @@ const evaluate = (code, source) => {
  */
 const loadCode = () => {
   const code = editor.getValue();
-  console.log(`code: ${code}`);
   if (repo !== null) {
     repo.ensureFileContents("for-repl.js", "Creating", "Updating", btoa(code), "main").then((f) => {
-      if (f.updated) {
-        console.log("Update saved on Github");
-        console.log(`Commit: ${f.file.data.commit.sha}`);
-        console.log(`Content: ${f.file.data.content.sha}`);
-        repo.getRef("heads/main").then((r) => {
-          console.log(`main after update: ${r.data.object.sha}`);
-        });
-      } else if (f.created) {
-        console.log("New file saved on Github");
-        console.log(`Content: ${f.file.data.sha}`);
-      } else {
-        console.log("No changes to be saved.");
+      if (f.updated || f.created) {
+        console.log("Saved."); // FIXME: should show this in the web UI somewhere.
       }
-      repo.getFile("for-repl.js", "main").then((file) => {
-        console.log(`Fetched: ${file.data.sha}`);
-      });
     });
   }
   if (iframe !== null) {
@@ -260,7 +246,6 @@ const replEnter = (e) => {
 };
 
 const editor = monaco.editor.create(document.getElementById("input"), {
-  //value: ["let x = 10;", "", "const fib = (n) => n < 2 ? n : fib(n - 2) + fib(n - 1);"].join("\n"),
   language: "javascript",
   automaticLayout: true,
 
@@ -297,11 +282,7 @@ let repo = null;
 github.repo(siteId, scopes, "itp").then((r) => {
   repo = r;
 
-  repo.getRef("heads/main").then((r) => {
-    console.log(`main at load: ${r.data.object.sha}`);
-  });
   repo.getFile("for-repl.js", "main").then((file) => {
-    console.log(file.data.sha);
     editor.setValue(atob(file.data.content));
     loadCode();
   });
