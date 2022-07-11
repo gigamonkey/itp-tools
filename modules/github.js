@@ -4,23 +4,31 @@ import { Octokit } from '@octokit/core';
 // FIXME: Not exactly pro-style, but will do for now.
 const token = sessionStorage.getItem('githubToken');
 
+const always = (x) => () => x;
+
+const checkLogin = async () => {
+  return new Octokit({ auth: token })
+    .request('GET /user')
+    .then(() => true)
+    .catch((e) => false);
+};
+
 const authenticate = async (siteId, scopes) => {
-  if (token !== null) {
-    return Promise.resolve(new Octokit({ auth: token }));
-  }
-  return new Promise((resolve, reject) => {
-    new Netlify({ site_id: siteId }).authenticate(
-      { provider: 'github', scope: scopes },
-      (err, data) => {
-        if (err) {
-          reject(err);
-        }
-        console.log(`Got token via OAuth: ${data.token}`);
-        sessionStorage.setItem('githubToken', data.token);
-        resolve(new Octokit({ auth: data.token }));
-      },
-    );
-  });
+  return token !== null
+    ? Promise.resolve(new Octokit({ auth: token }))
+    : new Promise((resolve, reject) => {
+        new Netlify({ site_id: siteId }).authenticate(
+          { provider: 'github', scope: scopes },
+          (err, data) => {
+            if (err) {
+              reject(err);
+            }
+            console.log(`Got token via OAuth: ${data.token}`);
+            sessionStorage.setItem('githubToken', data.token);
+            resolve(new Octokit({ auth: data.token }));
+          },
+        );
+      });
 };
 
 /*
@@ -32,6 +40,10 @@ class Repo {
     this.user = user;
     this.owner = this.user.login;
     this.name = name;
+  }
+
+  exists() {
+    return this.getRepo().then(always(true)).catch(always(false));
   }
 
   getRepo() {
@@ -166,9 +178,12 @@ class Repo {
   }
 }
 
+const user = async (siteId, scopes) =>
+  authenticate(siteId, scopes).then((octokit) => octokit.request('GET /user'));
+
 const repo = async (siteId, scopes, repoName) =>
   authenticate(siteId, scopes).then((octokit) =>
     octokit.request('GET /user').then((user) => new Repo(octokit, user.data, repoName)),
   );
 
-export default { repo };
+export default { user, repo, checkLogin };

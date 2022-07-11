@@ -14,6 +14,7 @@ body {
   text-align: center;
   height: 100vh;
   width: 100vw;
+  background: rgba(196, 128, 196, 0.1);
 }
 
 p {
@@ -27,7 +28,6 @@ p {
 #container {
   display: flex;
   flex-direction: row;
-  background: rgba(196, 128, 196, 0.1);
   height: 100%;
   width: 100%;
 }
@@ -114,4 +114,19 @@ iframe {
   justify-content: space-between;
   height: 20px;
   padding-top: 10px;
+}
+
+#toolbar img {
+  height: 20px;
+  width: 20px;
+  padding: 0 10px;
+}
+
+.container {
+  text-align: left;
+  width: 40em;
+  margin: 50px auto;
+  height: calc(100vh - 2 * (50px + 20px));
+  padding: 20px;
+  border: 1px solid black;
 }

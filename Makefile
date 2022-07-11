@@ -3,6 +3,7 @@ files += js
 
 js_source := github-test.js
 js_source += repl.js
+js_source += login.js
 js_source += new-repl.js
 
 esbuild := ./node_modules/.bin/esbuild

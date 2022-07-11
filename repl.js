@@ -259,7 +259,6 @@ const replEnter = (e) => {
   }
 };
 
-
 const connectToGithub = async () => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 
@@ -304,4 +303,8 @@ repl.onfocus = () => cursor.focus();
 cursor.onkeydown = replEnter;
 cursor.focus();
 
-connectToGithub();
+document.getElementById('github').onclick = connectToGithub;
+
+github.checkLogin().then((ok) => {
+  document.getElementById('github-checkbox').checked = ok;
+});
