@@ -266,9 +266,7 @@ const editor = monaco.editor.create(document.getElementById('input'), {
     comments: false,
     strings: false,
   },
-  parameterHints: {
-    enabled: false,
-  },
+  parameterHints: { enabled: false },
   ordBasedSuggestions: false,
   suggestOnTriggerCharacters: false,
   acceptSuggestionOnEnter: 'off',
