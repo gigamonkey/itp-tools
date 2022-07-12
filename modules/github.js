@@ -6,15 +6,74 @@ const token = sessionStorage.getItem('githubToken');
 
 const always = (x) => () => x;
 
-const checkLogin = async () => {
-  return new Octokit({ auth: token })
-    .request('GET /user')
-    .then(() => true)
-    .catch((e) => false);
+const checkLogin = async () =>
+  new Octokit({ auth: token }).request('GET /user').then(always(true)).catch(always(false));
+
+const getToken = () => sessionStorage.getItem('githubToken');
+
+const setToken = (t) => {
+  sessionStorage.setItem('githubToken', t);
 };
 
-const authenticate = async (siteId, scopes) => {
-  return token !== null
+class Github {
+  constructor(siteId, scopes) {
+    this.siteId = siteId;
+    this.scopes = scopes;
+    this.user = null;
+  }
+
+  token() {
+    const t = getToken();
+    if (t !== null) {
+      return Promise.resolve(t);
+    }
+    return new Promise((resolve, reject) => {
+      new Netlify({ site_id: this.siteId }).authenticate(
+        { provider: 'github', scope: this.scopes },
+        (err, data) => {
+          if (err) {
+            reject(err);
+          }
+          console.log(`Got token via OAuth: ${data.token}`);
+          setToken(data.token);
+          resolve(data.token);
+        },
+      );
+    });
+  }
+
+  octokit() {
+    return this.token().then((t) => new Octokit({ auth: t }));
+  }
+
+  getUser() {
+    if (this.user === null) {
+      return this.octokit().then((o) => {
+        console.log(o);
+        return o.request('GET /user').then((u) => {
+          this.user = u.data;
+          return u;
+        });
+      });
+    }
+    return Promise.resolve(this.user);
+  }
+
+  repo(name) {
+    return this.getUser().then((u) => {
+      const url = 'GET /repos/{owner}/{name}';
+      return this.octokit().then((o) => o.request(url, { owner: u.login, name }));
+    });
+  }
+
+  makeRepo(name) {
+    const url = 'POST /user/repos';
+    return this.octokit().then((o) => o.request(url, { name }));
+  }
+}
+
+const authenticate = async (siteId, scopes) =>
+  token !== null
     ? Promise.resolve(new Octokit({ auth: token }))
     : new Promise((resolve, reject) => {
         new Netlify({ site_id: siteId }).authenticate(
@@ -29,7 +88,6 @@ const authenticate = async (siteId, scopes) => {
           },
         );
       });
-};
 
 /*
  * Thin wrapper over the GitHub API for doing things with a repo.
@@ -183,7 +241,12 @@ const user = async (siteId, scopes) =>
 
 const repo = async (siteId, scopes, repoName) =>
   authenticate(siteId, scopes).then((octokit) =>
-    octokit.request('GET /user').then((user) => new Repo(octokit, user.data, repoName)),
+    octokit.request('GET /user').then((u) => new Repo(octokit, u.data, repoName)),
   );
 
-export default { user, repo, checkLogin };
+const connect = async (siteId, scopes) => {
+  const gh = new Github(siteId, scopes);
+  return gh.getUser().then((u) => gh);
+};
+
+export default { user, repo, checkLogin, connect };

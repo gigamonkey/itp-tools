@@ -4,14 +4,25 @@
   <meta charset="utf-8">
   <title>Intro to Programming</title>
   <link href="./css/style.css" media="all" rel="stylesheet" type="text/css">
-  <link href="./js/repl.css" media="all" rel="stylesheet" type="text/css">
+  <link href="./css/login.css" media="all" rel="stylesheet" type="text/css">
   <script src="./js/login.js" type="module"></script>
 </head>
 <body>
   <div class="container">
-    <ul>
-      <li>Log in to github.</li>
-    </ul>
+    <div hidden="true" id="logged-in">
+      Logged in to github.
+    </div>
+    <div hidden="true" id="setup-message">
+      You don't seem to have an <code class="repo-name">-</code> repository yet so I'll go ahead and set one up for
+      you. <button id="setup-repo">Click here</button> to proceed.
+    </div>
+    <div hidden="true" id="problem-making-repo">
+      Hmmm. There was a problem making the <code class="repo-name">-</code> repo. Please ask for help.
+    </div>
+    <div hidden="true" id="malformed-repo">
+      Hmmm. Something is not right about your existing <code class="repo-name">-</code> repository. Please ask for
+      help.
+    </div>
   </div>
 </body>
 </html>

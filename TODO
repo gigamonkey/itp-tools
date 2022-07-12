@@ -13,3 +13,6 @@
 - Make set of files to load data driven.
 
 - Factor repl.js into some modules.
+
+- Figure out how to be robust (or at least graceful) if token stored is
+  sessionStorage has been revoked.
