@@ -249,4 +249,6 @@ const connect = async (siteId, scopes) => {
   return gh.getUser().then((u) => gh);
 };
 
-export default { user, repo, checkLogin, connect };
+const hasToken = () => getToken() !== null;
+
+export default { user, repo, checkLogin, connect, hasToken };

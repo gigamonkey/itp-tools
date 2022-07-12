@@ -32,6 +32,9 @@ window.MonacoEnvironment = {
 let repo = null;
 
 const cursor = document.getElementById('cursor');
+const editorDiv = document.getElementById('editor');
+const loggedInName = document.getElementById('logged-in');
+const loginButton = document.getElementById('login');
 const minibuffer = document.getElementById('minibuffer');
 const prompt = document.getElementById('prompt');
 const repl = document.getElementById('repl');
@@ -259,12 +262,23 @@ const replEnter = (e) => {
   }
 };
 
+const checkLoggedIn = () => {
+  if (github.hasToken()) {
+    connectToGithub();
+  } else {
+    loginButton.hidden = false;
+    loggedInName.hidden = true;
+  }
+};
+
 const connectToGithub = async () => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 
   const gh = await github.connect(siteId, ['repo', 'user']);
 
-  document.getElementById('github-login').innerText = gh.user.login;
+  loginButton.hidden = true;
+  loggedInName.appendChild(document.createTextNode(gh.user.login));
+  loggedInName.hidden = false;
 
   // Set global used by loadCode
   // FIXME: harmonize github module so this can use method on gh.
@@ -281,7 +295,7 @@ const connectToGithub = async () => {
   }
 };
 
-const editor = monaco.editor.create(document.getElementById('input'), {
+const editor = monaco.editor.create(editorDiv, {
   language: 'javascript',
   automaticLayout: true,
 
@@ -306,10 +320,7 @@ window.onresize = () => editor.layout({ width: 0, height: 0 });
 submit.onclick = loadCode;
 repl.onfocus = () => cursor.focus();
 cursor.onkeydown = replEnter;
+login.onclick = connectToGithub;
 cursor.focus();
 
-connectToGithub()
-  .catch((e) => {
-    console.log("Problem connecting to GitHub");
-    console.log(e);
-  });
+checkLoggedIn();

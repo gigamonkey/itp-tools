@@ -34,6 +34,16 @@ p {
   flex-grow: 0;
 }
 
+#top-toolbar button {
+  background: #fff;
+  padding: 6px;
+  border: 1px solid #000;
+}
+
+#top-toolbar button * {
+  vertical-align: middle;
+}
+
 #top-toolbar img {
   height: 12px;
   width: 12px;
@@ -57,7 +67,7 @@ p {
   padding: 40px;
 }
 
-#input,
+#editor,
 #repl {
   border: 1px solid #ccc;
   flex-grow: 1;
