@@ -5,10 +5,6 @@
   (https://docs.netlify.com/routing/redirects/rewrites-proxies/) to have a
   single page that handles all branches
 
-- Add a "connect to github" button or checkbox on REPL page if there's no token.
-
-- Provide button to log into Github.
-
 - Make version of bouncing ball that has the code in an editor.
 
 - Finish new-repl and replace REPL with it.
