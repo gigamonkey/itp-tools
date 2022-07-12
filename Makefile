@@ -1,10 +1,7 @@
 files := $(shell git ls-files *.js *.html *.css *.svg *.png *.woff2)
 files += js
 
-js_source := github-test.js
-js_source += repl.js
-js_source += login.js
-js_source += new-repl.js
+js_source := $(wildcard *.js)
 
 esbuild := ./node_modules/.bin/esbuild
 esbuild_opts := --bundle
