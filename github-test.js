@@ -13,53 +13,65 @@ const test = async () => {
 
   let out = '';
 
-  const repo = await github.repo(siteId, scopes, REPO_NAME).catch(() => false);
+  const gh = await github.connect(siteId, scopes);
 
-  if (repo) {
-    out += `Repo. owner: ${repo.owner}; name: ${repo.name}; user.name: ${repo.user.name}; user.login: ${repo.user.login}\n\n`;
+  out += toJSON(gh.user);
 
-    const x = await repo.ensureRepo();
+  if (await gh.repoExists(REPO_NAME)) {
+    out += `\n// ${REPO_NAME} exists.\n`;
+  }
 
-    out += x.created ? '// Created repo.\n' : '// Found existing repo.\n';
-    out += toJSON(x.repo);
+  try {
+    const repo = await gh.getRepo(REPO_NAME);
+    out += '\n// Found existing repo.\n';
+    out += toJSON(repo.raw);
 
-    // Have to create a file to create the first ref and thus the first branch.
-    const { file, updated, created } = await repo.ensureFileContents(
-      'config4.json',
-      'Making config file',
-      'Updating config file',
-      btoa(fileContent),
-      'main',
-    );
-
-    if (created) {
-      out += '\n// Created file\n';
-    } else if (updated) {
-      out += '\n// Updated file\n';
-    } else {
-      out += '\n// File already existed with correct contents.\n';
-    }
+    out += `\nLooking for file\n`;
+    const file = await repo.getFile('config.json', 'main');
     out += toJSON(file);
 
-    const main = await repo.getRef('heads/main').catch(() => false);
-    const checkpoints = await repo.getRef('heads/checkpoints').catch(() => false);
+    out += `\nEnsuring a file\n`;
+    const newfile = await repo.ensureFileContents(
+      'newfile5.json',
+      'Making newfile',
+      'Updating newfile',
+      'some new, new content',
+      'main',
+    );
+    out += toJSON(newfile);
 
-    if (main) {
-      out += `\nmain: ${toJSON(main)}\n`;
+    out += `\n// Looking for main in ${repo.name}.\n`;
+    const m = await repo.getRef('heads/main');
+    out += toJSON(m);
 
-      if (!checkpoints) {
-        out += await repo
-          .makeRef('heads/checkpoints', main.data.object.sha)
-          .then((cp) => `\ncheckpoints:${toJSON(cp)}\n`)
-          .catch((error) => `Couldn't make checkpoints: ${error}`);
-      } else {
-        out += `\ncheckpoints already exists: ${toJSON(checkpoints)}\n`;
-      }
+    const main2Exists = await repo.branchExists('main2');
+    if (main2Exists) {
+      out += `\n// main2 already exsits in ${repo.name}.\n`;
     } else {
-      out += "Couldn't find main.";
+      out += `\n// Creating main2 in ${repo.name}.\n`;
+      out += toJSON(await repo.makeRef('heads/main2', m.object.sha));
     }
-  } else {
-    out += "Couldn't get repo!";
+
+    out += `\nUpdating a file\n`;
+    const updated = await repo.updateFile(
+      'newfile5.json',
+      'Updating newfile3',
+      `some new content ${Math.random()}`,
+      newfile.file.sha,
+    );
+    out += toJSON(updated);
+  } catch (e) {
+    out += '// ' + e + '\n';
+    out += "Couldn't get repo.";
+
+    try {
+      const r = await gh.makeRepo(REPO_NAME);
+      out += '\n// Made new repo.\n';
+      out += toJSON(r.raw);
+    } catch (e2) {
+      out += e2;
+      out += "Couldn't make repo.";
+    }
   }
 
   document.getElementById('stuff').innerText = out;
