@@ -1,3 +1,10 @@
+- Write function to check that you're ready to go: logged into GitHub, repo
+  exists, and repo well formed.
+
+- Use netlify \_rewrite rule
+  (https://docs.netlify.com/routing/redirects/rewrites-proxies/) to have a
+  single page that handles all branches
+
 - Add a "connect to github" button or checkbox on REPL page if there's no token.
 
 - Provide button to log into Github.
