@@ -22,4 +22,8 @@
 - Factor repl.js into some modules.
 
 - Figure out how to be robust (or at least graceful) if token stored is
-  sessionStorage has been revoked.
+  sessionStorage has been revoked. (Probably if any API requests file clear the
+  current token from sessionStorage and then redirect to login.)
+
+- Change REPL to work on multiple branches and possibly multiple files within a
+  branch.

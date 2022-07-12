@@ -262,7 +262,12 @@ const replEnter = (e) => {
 const connectToGithub = async () => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 
+  const gh = await github.connect(siteId, ['repo', 'user']);
+
+  document.getElementById('github-login').innerText = gh.user.login;
+
   // Set global used by loadCode
+  // FIXME: harmonize github module so this can use method on gh.
   repo = await github.repo(siteId, ['repo', 'user'], 'itp');
 
   // FIXME: not clear exactly what to do if there is already content in the
@@ -303,8 +308,8 @@ repl.onfocus = () => cursor.focus();
 cursor.onkeydown = replEnter;
 cursor.focus();
 
-document.getElementById('github').onclick = connectToGithub;
-
-github.checkLogin().then((ok) => {
-  document.getElementById('github-checkbox').checked = ok;
-});
+connectToGithub()
+  .catch((e) => {
+    console.log("Problem connecting to GitHub");
+    console.log(e);
+  });

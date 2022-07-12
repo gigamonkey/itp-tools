@@ -3,7 +3,6 @@ import github from './modules/github';
 const REPO_NAME = 'itp';
 const SITE_ID = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 
-
 const connectToRepo = async () => {
   // Login to Github.
   const gh = await github.connect(SITE_ID, ['repo', 'user']);
@@ -19,7 +18,8 @@ const connectToRepo = async () => {
     const repo = await gh.repo(name);
 
     if (await wellFormed(repo)) {
-      window.location = '/';
+      //window.location = '/';
+      show('all-set');
     } else {
       show('malformed-repo', name);
     }
@@ -37,7 +37,7 @@ const connectToRepo = async () => {
  * This is where we could provide an override mechanism in case someone already
  * has an 'itp' repo. And because this is already async we'll be able to make
  * another API call or something.
-*/
+ */
 const getRepoName = async (login) => {
   console.log(`Getting repo name for ${login}`);
   return REPO_NAME;
@@ -51,12 +51,12 @@ const makeRepo = async (gh, name) => {
   // Redirect to assignments page on success, otherwise show error message.
   try {
     gh.makeRepo(name);
-    window.location = '/';
+    //window.location = '/';
+    show('all-set');
   } catch (e) {
     show('problem-making-repo', name);
   }
 };
-
 
 /*
  * Make this async so later we can do something that actually requires talking
@@ -74,6 +74,5 @@ const show = (id, repoName) => {
   });
   div.hidden = false;
 };
-
 
 connectToRepo();

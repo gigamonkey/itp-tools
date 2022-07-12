@@ -1,4 +1,10 @@
 .container {
+  text-align: left;
+  width: 40em;
+  margin: 50px auto;
+  height: calc(100vh - 2 * (50px + 20px));
+  padding: 20px;
+  border: 1px solid black;
   font-size: 16px;
 }
 
