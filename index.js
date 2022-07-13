@@ -1,14 +1,13 @@
 import github from './modules/github';
+import makeEvaluator from './modules/evaluator';
 import monaco from './modules/editor';
 import replize from './modules/repl';
+import { jsonIfOk, textIfOk } from './modules/fetch-helpers';
 
 const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-template/main/.version';
 
 // Set when we connect to github.
 let repo = null;
-
-const editor = monaco('editor');
-const repl = replize('repl');
 
 const loggedInName = document.getElementById('logged-in');
 const loginButton = document.getElementById('login');
@@ -24,72 +23,26 @@ const message = (text, fade) => {
   }
 };
 
-/*
- * Show errors from evaluating code.
- */
-const showError = (msg, source, line, column, error) => {
-  // This seems to be a Chrome bug. Doesn't always happen but probably safe to
-  // filter this message.
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=1328008
-  // https://stackoverflow.com/questions/72396527/evalerror-possible-side-effect-in-debug-evaluate-in-google-chrome
-  if (error === 'EvalError: Possible side-effect in debug-evaluate') {
-    return;
-  }
-
-  const errormsg = source === 'repl' ? error : `${error} (line ${line - 2}, column ${column})`;
-  if (iframe.contentWindow.repl.loading) {
-    message(errormsg, 0);
-  } else {
-    repl.error(errormsg);
-  }
-};
+const editor = monaco('editor');
+const repl = replize('repl');
+const evaluator = makeEvaluator(repl, message);
 
 /*
- * Create a new iframe to use for evaluating code.
- */
-const newIframe = () => {
-  const iframe = document.createElement('iframe');
-  iframe.setAttribute('src', 'about:blank');
-  document.querySelector('body').append(iframe);
-
-  iframe.contentWindow.repl = repl;
-  iframe.contentWindow.console = repl.console;
-  iframe.contentWindow.minibuffer = { message };
-  iframe.contentWindow.onerror = showError;
-  return iframe;
-};
-
-/*
- * Send code to the current iframe to be added as a script tag and thus
- * evaluated. The code can use the function in the iframe's repl object (see
- * newIframe) to communicate back.
- */
-const evaluate = (code, source) => {
-  const d = iframe.contentDocument;
-  const w = iframe.contentWindow;
-  const s = d.createElement('script');
-  s.append(d.createTextNode(`"use strict";\n${code}\n//# sourceURL=${source}`));
-  w.repl.loading = source !== 'repl';
-  d.documentElement.append(s);
-};
-
-/*
- * Load the code from input into the iframe, creating a new iframe if needed.
+ * Load the code from editor. Wipes out existing definitions.
  */
 const loadCode = (config) => {
   const code = editor.getValue();
+  maybeSave(code, config);
+  evaluator.load(code);
+};
+
+const maybeSave = async (code, config) => {
   if (repo !== null) {
-    repo.ensureFileContents(config.files[0], 'Creating', 'Updating', code, 'main').then((f) => {
-      if (f.updated || f.created) {
-        console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
-      }
-    });
+    const f = await repo.ensureFileContents(config.files[0], 'Creating', 'Updating', code, 'main');
+    if (f.updated || f.created) {
+      console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
+    }
   }
-  if (iframe !== null) {
-    iframe.parentNode.removeChild(iframe);
-  }
-  iframe = newIframe();
-  evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, 'editor');
 };
 
 const checkLoggedIn = (config) => {
@@ -133,7 +86,7 @@ const showLoggedIn = (username) => {
 
 const checkRepoVersion = async (r) => {
   const [expected, got] = await Promise.all([
-    fetch(CANONICAL_VERSION).then((resp) => resp.json()),
+    fetch(CANONICAL_VERSION).then(jsonIfOk),
     r
       .getFile('.version')
       .then((f) => JSON.parse(atob(f.content)))
@@ -162,12 +115,7 @@ const fetchCodeFromWeb = (config) => {
   // FIXME: Need UI support for multiple files.
   const file = config.files[0];
   fetch(`${window.location.pathname}${file}`)
-    .then((r) => {
-      if (r.ok) {
-        return r.text();
-      }
-      throw r;
-    })
+    .then(textIfOk)
     .then((t) => {
       editor.setValue(t);
       loadCode(config);
@@ -175,26 +123,16 @@ const fetchCodeFromWeb = (config) => {
     .catch(() => '');
 };
 
-// This is part of our base kludge to deal with the monaco worker plugin files
-// (see modules/editor.js). Since we've likely set a <base> in our HTML we
+// This is part of our base href kludge to deal with the monaco worker plugin
+// files (see modules/editor.js). Since we've likely set a <base> in our HTML we
 // need to do this gross thing to convert this back to a relative link.
-const configuration = async () =>
-  fetch(`${window.location.pathname}config.json`).then((r) => {
-    if (r.ok) {
-      return r.json();
-    }
-    throw r;
-  });
-
-let iframe = newIframe();
-
-repl.evaluate = evaluate;
-repl.focus();
+const configuration = async () => fetch(`${window.location.pathname}config.json`).then(jsonIfOk);
 
 configuration()
   .then((config) => {
     loginButton.onclick = () => connectToGithub(config);
     submit.onclick = () => loadCode(config);
     checkLoggedIn(config);
+    repl.focus();
   })
   .catch(() => console.log('No configuration found.'));
