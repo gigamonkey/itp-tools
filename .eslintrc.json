@@ -15,6 +15,7 @@
       }
     ],
     "no-console": "off",
+    "no-shadow": "off",
     "no-use-before-define": "off",
     "spaced-comment": [
       "error",
