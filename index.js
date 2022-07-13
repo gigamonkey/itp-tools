@@ -8,7 +8,7 @@ const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-temp
 let repo = null;
 
 const editor = monaco(document.getElementById('editor'));
-const repl = replize('repl', 'prompt', 'cursor');
+const repl = replize('repl');
 
 const loggedInName = document.getElementById('logged-in');
 const loginButton = document.getElementById('login');

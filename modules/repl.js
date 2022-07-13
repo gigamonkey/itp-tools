@@ -37,16 +37,25 @@ const isExpression = (code) => {
 };
 
 class Repl {
-  constructor(replId, promptId, cursorId) {
-    this.repl = document.getElementById(replId);
-    this.prompt = document.getElementById(promptId);
-    this.cursor = document.getElementById(cursorId);
+  constructor(id) {
+    this.repl = document.getElementById(id);
+    this.repl.setAttribute('autofocus', true);
+    this.repl.setAttribute('tabindex', 0);
+
+    this.prompt = document.createElement('span');
+    this.prompt.classList.add('prompt');
+    this.prompt.innerText = '»\u00a0';
+
+    this.cursor = document.createElement('span');
+    this.cursor.setAttribute('contenteditable', true);
+
     this.evaluate = () => {
       throw new Error('Must set repl.evaluate');
     };
 
     this.cursor.onkeydown = (e) => this.onEnter(e);
     this.repl.onfocus = () => this.cursor.focus();
+    this.newPrompt();
   }
 
   focus() {
@@ -139,6 +148,6 @@ class Repl {
   }
 }
 
-const repl = (replId, promptId, cursorId) => new Repl(replId, promptId, cursorId);
+const repl = (id) => new Repl(id);
 
 export default repl;
