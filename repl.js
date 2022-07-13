@@ -2,6 +2,8 @@ import * as acorn from 'acorn';
 import * as monaco from 'monaco-editor';
 import github from './modules/github';
 
+const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-template/main/.version';
+
 window.MonacoEnvironment = {
   getWorkerUrl(moduleId, label) {
     switch (label) {
@@ -271,6 +273,20 @@ const checkLoggedIn = () => {
   }
 };
 
+const checkRepoVersion = async () => {
+  const [expected, got] = await Promise.all([
+    fetch(CANONICAL_VERSION).then((r) => r.json()),
+    repo
+      .getFile('.version')
+      .then((f) => JSON.parse(atob(f.content)))
+      .catch(() => 'No .version file'),
+  ]);
+
+  const same = expected.version === got.version && expected.uuid === got.uuid;
+
+  console.log(`Version check: ${same}; ${JSON.stringify({ expected, got }, null, 2)}`);
+};
+
 const connectToGithub = async () => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 
@@ -282,6 +298,8 @@ const connectToGithub = async () => {
 
   // Set global used by loadCode
   repo = await gh.getRepo('itp');
+
+  checkRepoVersion(repo);
 
   // FIXME: not clear exactly what to do if there is already content in the
   // editor when we connect to repo. Could immediately save it but that might
