@@ -1,7 +1,4 @@
-files := $(shell git ls-files *.js *.html *.css *.svg *.png *.woff2)
-files += js
-
-js_source := $(wildcard *.js)
+# Tool setup
 
 esbuild := ./node_modules/.bin/esbuild
 esbuild_opts := --bundle
@@ -10,6 +7,13 @@ esbuild_opts += --minify
 esbuild_opts += --outdir=./js
 esbuild_opts += --sourcemap
 #esbuild_opts += --format=esm # This seems to mess up Monaco.
+
+eslint_opts := --format unix
+eslint_strict_opts := --rule 'no-console: 1'
+
+# Files
+
+js_source := $(wildcard *.js)
 
 worker_entry_points := vs/language/json/json.worker.js
 worker_entry_points += vs/language/css/css.worker.js
@@ -20,8 +24,11 @@ worker_entry_points += vs/editor/editor.worker.js
 built_js := $(addprefix js/,$(js_source))
 built_js += $(addprefix js/, $(worker_entry_points))
 
-eslint_opts := --format unix
-eslint_strict_opts := --rule 'no-console: 1'
+to_publish := $(shell git ls-files *.html)
+to_publish += css/
+to_publish += fonts/
+to_publish += img/
+to_publish += js/
 
 all:  build
 
@@ -50,7 +57,7 @@ serve:
 	$(esbuild) $(js_source) $(esbuild_opts) --servedir=.
 
 publish: all
-	./publish.sh $(files)
+	./publish.sh $(to_publish)
 
 clean:
 	rm -rf ./js
