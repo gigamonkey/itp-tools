@@ -61,7 +61,7 @@ const connectToGithub = async (config) => {
 
   showLoggedIn(gh.user.login);
 
-  // global used by loadCode
+  // global used by maybeSave
   // FIXME: need to actually not proceed if the repo is malformed.
   repo = await checkRepoVersion(await gh.getRepo('itp'));
 
@@ -123,9 +123,10 @@ const fetchCodeFromWeb = (config) => {
     .catch(() => '');
 };
 
-// This is part of our base href kludge to deal with the monaco worker plugin
-// files (see modules/editor.js). Since we've likely set a <base> in our HTML we
-// need to do this gross thing to convert this back to a relative link.
+// The window.location.pathname thing below is part of our base href kludge to
+// deal with the monaco worker plugin files (see modules/editor.js). Since we've
+// likely set a <base> in our HTML we need to do this gross thing to convert
+// this back to a relative link.
 const configuration = async () => fetch(`${window.location.pathname}config.json`).then(jsonIfOk);
 
 configuration()
