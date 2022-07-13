@@ -38,6 +38,8 @@ const isExpression = (code) => {
 
 class Repl {
   constructor(id) {
+    this.console = new Console((text) => this.log(text));
+
     this.div = document.getElementById(id);
     this.div.setAttribute('autofocus', true);
     this.div.setAttribute('tabindex', 0);
@@ -147,6 +149,37 @@ class Repl {
     }
   }
 }
+
+/*
+ * A fake console.
+ */
+class Console {
+  constructor(logFn) {
+    this.logFn = logFn;
+  }
+
+  log(...text) {
+    this.logFn(stringify(text));
+  }
+
+  info(...text) {
+    this.logFn(`INFO: ${stringify(text)}`);
+  }
+
+  warn(...text) {
+    this.logFn(`WARN: ${stringify(text)}`);
+  }
+
+  error(...text) {
+    this.logFn(`ERROR: ${stringify(text)}`);
+  }
+
+  debug(...text) {
+    this.logFn(`DEBUG: ${stringify(text)}`);
+  }
+}
+
+const stringify = (args) => args.map(String).join(' ');
 
 const repl = (id) => new Repl(id);
 

@@ -15,26 +15,6 @@ const loginButton = document.getElementById('login');
 const minibuffer = document.getElementById('minibuffer');
 const submit = document.getElementById('submit');
 
-const replConsole = {
-  log(...text) {
-    repl.log(stringify(text));
-  },
-  info(...text) {
-    repl.log(`INFO: ${stringify(text)}`);
-  },
-  warn(...text) {
-    repl.log(`WARN: ${stringify(text)}`);
-  },
-  error(...text) {
-    repl.log(`ERROR: ${stringify(text)}`);
-  },
-  debug(...text) {
-    repl.log(`DEBUG: ${stringify(text)}`);
-  },
-};
-
-const stringify = (args) => args.map(String).join(' ');
-
 const message = (text, fade) => {
   minibuffer.innerText = text;
   if (fade) {
@@ -73,9 +53,9 @@ const newIframe = () => {
   document.querySelector('body').append(iframe);
 
   iframe.contentWindow.repl = repl;
+  iframe.contentWindow.console = repl.console;
   iframe.contentWindow.minibuffer = { message };
   iframe.contentWindow.onerror = showError;
-  iframe.contentWindow.console = replConsole;
   return iframe;
 };
 
