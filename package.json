@@ -2,7 +2,6 @@
   "name": "itp-tools",
   "version": "1.0.0",
   "description": "Various web tools for Intro to Programming",
-  "main": "script.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
