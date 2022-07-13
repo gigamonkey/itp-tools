@@ -3,8 +3,6 @@ import github from './modules/github';
 const scopes = ['repo', 'user'];
 const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 
-const toJSON = (r) => JSON.stringify(r, null, 2);
-
 let gh = null;
 
 const login = async () => {
