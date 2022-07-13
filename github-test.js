@@ -62,7 +62,7 @@ const test = async () => {
     out += "Couldn't get repo.";
 
     try {
-      const r = await gh.makeRepo(REPO_NAME);
+      const r = await gh.makeRepoFromTemplate(REPO_NAME, 'gigamonkey', 'itp-template'));
       out += '\n// Made new repo.\n';
       out += toJSON(r.raw);
     } catch (e2) {
