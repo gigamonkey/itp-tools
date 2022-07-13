@@ -200,7 +200,7 @@ const evaluate = (code, source) => {
 const loadCode = () => {
   const code = editor.getValue();
   if (repo !== null) {
-    repo.ensureFileContents('for-repl.js', 'Creating', 'Updating', btoa(code), 'main').then((f) => {
+    repo.ensureFileContents('for-repl.js', 'Creating', 'Updating', code, 'main').then((f) => {
       if (f.updated || f.created) {
         console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
       }
@@ -281,15 +281,14 @@ const connectToGithub = async () => {
   loggedInName.hidden = false;
 
   // Set global used by loadCode
-  // FIXME: harmonize github module so this can use method on gh.
-  repo = await github.repo(siteId, ['repo', 'user'], 'itp');
+  repo = await gh.getRepo('itp');
 
   // FIXME: not clear exactly what to do if there is already content in the
   // editor when we connect to repo. Could immediately save it but that might
   // stomp on what's in the repo. Could prompt to save. Blech.
   if (editor.getValue() === '') {
     repo.getFile('for-repl.js', 'main').then((file) => {
-      editor.setValue(atob(file.data.content));
+      editor.setValue(atob(file.content));
       loadCode();
     });
   }
