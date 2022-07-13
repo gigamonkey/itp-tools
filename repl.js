@@ -1,40 +1,15 @@
 import * as acorn from 'acorn';
-import * as monaco from 'monaco-editor';
 import github from './modules/github';
+import monaco from './modules/editor';
 
 const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-template/main/.version';
-
-window.MonacoEnvironment = {
-  getWorkerUrl(moduleId, label) {
-    switch (label) {
-      case 'json':
-        return './js/vs/language/json/json.worker.js';
-
-      case 'css':
-      case 'scss':
-      case 'less':
-        return './js/vs/language/css/css.worker.js';
-
-      case 'html':
-      case 'handlebars':
-      case 'razor':
-        return './js/vs/language/html/html.worker.js';
-
-      case 'typescript':
-      case 'javascript':
-        return './js/vs/language/typescript/ts.worker.js';
-
-      default:
-        return './js/vs/editor/editor.worker.js';
-    }
-  },
-};
 
 // Set when we connect to github.
 let repo = null;
 
+const editor = monaco(document.getElementById('editor'));
+
 const cursor = document.getElementById('cursor');
-const editorDiv = document.getElementById('editor');
 const loggedInName = document.getElementById('logged-in');
 const loginButton = document.getElementById('login');
 const minibuffer = document.getElementById('minibuffer');
@@ -280,10 +255,8 @@ const connectToGithub = async () => {
 
   loggedIn(gh.user.login);
 
-  // Set global used by loadCode
-  repo = await gh.getRepo('itp');
-
-  checkRepoVersion(repo);
+  // global used by loadCode
+  repo = await checkRepoVersion(await gh.getRepo('itp'));
 
   // FIXME: not clear exactly what to do if there is already content in the
   // editor when we connect to repo. Could immediately save it but that might
@@ -302,10 +275,10 @@ const loggedIn = (username) => {
   loggedInName.hidden = false;
 };
 
-const checkRepoVersion = async (repo) => {
+const checkRepoVersion = async (r) => {
   const [expected, got] = await Promise.all([
-    fetch(CANONICAL_VERSION).then((r) => r.json()),
-    repo
+    fetch(CANONICAL_VERSION).then((resp) => resp.json()),
+    r
       .getFile('.version')
       .then((f) => JSON.parse(atob(f.content)))
       .catch(() => 'No .version file'),
@@ -313,39 +286,23 @@ const checkRepoVersion = async (repo) => {
 
   const same = expected.version === got.version && expected.uuid === got.uuid;
 
-  if (same) {
-    document.getElementById('repo').innerText = `${repo.owner}/${repo.name}`;
-  } else {
-    document.getElementById('repo').innerText = `${repo.owner}/${repo.name} exists but malformed`;
-  }
+  document.getElementById('repo').innerText = same
+    ? `${r.owner}/${r.name}`
+    : `${r.owner}/${r.name} exists but malformed`;
+
+  return r;
 };
 
-const editor = monaco.editor.create(editorDiv, {
-  language: 'javascript',
-  automaticLayout: true,
-
-  // Code to disable intellisense from https://github.com/microsoft/monaco-editor/issues/1681
-  quickSuggestions: {
-    other: false,
-    comments: false,
-    strings: false,
-  },
-  parameterHints: { enabled: false },
-  ordBasedSuggestions: false,
-  suggestOnTriggerCharacters: false,
-  acceptSuggestionOnEnter: 'off',
-  tabCompletion: 'off',
-  wordBasedSuggestions: false,
-  // End code to disable intellisense.
-});
-
 let iframe = newIframe();
+
 window.onkeydown = checkKeyBindings;
 window.onresize = () => editor.layout({ width: 0, height: 0 });
-submit.onclick = loadCode;
-repl.onfocus = () => cursor.focus();
-cursor.onkeydown = replEnter;
-loginButton.onclick = connectToGithub;
+
 cursor.focus();
+cursor.onkeydown = replEnter;
+
+loginButton.onclick = connectToGithub;
+repl.onfocus = () => cursor.focus();
+submit.onclick = loadCode;
 
 checkLoggedIn();
