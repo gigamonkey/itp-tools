@@ -1,3 +1,8 @@
+- Change REPL to work on multiple branches and possibly multiple files within a
+  branch.
+
+- Finish new-repl and replace REPL with it.
+
 - Write function to check that you're ready to go: logged into GitHub, repo
   exists, and repo well formed.
 
@@ -6,8 +11,6 @@
   single page that handles all branches
 
 - Make version of bouncing ball that has the code in an editor.
-
-- Finish new-repl and replace REPL with it.
 
 - Move "Saving" indicator into web page.
 
@@ -20,6 +23,3 @@
 - Figure out how to be robust (or at least graceful) if token stored is
   sessionStorage has been revoked. (Probably if any API requests file clear the
   current token from sessionStorage and then redirect to login.)
-
-- Change REPL to work on multiple branches and possibly multiple files within a
-  branch.
