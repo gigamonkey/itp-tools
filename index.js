@@ -96,10 +96,10 @@ const evaluate = (code, source) => {
 /*
  * Load the code from input into the iframe, creating a new iframe if needed.
  */
-const loadCode = () => {
+const loadCode = (config) => {
   const code = editor.getValue();
   if (repo !== null) {
-    repo.ensureFileContents('for-repl.js', 'Creating', 'Updating', code, 'main').then((f) => {
+    repo.ensureFileContents(config.files[0], 'Creating', 'Updating', code, 'main').then((f) => {
       if (f.updated || f.created) {
         console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
       }
@@ -128,28 +128,21 @@ const checkKeyBindings = (e) => {
   }
 };
 
-const checkLoggedIn = () => {
+const checkLoggedIn = (config) => {
   if (github.hasToken()) {
-    connectToGithub();
+    connectToGithub(config);
   } else {
-    configuration()
-      .then((c) => {
-        // Need UI support for multiple files.
-        fetchCodeFromWeb(c.files[0]);
-      })
-      .catch(() => console.log('No configuration found.'));
-
-    loginButton.hidden = false;
-    loggedInName.hidden = true;
+    showLoggedOut();
+    fetchCodeFromWeb(config);
   }
 };
 
-const connectToGithub = async () => {
+const connectToGithub = async (config) => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 
   const gh = await github.connect(siteId, ['repo', 'user']);
 
-  loggedIn(gh.user.login);
+  showLoggedIn(gh.user.login);
 
   // global used by loadCode
   // FIXME: need to actually not proceed if the repo is malformed.
@@ -159,11 +152,16 @@ const connectToGithub = async () => {
   // editor when we connect to repo. Could immediately save it but that might
   // stomp on what's in the repo. Could prompt to save. Blech.
   if (editor.getValue() === '') {
-    fetchCodeFromGithub('for-repl.js', 'main');
+    fetchCodeFromGithub(config);
   }
 };
 
-const loggedIn = (username) => {
+const showLoggedOut = () => {
+  loginButton.hidden = false;
+  loggedInName.hidden = true;
+};
+
+const showLoggedIn = (username) => {
   loginButton.hidden = true;
   loggedInName.appendChild(document.createTextNode(username));
   loggedInName.hidden = false;
@@ -187,20 +185,30 @@ const checkRepoVersion = async (r) => {
   return r;
 };
 
-const fetchCodeFromGithub = (file, branch) => {
+const fetchCodeFromGithub = (config) => {
+  const file = config.files[0];
+  const branch = 'main';
   repo.getFile(file, branch).then((file) => {
     editor.setValue(atob(file.content));
-    loadCode();
+    loadCode(config);
   });
 };
 
-const fetchCodeFromWeb = (file) => {
+const fetchCodeFromWeb = (config) => {
+  // FIXME: Need UI support for multiple files.
+  const file = config.files[0];
   fetch(`${window.location.pathname}${file}`)
-    .then((r) => r.text())
+    .then((r) => {
+      if (r.ok) {
+        return r.text();
+      }
+      throw r;
+    })
     .then((t) => {
       editor.setValue(t);
-      loadCode();
-    });
+      loadCode(config);
+    })
+    .catch(() => '');
 };
 
 // This is part of our base kludge to deal with the monaco worker plugin files
@@ -218,10 +226,13 @@ let iframe = newIframe();
 
 window.onkeydown = checkKeyBindings;
 
-loginButton.onclick = connectToGithub;
-submit.onclick = loadCode;
-
 repl.evaluate = evaluate;
 repl.focus();
 
-checkLoggedIn();
+configuration()
+  .then((config) => {
+    loginButton.onclick = () => connectToGithub(config);
+    submit.onclick = () => loadCode(config);
+    checkLoggedIn(config);
+  })
+  .catch(() => console.log('No configuration found.'));
