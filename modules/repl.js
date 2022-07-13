@@ -38,9 +38,9 @@ const isExpression = (code) => {
 
 class Repl {
   constructor(id) {
-    this.repl = document.getElementById(id);
-    this.repl.setAttribute('autofocus', true);
-    this.repl.setAttribute('tabindex', 0);
+    this.div = document.getElementById(id);
+    this.div.setAttribute('autofocus', true);
+    this.div.setAttribute('tabindex', 0);
 
     this.prompt = document.createElement('span');
     this.prompt.classList.add('prompt');
@@ -54,7 +54,7 @@ class Repl {
     };
 
     this.cursor.onkeydown = (e) => this.onEnter(e);
-    this.repl.onfocus = () => this.cursor.focus();
+    this.div.onfocus = () => this.cursor.focus();
     this.newPrompt();
   }
 
@@ -69,7 +69,7 @@ class Repl {
     const div = document.createElement('div');
     div.classList.add('log');
     div.innerText = text;
-    this.repl.append(div);
+    this.div.append(div);
     this.newPrompt();
   }
 
@@ -81,7 +81,7 @@ class Repl {
     const div = document.createElement('div');
     div.append(this.prompt);
     div.append(this.cursor);
-    this.repl.append(div);
+    this.div.append(div);
     this.cursor.focus();
   }
 
@@ -119,7 +119,7 @@ class Repl {
     const div = document.createElement('div');
     div.classList.add(clazz);
     div.append(text);
-    this.repl.append(div);
+    this.div.append(div);
     this.newPrompt();
   }
 
