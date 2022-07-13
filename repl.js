@@ -1,6 +1,6 @@
-import * as acorn from 'acorn';
 import github from './modules/github';
 import monaco from './modules/editor';
+import replize from './modules/repl';
 
 const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-template/main/.version';
 
@@ -8,112 +8,32 @@ const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-temp
 let repo = null;
 
 const editor = monaco(document.getElementById('editor'));
+const repl = replize('repl', 'prompt', 'cursor');
 
-const cursor = document.getElementById('cursor');
 const loggedInName = document.getElementById('logged-in');
 const loginButton = document.getElementById('login');
 const minibuffer = document.getElementById('minibuffer');
-const prompt = document.getElementById('prompt');
-const repl = document.getElementById('repl');
 const submit = document.getElementById('submit');
 
 const replConsole = {
   log(...text) {
-    log(stringify(text));
+    repl.log(stringify(text));
   },
   info(...text) {
-    log(`INFO: ${stringify(text)}`);
+    repl.log(`INFO: ${stringify(text)}`);
   },
   warn(...text) {
-    log(`WARN: ${stringify(text)}`);
+    repl.log(`WARN: ${stringify(text)}`);
   },
   error(...text) {
-    log(`ERROR: ${stringify(text)}`);
+    repl.log(`ERROR: ${stringify(text)}`);
   },
   debug(...text) {
-    log(`DEBUG: ${stringify(text)}`);
+    repl.log(`DEBUG: ${stringify(text)}`);
   },
 };
 
 const stringify = (args) => args.map(String).join(' ');
-
-/*
- * Put the prompt and the cursor at the end of the repl, ready for more input.
- * (They are removed from their parent in replEnter.)
- */
-const newPrompt = () => {
-  const div = document.createElement('div');
-  div.append(prompt);
-  div.append(cursor);
-  repl.append(div);
-  cursor.focus();
-};
-
-/*
- * Output a log line in the repl div.
- */
-const log = (text) => {
-  const div = document.createElement('div');
-  div.classList.add('log');
-  div.innerText = text;
-  repl.append(div);
-  newPrompt();
-};
-
-/*
- * Output to the repl with a particular CSS class.
- */
-const toRepl = (text, clazz) => {
-  const div = document.createElement('div');
-  div.classList.add(clazz);
-  div.append(text);
-  repl.append(div);
-  newPrompt();
-};
-
-const textNode = (s) => document.createTextNode(s);
-
-/*
- * Output a value in the repl div.
- */
-const print = (value) => {
-  const span = document.createElement('span');
-  const arrow = document.createElement('span');
-  arrow.classList.add('output');
-  arrow.append(textNode('⇒ '));
-  span.append(arrow);
-  span.append(textNode(pretty(value)));
-  toRepl(span, 'value');
-};
-
-const pretty = (v) => {
-  // This could be a lot better but I'd have to write an actual recursive pretty
-  // printer.
-  if (v === null || v === undefined) {
-    return String(v);
-  }
-
-  switch (v.constructor.name) {
-    case 'Boolean':
-    case 'Function':
-    case 'Number':
-    case 'String':
-      return v.toString();
-
-    case 'Array':
-    case 'Object':
-      // ideally we'd use Javascript syntax (i.e. no quotes on properties that
-      // don't need them but this will do for now.
-      return JSON.stringify(v);
-
-    default:
-      return `${v.constructor.name} ${JSON.stringify(v)}`;
-  }
-};
-
-const replMessage = (text) => toRepl(textNode(text), 'message');
-
-const replError = (text) => toRepl(textNode(text), 'error');
 
 const message = (text, fade) => {
   minibuffer.innerText = text;
@@ -140,7 +60,7 @@ const showError = (msg, source, line, column, error) => {
   if (iframe.contentWindow.repl.loading) {
     message(errormsg, 0);
   } else {
-    replError(errormsg);
+    repl.error(errormsg);
   }
 };
 
@@ -151,7 +71,9 @@ const newIframe = () => {
   const iframe = document.createElement('iframe');
   iframe.setAttribute('src', 'about:blank');
   document.querySelector('body').append(iframe);
-  iframe.contentWindow.repl = { print, message, replMessage };
+
+  iframe.contentWindow.repl = repl;
+  iframe.contentWindow.minibuffer = { message };
   iframe.contentWindow.onerror = showError;
   iframe.contentWindow.console = replConsole;
   return iframe;
@@ -187,7 +109,7 @@ const loadCode = () => {
     iframe.parentNode.removeChild(iframe);
   }
   iframe = newIframe();
-  evaluate(`\n${code}\nrepl.message('Loaded.', 1000);`, 'editor');
+  evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, 'editor');
 };
 
 const keyBindings = {
@@ -203,39 +125,6 @@ const checkKeyBindings = (e) => {
   if (binding && binding.guard(e)) {
     if (binding.preventDefault) e.preventDefault();
     binding.fn();
-  }
-};
-
-const isExpression = (code) => {
-  try {
-    const parsed = acorn.parse(code, { ecmaVersion: 2022 });
-    return parsed.body.length === 1 && parsed.body[0].type === 'ExpressionStatement';
-  } catch (e) {
-    return false;
-  }
-};
-
-const replEnter = (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    let text = cursor.innerText;
-
-    const parent = cursor.parentNode;
-    const p = prompt.cloneNode(true);
-    p.removeAttribute('id');
-    parent.replaceChild(p, prompt);
-    parent.insertBefore(document.createTextNode(text), cursor);
-    cursor.replaceChildren();
-    parent.removeChild(cursor);
-
-    if (isExpression(text)) {
-      while (text.endsWith(';')) {
-        text = text.substring(0, text.length - 1);
-      }
-      evaluate(`repl.print((\n${text}\n))`, 'repl');
-    } else {
-      evaluate(`\n${text}\nrepl.replMessage("Ok.");`, 'repl');
-    }
   }
 };
 
@@ -256,6 +145,7 @@ const connectToGithub = async () => {
   loggedIn(gh.user.login);
 
   // global used by loadCode
+  // FIXME: need to actually not proceed if the repo is malformed.
   repo = await checkRepoVersion(await gh.getRepo('itp'));
 
   // FIXME: not clear exactly what to do if there is already content in the
@@ -298,11 +188,10 @@ let iframe = newIframe();
 window.onkeydown = checkKeyBindings;
 window.onresize = () => editor.layout({ width: 0, height: 0 });
 
-cursor.focus();
-cursor.onkeydown = replEnter;
-
 loginButton.onclick = connectToGithub;
-repl.onfocus = () => cursor.focus();
 submit.onclick = loadCode;
+
+repl.evaluate = evaluate;
+repl.focus();
 
 checkLoggedIn();
