@@ -92,22 +92,6 @@ const loadCode = (config) => {
   evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, 'editor');
 };
 
-const keyBindings = {
-  e: {
-    guard: (e) => e.metaKey,
-    preventDefault: true,
-    fn: loadCode,
-  },
-};
-
-const checkKeyBindings = (e) => {
-  const binding = keyBindings[e.key];
-  if (binding && binding.guard(e)) {
-    if (binding.preventDefault) e.preventDefault();
-    binding.fn();
-  }
-};
-
 const checkLoggedIn = (config) => {
   if (github.hasToken()) {
     connectToGithub(config);
@@ -203,8 +187,6 @@ const configuration = async () =>
   });
 
 let iframe = newIframe();
-
-window.onkeydown = checkKeyBindings;
 
 repl.evaluate = evaluate;
 repl.focus();
