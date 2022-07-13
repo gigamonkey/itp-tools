@@ -125,6 +125,11 @@ class Repo {
       .then(if200);
   }
 
+  // FIXME: if we wanted (and if we had a good SHA1 library) we could compute
+  // the sha of the contents as described here
+  // https://stackoverflow.com/questions/7225313/how-does-git-compute-file-hashes
+  // And use that to check if we need to update tehe file rather than literally
+  // comparing the contents. Dunno if that's much better.
   ensureFileContents(path, createMessage, updateMessage, content, branch) {
     // Depending on whether the file exists or not, we may get an object that
     // has a commit in it and the file data down a level. So we normalize things
