@@ -20,6 +20,9 @@ worker_entry_points += vs/editor/editor.worker.js
 built_js := $(addprefix js/,$(js_source))
 built_js += $(addprefix js/, $(worker_entry_points))
 
+eslint_opts := --format unix
+eslint_strict_opts := --rule 'no-console: 1'
+
 all:  build
 
 setup:
@@ -36,7 +39,10 @@ pretty:
 	tidy -config .tidyconfig *.html
 
 lint:
-	npx eslint *.js modules/*.js
+	npx eslint $(eslint_opts) *.js modules/*.js
+
+strict_lint:
+	npx eslint $(eslint_opts) $(eslint_strict_opts) *.js modules/*.js
 
 build: $(built_js)
 
