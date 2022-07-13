@@ -76,7 +76,7 @@ class Github {
         template_owner: templateOwner,
         template_repo: templateRepo,
         owner: this.user.login,
-        name: name,
+        name,
         description: `Repo made from ${templateOwner}/${templateRepo}`,
         include_all_branches: true,
       })
