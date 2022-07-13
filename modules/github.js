@@ -69,6 +69,20 @@ class Github {
       .then((data) => new Repo(this.octokit, data));
   }
 
+  async makeRepoFromTemplate(name, templateOwner, templateRepo) {
+    const url = 'POST /repos/{template_owner}/{template_repo}/generate';
+    return this.octokit
+      .request(url, {
+        template_owner: templateOwner,
+        template_repo: templateRepo,
+        owner: this.user.login,
+        name: name,
+        description: `Repo made from ${templateOwner}/${templateRepo}`,
+        include_all_branches: true,
+      })
+      .then(if200);
+  }
+
   async repoExists(name) {
     return this.getRepo(name).then(always(true)).catch(always(false));
   }
