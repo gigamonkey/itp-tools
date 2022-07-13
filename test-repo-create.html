@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width" name="viewport">
+  <title>Test repo creation</title>
+  <style>
+    body {
+      width: 40em; margin: 1in auto;
+      font-size: 20px;
+      font-family: "Gill Sans", sans-serif;
+      line-height: 1.75em;
+    }
+    input { text-align: center; width: 4em; }
+    #stuff { line-height: 1em; }
+    #login { height: 1em; width: 1em;   vertical-align: middle; padding: 0 10px; }
+  </style>
+  <script src="js/test-repo-create.js" type="module"></script>
+</head>
+<body>
+  <p>This page is testing the ability to create a GitHub repository from a
+  template repository which is something I want to be able to do from a tool I'm
+  building for my students. If you want to help me test this bit of
+  functionality please follow these instructions.</p>
+  <p>First please click here to log into GitHub: <img alt="GitHub" id="login" src="img/GitHub-Mark-32px.png"></p>
+  <p hidden="true" id="bad-login">Uh oh. Couldn't log in.</p>
+  <p hidden="true" id="after-login">Now, please adjust the name here: <input id="repo-name" type="text" value="itp"> to
+  something that is not a name of a repo under your GitHub user. Then <button id="doit">click here</button> to create
+  the repo.</p>
+  <p hidden="true" id="already-exists">Whoops. You already have a repo named <code></code></p>
+  <p hidden="true" id="creating">Creating repo.</p>
+  <p hidden="true" id="send-link">Awesome. Please send <a class="mailto"
+  href="mailto:peter@gigamonkeys.com">me</a> this link so I can take a quick
+  look at the repo: <a class="link"></a>. I'll let you know when I'm done so you
+  can delete it.</p>
+  <p hidden="true" id="show-problem">Uh oh. Ran into a problem. <code></code></p>
+</body>
+</html>
