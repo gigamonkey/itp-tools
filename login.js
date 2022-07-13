@@ -18,7 +18,7 @@ const connectToRepo = async () => {
     const repo = await gh.repo(name);
 
     if (await wellFormed(repo)) {
-      //window.location = '/';
+      // window.location = '/';
       show('all-set');
     } else {
       show('malformed-repo', name);
@@ -38,10 +38,7 @@ const connectToRepo = async () => {
  * has an 'itp' repo. And because this is already async we'll be able to make
  * another API call or something.
  */
-const getRepoName = async (login) => {
-  console.log(`Getting repo name for ${login}`);
-  return REPO_NAME;
-};
+const getRepoName = async (login) => (login ? REPO_NAME : 'wat!');
 
 /*
  * Create the repo we will use to save files in. Probably should actually be
@@ -51,7 +48,7 @@ const makeRepo = async (gh, name) => {
   // Redirect to assignments page on success, otherwise show error message.
   try {
     gh.makeRepo(name);
-    //window.location = '/';
+    // window.location = '/';
     show('all-set');
   } catch (e) {
     show('problem-making-repo', name);
@@ -62,7 +59,7 @@ const makeRepo = async (gh, name) => {
  * Make this async so later we can do something that actually requires talking
  * to GitHub to check out the repo.
  */
-const wellFormed = async (repo) => Promise.resolve(true);
+const wellFormed = async (repo) => Promise.resolve(repo !== null);
 
 /*
  * Show a hidden div, filling in any .repo-name elements first.

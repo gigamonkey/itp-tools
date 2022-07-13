@@ -319,7 +319,7 @@ window.onresize = () => editor.layout({ width: 0, height: 0 });
 submit.onclick = loadCode;
 repl.onfocus = () => cursor.focus();
 cursor.onkeydown = replEnter;
-login.onclick = connectToGithub;
+loginButton.onclick = connectToGithub;
 cursor.focus();
 
 checkLoggedIn();

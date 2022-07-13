@@ -8,9 +8,6 @@ const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 const toJSON = (r) => JSON.stringify(r, null, 2);
 
 const test = async () => {
-  // Simulated file content.
-  const fileContent = toJSON({ foo: 'bar', baz: 'quux', another: 45 });
-
   let out = '';
 
   const gh = await github.connect(siteId, scopes);
@@ -61,7 +58,7 @@ const test = async () => {
     );
     out += toJSON(updated);
   } catch (e) {
-    out += '// ' + e + '\n';
+    out += `// ${e}\n`;
     out += "Couldn't get repo.";
 
     try {
@@ -77,4 +74,4 @@ const test = async () => {
   document.getElementById('stuff').innerText = out;
 };
 
-test().then(() => console.log('Done'));
+test();

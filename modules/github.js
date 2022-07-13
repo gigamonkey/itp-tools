@@ -35,9 +35,8 @@ const token = async (siteId, scopes) => {
 const if200 = (r) => {
   if (200 <= r.status && r.status < 300) {
     return r.data;
-  } else {
-    throw r;
   }
+  throw r;
 };
 
 /*
@@ -88,7 +87,6 @@ class Repo {
   }
 
   getFile(path, ref) {
-    console.log(`getting file ${path}`);
     const { owner, name } = this;
     const url = 'GET /repos/{owner}/{name}/contents/{path}';
     return this.octokit
@@ -141,9 +139,8 @@ class Repo {
     const wrap = (file, updated, created) => {
       if ('commit' in file) {
         return { file: file.content, commit: file.commit, updated, created };
-      } else {
-        return { file, updated, created };
       }
+      return { file, updated, created };
     };
 
     return this.getFile(path, branch)

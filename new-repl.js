@@ -162,14 +162,14 @@ class Keybindings {
     const descriptor = Keybindings.descriptor(e);
 
     if (descriptor in this.bindings) {
-      console.log(`${descriptor} is bound`);
+      // console.log(`${descriptor} is bound`);
       return this.bindings[descriptor];
     }
     if (descriptor.length === 1) {
-      console.log(`Using default binding for ${descriptor}`);
+      // console.log(`Using default binding for ${descriptor}`);
       return this.defaultBinding;
     }
-    console.log(`No binding for ${descriptor}`);
+    // console.log(`No binding for ${descriptor}`);
     return false;
   }
 }
