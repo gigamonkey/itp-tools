@@ -7,7 +7,7 @@ const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-temp
 // Set when we connect to github.
 let repo = null;
 
-const editor = monaco(document.getElementById('editor'));
+const editor = monaco('editor');
 const repl = replize('repl');
 
 const loggedInName = document.getElementById('logged-in');
@@ -132,6 +132,13 @@ const checkLoggedIn = () => {
   if (github.hasToken()) {
     connectToGithub();
   } else {
+    configuration()
+      .then((c) => {
+        // Need UI support for multiple files.
+        fetchCodeFromWeb(c.files[0]);
+      })
+      .catch(() => console.log('No configuration found.'));
+
     loginButton.hidden = false;
     loggedInName.hidden = true;
   }
@@ -152,10 +159,7 @@ const connectToGithub = async () => {
   // editor when we connect to repo. Could immediately save it but that might
   // stomp on what's in the repo. Could prompt to save. Blech.
   if (editor.getValue() === '') {
-    repo.getFile('for-repl.js', 'main').then((file) => {
-      editor.setValue(atob(file.content));
-      loadCode();
-    });
+    fetchCodeFromGithub('for-repl.js', 'main');
   }
 };
 
@@ -183,10 +187,36 @@ const checkRepoVersion = async (r) => {
   return r;
 };
 
+const fetchCodeFromGithub = (file, branch) => {
+  repo.getFile(file, branch).then((file) => {
+    editor.setValue(atob(file.content));
+    loadCode();
+  });
+};
+
+const fetchCodeFromWeb = (file) => {
+  fetch(`${window.location.pathname}${file}`)
+    .then((r) => r.text())
+    .then((t) => {
+      editor.setValue(t);
+      loadCode();
+    });
+};
+
+// This is part of our base kludge to deal with the monaco worker plugin files
+// (see modules/editor.js). Since we've likely set a <base> in our HTML we
+// need to do this gross thing to convert this back to a relative link.
+const configuration = async () =>
+  fetch(`${window.location.pathname}config.json`).then((r) => {
+    if (r.ok) {
+      return r.json();
+    }
+    throw r;
+  });
+
 let iframe = newIframe();
 
 window.onkeydown = checkKeyBindings;
-window.onresize = () => editor.layout({ width: 0, height: 0 });
 
 loginButton.onclick = connectToGithub;
 submit.onclick = loadCode;
