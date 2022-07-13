@@ -273,28 +273,12 @@ const checkLoggedIn = () => {
   }
 };
 
-const checkRepoVersion = async () => {
-  const [expected, got] = await Promise.all([
-    fetch(CANONICAL_VERSION).then((r) => r.json()),
-    repo
-      .getFile('.version')
-      .then((f) => JSON.parse(atob(f.content)))
-      .catch(() => 'No .version file'),
-  ]);
-
-  const same = expected.version === got.version && expected.uuid === got.uuid;
-
-  console.log(`Version check: ${same}; ${JSON.stringify({ expected, got }, null, 2)}`);
-};
-
 const connectToGithub = async () => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 
   const gh = await github.connect(siteId, ['repo', 'user']);
 
-  loginButton.hidden = true;
-  loggedInName.appendChild(document.createTextNode(gh.user.login));
-  loggedInName.hidden = false;
+  loggedIn(gh.user.login);
 
   // Set global used by loadCode
   repo = await gh.getRepo('itp');
@@ -309,6 +293,30 @@ const connectToGithub = async () => {
       editor.setValue(atob(file.content));
       loadCode();
     });
+  }
+};
+
+const loggedIn = (username) => {
+  loginButton.hidden = true;
+  loggedInName.appendChild(document.createTextNode(username));
+  loggedInName.hidden = false;
+};
+
+const checkRepoVersion = async (repo) => {
+  const [expected, got] = await Promise.all([
+    fetch(CANONICAL_VERSION).then((r) => r.json()),
+    repo
+      .getFile('.version')
+      .then((f) => JSON.parse(atob(f.content)))
+      .catch(() => 'No .version file'),
+  ]);
+
+  const same = expected.version === got.version && expected.uuid === got.uuid;
+
+  if (same) {
+    document.getElementById('repo').innerText = `${repo.owner}/${repo.name}`;
+  } else {
+    document.getElementById('repo').innerText = `${repo.owner}/${repo.name} exists but malformed`;
   }
 };
 

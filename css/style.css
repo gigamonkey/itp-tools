@@ -141,8 +141,7 @@ iframe {
   padding-top: 10px;
 }
 
-#toolbar img {
-  height: 20px;
-  width: 20px;
+#toolbar > * {
   padding: 0 10px;
+  vertical-align: middle;
 }
