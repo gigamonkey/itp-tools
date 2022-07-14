@@ -28,25 +28,27 @@ p {
 }
 
 #top-toolbar {
-  text-align: right;
-  height: 20px;
-  padding: 10px 20px;
   flex-grow: 0;
+  padding: 10px 20px;
+  text-align: right;
 }
 
 #top-toolbar button {
   background: #fff;
-  padding: 6px;
+  padding: 6px 9px;
   border: 1px solid #000;
-}
-
-#top-toolbar button * {
+  font-size: inherit;
   vertical-align: middle;
 }
 
-#top-toolbar img {
-  height: 12px;
-  width: 12px;
+#top-toolbar button * {
+  vertical-align: inherit;
+}
+
+#top-toolbar img,
+#top-toolbar svg {
+  height: 1em;
+  width: 1em;
   vertical-align: middle;
   padding: 0;
 }
@@ -144,4 +146,17 @@ iframe {
 #toolbar > * {
   padding: 0 10px;
   vertical-align: middle;
+}
+
+#toolbar > * {
+  flex-grow: 0;
+}
+
+#submit {
+  width: 2em;
+  height: 2em;
+}
+
+#toolbar > #minibuffer {
+  flex-grow: 1;
 }

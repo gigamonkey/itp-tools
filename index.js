@@ -15,6 +15,19 @@ const submit = document.getElementById('submit');
 ////////////////////////////////////////////////////////////////////////////////
 // UI manipulations
 
+const el = (name, text) => {
+  const e = document.createElement(name);
+  if (text) e.innerText = text;
+  return e;
+};
+
+const text = (t) => document.createTextNode(t);
+
+const fill = (parent, selector, ...what) => {
+  const e = parent.querySelector(selector);
+  e.replaceChildren(...what);
+};
+
 const message = (text, fade) => {
   minibuffer.innerText = text;
   if (fade) {
@@ -31,7 +44,7 @@ const showLoggedOut = () => {
 
 const showLoggedIn = (username) => {
   loginButton.hidden = true;
-  loggedInName.appendChild(document.createTextNode(username));
+  fill(loggedInName, '.github-user', el('span', username));
   loggedInName.hidden = false;
 };
 
@@ -71,10 +84,12 @@ const checkRepoVersion = async (repo) => {
   ]);
 
   const same = expected.version === got.version && expected.uuid === got.uuid;
-
-  document.getElementById('repo').innerText = same
-    ? `${repo.owner}/${repo.name}`
-    : `${repo.owner}/${repo.name} exists but malformed`;
+  fill(
+    loggedInName,
+    '.github-repo',
+    text(' / '),
+    el('span', same ? repo.name : `${repo.name} (malformed)`),
+  );
 
   return repo;
 };

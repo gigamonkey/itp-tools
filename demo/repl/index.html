@@ -10,16 +10,28 @@
 </head>
 <body>
   <div id="top-toolbar">
-    <button hidden="true" id="login"><img alt="GitHub" src="img/GitHub-Mark-32px.png"> Log in</button> <span hidden=
-    "true" id="logged-in"><img alt="GitHub" src="img/GitHub-Mark-32px.png">&nbsp;</span>
+
+    <button hidden="true" id="login">
+      <svg class="bi" fill="#000"><use xlink:href="img/bootstrap-icons.svg#github"/></svg>
+      <span>Log in</span>
+    </button>
+
+    <span hidden="true" id="logged-in">
+      <svg class="bi" fill="#000"><use xlink:href="img/bootstrap-icons.svg#github"/></svg>
+      <span class="github-user"></span>
+      <span class="github-repo"></span>
+      <span class="github-branch"></span>
+    </span>
+
+
   </div>
   <div id="container">
     <div id="left">
       <p>Put definitions here.</p>
       <div id="editor"></div>
       <div id="toolbar">
-        <span id="minibuffer"></span> <span id="repo">Not connected to any repo</span> <button id="submit">Reload
-        code</button>
+        <span id="minibuffer"></span>
+        <svg id="submit" class="bi" fill="#000"><use xlink:href="img/bootstrap-icons.svg#arrow-clockwise"/></svg>
       </div>
     </div>
     <div id="right">
