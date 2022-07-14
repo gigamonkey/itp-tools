@@ -1,4 +1,4 @@
-- Save files to git under correct branch and directory.
+- Move all github info to top toobar.
 
 - Change REPL to work on multiple branches and possibly multiple files within a
   branch.
@@ -25,3 +25,9 @@
 - Figure out how to be robust (or at least graceful) if token stored is
   sessionStorage has been revoked. (Probably if any API requests file clear the
   current token from sessionStorage and then redirect to login.)
+
+- Get some nice icons insead of ugly "Reload code" button. (Installed
+  bootstrip-icons via npm. Now to just use them.)
+
+- If there is starter code, perhaps should save it to `main` first and then make
+  the branch so the PR shows changes from the starter code.
