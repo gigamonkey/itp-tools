@@ -48,6 +48,8 @@ pretty:
 lint:
 	npx eslint $(eslint_opts) *.js modules/*.js
 
+ready: pretty lint
+
 strict_lint:
 	npx eslint $(eslint_opts) $(eslint_strict_opts) *.js modules/*.js
 
