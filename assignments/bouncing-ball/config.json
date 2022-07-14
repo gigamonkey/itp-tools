@@ -1,0 +1,11 @@
+{
+  "files": ["empty.js"],
+  "iframe": {
+    "src": "assignments/bouncing-ball/frame.html",
+    "hidden": false,
+    "class": "canvas",
+    "scrolling": "no",
+    "width": "502",
+    "height": "402"
+  }
+}
