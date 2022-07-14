@@ -13,12 +13,10 @@ class Files {
    * because the user weren't logged in yet. Assumes the repo has already been
    * validated as a well-formed repo.
    */
-  async attachToRepo(repo) {
+  attachToRepo(repo) {
     this.repo = repo;
     console.log(`Ensuring branch ${this.branch}`);
-    const x = await this.repo.ensureBranch(this.branch, 'main');
-    console.log(x);
-    return x;
+    return this.repo.ensureBranch(this.branch, 'main');
   }
 
   async ensureFileInBranch(file) {
@@ -49,11 +47,12 @@ class Files {
   /*
    * Save the file with the given content.
    */
-  async save(file, content) {
+  save(file, content) {
     if (this.repo !== null) {
-      this.saveToGithub(file, content);
+      return this.saveToGithub(file, content);
     } else {
-      this.saveInMemory(file, content);
+      // FIXME: this return type probably doesn't match the github one
+      return this.saveInMemory(file, content);
     }
   }
 
@@ -77,18 +76,9 @@ class Files {
   /*
    * Save file content to github in correct directory and branch.
    */
-  async saveToGithub(file, content) {
+  saveToGithub(file, content) {
     const path = this.gitPath(file);
-    const f = await this.repo.ensureFileContents(
-      path,
-      'Creating',
-      'Updating',
-      content,
-      this.branch,
-    );
-    if (f.updated || f.created) {
-      console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
-    }
+    return this.repo.ensureFileContents(path, 'Creating', 'Updating', content, this.branch);
   }
 
   /*
