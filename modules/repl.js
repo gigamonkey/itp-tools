@@ -60,6 +60,11 @@ class Repl {
     this.newPrompt();
   }
 
+  start() {
+    this.log("Ready.");
+    this.newPrompt();
+  }
+
   focus() {
     this.cursor.focus();
   }

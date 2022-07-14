@@ -19,7 +19,7 @@ class Evaluator {
     this.repl.evaluate = (code, source) => this.evaluate(code, source);
     this.message = message;
     this.iframe = null;
-    this.resetIframe();
+    this.resetIframe(() => repl.start());
   }
 
   /*
@@ -38,14 +38,15 @@ class Evaluator {
    * definitions.
    */
   load(code, source) {
-    this.resetIframe();
-    this.evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, source);
+    this.resetIframe(() =>
+      this.evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, source));
   }
 
   /*
-   * Create a new iframe to use for evaluating code.
+   * Create a new iframe to use for evaluating code, evaluating a function after
+   * it is fully loaded.
    */
-  resetIframe() {
+  resetIframe(after) {
     const f = document.createElement('iframe');
 
     Object.entries(this.config).forEach(([k, v]) => {
@@ -61,6 +62,7 @@ class Evaluator {
     f.contentWindow.console = this.repl.console;
     f.contentWindow.minibuffer = { message: this.message };
     f.contentWindow.onerror = (...args) => this.showError(...args);
+    f.contentWindow.addEventListener('DOMContentLoaded', after);
 
     this.iframe = f;
   }
