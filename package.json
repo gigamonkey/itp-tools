@@ -20,6 +20,7 @@
     "@octokit/request": "^6.0.2",
     "@octokit/rest": "^19.0.3",
     "acorn": "^8.7.1",
+    "bootstrap-icons": "^1.9.0",
     "monaco-editor": "^0.33.0",
     "netlify-auth-providers": "^1.0.0-alpha5"
   },
