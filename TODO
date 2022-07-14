@@ -1,4 +1,7 @@
-- Make version of bouncing ball that has the code in an editor.
+- If there is starter code, perhaps should save it to `main` first and then make
+  the branch so the PR shows changes from the starter code.
+
+- Support multiple files in a project/assignment.
 
 - Finish new-repl and replace REPL with it.
 
@@ -6,10 +9,6 @@
 
 - Write function to check that you're ready to go: logged into GitHub, repo
   exists, and repo well formed.
-
-- Use netlify \_rewrite rule
-  (https://docs.netlify.com/routing/redirects/rewrites-proxies/) to have a
-  single page that handles all branches
 
 - Show SHA subtly somewhere in web page.
 
@@ -19,7 +18,8 @@
   sessionStorage has been revoked. (Probably if any API requests file clear the
   current token from sessionStorage and then redirect to login.)
 
-- If there is starter code, perhaps should save it to `main` first and then make
-  the branch so the PR shows changes from the starter code.
+# Maybe not.
 
-- Support multiple files in a project/assignment.
+? Use netlify \_rewrite rule
+  (https://docs.netlify.com/routing/redirects/rewrites-proxies/) to have a
+  single page that handles all branches
