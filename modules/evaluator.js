@@ -1,8 +1,19 @@
+const placeholder = () => {
+  let ph = document.getElementById("iframe-placeholder");
+  if (!ph) {
+    ph = document.createElement('div');
+    document.querySelector('body').appendChild(ph);
+  }
+  return ph;
+}
+
 class Evaluator {
-  constructor(repl, message) {
+  constructor(config, repl, message) {
+    this.config = config;
     this.repl = repl;
     this.repl.evaluate = (code, source) => this.evaluate(code, source);
     this.message = message;
+    this.iframe = null;
     this.resetIframe();
   }
 
@@ -30,17 +41,21 @@ class Evaluator {
    * Create a new iframe to use for evaluating code.
    */
   resetIframe() {
-    if (this.iframe) {
-      this.iframe.parentNode.removeChild(this.iframe);
-    }
-    this.iframe = document.createElement('iframe');
-    this.iframe.setAttribute('src', 'about:blank');
-    document.querySelector('body').append(this.iframe);
+    const f = document.createElement('iframe');
+    f.setAttribute('src', this.config.url ?? 'about:blank');
+    f.hidden = this.config.hidden;
 
-    this.iframe.contentWindow.repl = this.repl;
-    this.iframe.contentWindow.console = this.repl.console;
-    this.iframe.contentWindow.minibuffer = { message: this.message };
-    this.iframe.contentWindow.onerror = (...args) => this.showError(...args);
+    // Note: need to add the new frame to the document before we try to
+    // manipulate it's contentWindow but after we set it's src. When we set
+    // hidden doesn't seem to matter.
+    (this.iframe ?? placeholder()).replaceWith(f);
+
+    f.contentWindow.repl = this.repl;
+    f.contentWindow.console = this.repl.console;
+    f.contentWindow.minibuffer = { message: this.message };
+    f.contentWindow.onerror = (...args) => this.showError(...args);
+
+    this.iframe = f;
   }
 
   /*
@@ -63,6 +78,6 @@ class Evaluator {
   }
 }
 
-const evaluator = (repl, message) => new Evaluator(repl, message);
+const evaluator = (config, repl, message) => new Evaluator(config, repl, message);
 
 export default evaluator;

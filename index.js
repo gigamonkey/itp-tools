@@ -53,26 +53,7 @@ const showLoggedIn = (username) => {
 
 const editor = monaco('editor');
 const repl = replize('repl');
-const evaluator = makeEvaluator(repl, message);
 
-/*
- * Reevaluate the code in editor. Wipes out existing definitions including ones
- * from the REPL.
- */
-const reevaluateCode = (config, storage) => {
-  const code = editor.getValue();
-  storage.save(config.files[0], code).then((f) => {
-    if (f.updated || f.created) {
-      console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
-    }
-  });
-  evaluator.load(code);
-};
-
-const fillEditor = (code) => {
-  editor.setValue(code);
-  evaluator.load(code);
-};
 
 const checkRepoVersion = async (repo) => {
   const [expected, got] = await Promise.all([
@@ -127,6 +108,28 @@ const attachToGithub = async (storage) => {
 const setup = async () => {
   const config = await configuration();
   const storage = await makeStorage();
+
+  const evaluator = makeEvaluator(config.iframe ?? { hidden: true }, repl, message);
+
+  const fillEditor = (code) => {
+    editor.setValue(code);
+    evaluator.load(code);
+  };
+
+  /*
+   * Reevaluate the code in editor. Wipes out existing definitions including
+   * ones from the REPL.
+   */
+  const reevaluateCode = (config, storage) => {
+    const code = editor.getValue();
+    storage.save(config.files[0], code).then((f) => {
+      if (f.updated || f.created) {
+        console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
+      }
+    });
+    evaluator.load(code);
+  };
+
   if (storage.repo !== null) {
     storage.ensureFileInBranch(config.files[0]).then(fillEditor);
   } else {
