@@ -6,6 +6,9 @@
     "airbnb-base",
     "prettier"
   ],
+  "parserOptions": {
+    "ecmaVersion": "2022"
+  },
   "rules": {
     "max-classes-per-file": [
       "error",
@@ -15,8 +18,8 @@
       }
     ],
     "no-console": "off",
-    "no-shadow": "off",
     "no-else-return": "off",
+    "no-shadow": "off",
     "no-use-before-define": "off",
     "spaced-comment": [
       "error",
