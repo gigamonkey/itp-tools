@@ -177,6 +177,29 @@ class Repo {
       });
   }
 
+  getBranch(name) {
+    return this.getRef(`heads/${name}`);
+  }
+
+  branchExists(name) {
+    return this.getBranch(name).then(always(true)).catch(always(false));
+  }
+
+  /*
+   * Ensure branch named `name` exists. If it does not, create it by branchng
+   * off of `parent`.
+   */
+  ensureBranch(name, parent) {
+    return this.getBranch(name)
+      .then((b) => ({ branch: b, created: false }))
+      .catch(() => this.makeBranch(name, parent).then((b) => ({ branch: b, created: true })));
+  }
+
+  async makeBranch(name, parent) {
+    const p = await this.getBranch(parent);
+    return this.makeRef(`heads/${name}`, p.object.sha);
+  }
+
   getRef(ref) {
     const { owner, name } = this;
     const url = 'GET /repos/{owner}/{name}/git/ref/{ref}';
@@ -192,10 +215,6 @@ class Repo {
         },
       })
       .then(if200);
-  }
-
-  branchExists(name) {
-    return this.getRef(`heads/${name}`).then(always(true)).catch(always(false));
   }
 
   makeRef(ref, sha) {
@@ -216,7 +235,7 @@ class Repo {
     return this.octokit.request(url, { owner, name, ref }).then(if200);
   }
 
-  ensureRefSha(ref, sha) {
+  ensureRefAtSha(ref, sha) {
     return this.getRef(ref)
       .then((existing) => {
         if (existing.object.sha !== sha) {

@@ -1,18 +1,19 @@
+import files from './modules/files';
 import github from './modules/github';
 import makeEvaluator from './modules/evaluator';
 import monaco from './modules/editor';
 import replize from './modules/repl';
-import { jsonIfOk, textIfOk } from './modules/fetch-helpers';
+import { jsonIfOk } from './modules/fetch-helpers';
 
 const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-template/main/.version';
-
-// Set when we connect to github.
-let repo = null;
 
 const loggedInName = document.getElementById('logged-in');
 const loginButton = document.getElementById('login');
 const minibuffer = document.getElementById('minibuffer');
 const submit = document.getElementById('submit');
+
+////////////////////////////////////////////////////////////////////////////////
+// UI manipulations
 
 const message = (text, fade) => {
   minibuffer.innerText = text;
@@ -20,56 +21,6 @@ const message = (text, fade) => {
     setTimeout(() => {
       minibuffer.innerText = '';
     }, fade);
-  }
-};
-
-const editor = monaco('editor');
-const repl = replize('repl');
-const evaluator = makeEvaluator(repl, message);
-
-/*
- * Load the code from editor. Wipes out existing definitions.
- */
-const loadCode = (config) => {
-  const code = editor.getValue();
-  maybeSave(code, config);
-  evaluator.load(code);
-};
-
-const maybeSave = async (code, config) => {
-  if (repo !== null) {
-    const f = await repo.ensureFileContents(config.files[0], 'Creating', 'Updating', code, 'main');
-    if (f.updated || f.created) {
-      console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
-    }
-  }
-};
-
-const checkLoggedIn = (config) => {
-  if (github.hasToken()) {
-    connectToGithub(config);
-  } else {
-    showLoggedOut();
-    fetchCodeFromWeb(config);
-  }
-};
-
-const connectToGithub = async (config) => {
-  const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
-
-  const gh = await github.connect(siteId, ['repo', 'user']);
-
-  showLoggedIn(gh.user.login);
-
-  // global used by maybeSave
-  // FIXME: need to actually not proceed if the repo is malformed.
-  repo = await checkRepoVersion(await gh.getRepo('itp'));
-
-  // FIXME: not clear exactly what to do if there is already content in the
-  // editor when we connect to repo. Could immediately save it but that might
-  // stomp on what's in the repo. Could prompt to save. Blech.
-  if (editor.getValue() === '') {
-    fetchCodeFromGithub(config);
   }
 };
 
@@ -84,10 +35,36 @@ const showLoggedIn = (username) => {
   loggedInName.hidden = false;
 };
 
-const checkRepoVersion = async (r) => {
+// End UI manipulations
+////////////////////////////////////////////////////////////////////////////////
+
+const editor = monaco('editor');
+const repl = replize('repl');
+const evaluator = makeEvaluator(repl, message);
+
+/*
+ * Reevaluate the code in editor. Wipes out existing definitions including ones
+ * from the REPL.
+ */
+const reevaluateCode = (config, storage) => {
+  const code = editor.getValue();
+  storage.save(config.files[0], code).then((f) => {
+    if (f.updated || f.created) {
+      console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
+    }
+  });
+  evaluator.load(code);
+};
+
+const fillEditor = (code) => {
+  editor.setValue(code);
+  evaluator.load(code);
+};
+
+const checkRepoVersion = async (repo) => {
   const [expected, got] = await Promise.all([
     fetch(CANONICAL_VERSION).then(jsonIfOk),
-    r
+    repo
       .getFile('.version')
       .then((f) => JSON.parse(atob(f.content)))
       .catch(() => 'No .version file'),
@@ -96,31 +73,10 @@ const checkRepoVersion = async (r) => {
   const same = expected.version === got.version && expected.uuid === got.uuid;
 
   document.getElementById('repo').innerText = same
-    ? `${r.owner}/${r.name}`
-    : `${r.owner}/${r.name} exists but malformed`;
+    ? `${repo.owner}/${repo.name}`
+    : `${repo.owner}/${repo.name} exists but malformed`;
 
-  return r;
-};
-
-const fetchCodeFromGithub = (config) => {
-  const file = config.files[0];
-  const branch = 'main';
-  repo.getFile(file, branch).then((file) => {
-    editor.setValue(atob(file.content));
-    loadCode(config);
-  });
-};
-
-const fetchCodeFromWeb = (config) => {
-  // FIXME: Need UI support for multiple files.
-  const file = config.files[0];
-  fetch(`${window.location.pathname}${file}`)
-    .then(textIfOk)
-    .then((t) => {
-      editor.setValue(t);
-      loadCode(config);
-    })
-    .catch(() => '');
+  return repo;
 };
 
 // The window.location.pathname thing below is part of our base href kludge to
@@ -129,11 +85,55 @@ const fetchCodeFromWeb = (config) => {
 // this back to a relative link.
 const configuration = async () => fetch(`${window.location.pathname}config.json`).then(jsonIfOk);
 
-configuration()
-  .then((config) => {
-    loginButton.onclick = () => connectToGithub(config);
-    submit.onclick = () => loadCode(config);
-    checkLoggedIn(config);
-    repl.focus();
-  })
-  .catch(() => console.log('No configuration found.'));
+const connectToGithub = async (repoName) => {
+  const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
+  const gh = await github.connect(siteId, ['repo', 'user']);
+  showLoggedIn(gh.user.login);
+  return checkRepoVersion(await gh.getRepo(repoName));
+};
+
+const makeStorage = async () => {
+  let branch = window.location.pathname.substring(1);
+
+  if (branch.endsWith('/')) {
+    branch = branch.substring(0, branch.length - 1);
+  }
+
+  const repo = github.hasToken() ? await connectToGithub('itp') : null;
+  if (repo === null) showLoggedOut();
+  return files(branch, repo);
+};
+
+const attachToGithub = async (storage) => {
+  const repo = await connectToGithub('itp');
+  return storage.attachToRepo(repo);
+};
+
+const setup = async () => {
+  const config = await configuration();
+  const storage = await makeStorage();
+  if (storage.repo !== null) {
+    storage.ensureFileInBranch(config.files[0]).then(fillEditor);
+  } else {
+    storage.load(config.files[0]).then(fillEditor);
+  }
+
+  loginButton.onclick = async () => {
+    attachToGithub(storage).then(async (b) => {
+      if (b.created) {
+        storage.save(config.files[0], editor.getValue());
+      } else {
+        const current = editor.getValue();
+        const starter = await storage.ensureFileInBranch(config.files[0]);
+        if (current !== starter) {
+          storage.save(config.files[0], current);
+        }
+      }
+    });
+  };
+
+  submit.onclick = () => reevaluateCode(config, storage);
+  repl.focus();
+};
+
+setup();
