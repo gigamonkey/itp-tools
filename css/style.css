@@ -70,10 +70,19 @@ p {
 }
 
 #editor,
-#repl {
+#repl,
+iframe.canvas {
   border: 1px solid #ccc;
-  flex-grow: 1;
   margin-top: 10px;
+}
+
+iframe.canvas {
+  display: block;
+}
+
+#editor,
+#repl {
+  flex-grow: 1;
   text-align: left;
 }
 
@@ -130,10 +139,6 @@ div.message {
 
 .codeLink * {
   vertical-align: middle;
-}
-
-iframe {
-  display: none;
 }
 
 #toolbar {

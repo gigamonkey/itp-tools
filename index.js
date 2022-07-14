@@ -54,7 +54,6 @@ const showLoggedIn = (username) => {
 const editor = monaco('editor');
 const repl = replize('repl');
 
-
 const checkRepoVersion = async (repo) => {
   const [expected, got] = await Promise.all([
     fetch(CANONICAL_VERSION).then(jsonIfOk),
@@ -108,8 +107,7 @@ const attachToGithub = async (storage) => {
 const setup = async () => {
   const config = await configuration();
   const storage = await makeStorage();
-
-  const evaluator = makeEvaluator(config.iframe ?? { hidden: true }, repl, message);
+  const evaluator = makeEvaluator(config.iframe, repl, message);
 
   const fillEditor = (code) => {
     editor.setValue(code);

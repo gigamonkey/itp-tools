@@ -1,15 +1,20 @@
+const DEFAULT_CONFIG = {
+  hidden: true,
+  src: 'about:blank',
+};
+
 const placeholder = () => {
-  let ph = document.getElementById("iframe-placeholder");
+  let ph = document.querySelector('iframe');
   if (!ph) {
     ph = document.createElement('div');
     document.querySelector('body').appendChild(ph);
   }
   return ph;
-}
+};
 
 class Evaluator {
   constructor(config, repl, message) {
-    this.config = config;
+    this.config = config ?? DEFAULT_CONFIG;
     this.repl = repl;
     this.repl.evaluate = (code, source) => this.evaluate(code, source);
     this.message = message;
@@ -42,8 +47,10 @@ class Evaluator {
    */
   resetIframe() {
     const f = document.createElement('iframe');
-    f.setAttribute('src', this.config.url ?? 'about:blank');
-    f.hidden = this.config.hidden;
+
+    Object.entries(this.config).forEach(([k, v]) => {
+      f.setAttribute(k, v);
+    });
 
     // Note: need to add the new frame to the document before we try to
     // manipulate it's contentWindow but after we set it's src. When we set
