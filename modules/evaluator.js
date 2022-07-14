@@ -39,7 +39,8 @@ class Evaluator {
    */
   load(code, source) {
     this.resetIframe(() =>
-      this.evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, source));
+      this.evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, source),
+    );
   }
 
   /*

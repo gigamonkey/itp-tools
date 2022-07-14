@@ -109,16 +109,14 @@ const setup = async () => {
   const storage = await makeStorage();
   const evaluator = makeEvaluator(config.iframe, repl, message);
 
+  // Put code in editor and evaluate it.
   const fillEditor = (code) => {
     editor.setValue(code);
     evaluator.load(code);
   };
 
-  /*
-   * Reevaluate the code in editor. Wipes out existing definitions including
-   * ones from the REPL.
-   */
-  const reevaluateCode = (config, storage) => {
+  // Evaluate code now in editor and also save it.
+  const reevaluateCode = () => {
     const code = editor.getValue();
     storage.save(config.files[0], code).then((f) => {
       if (f.updated || f.created) {
@@ -148,7 +146,7 @@ const setup = async () => {
     });
   };
 
-  submit.onclick = () => reevaluateCode(config, storage);
+  submit.onclick = reevaluateCode;
   repl.focus();
 };
 

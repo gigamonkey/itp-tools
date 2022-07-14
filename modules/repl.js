@@ -61,7 +61,7 @@ class Repl {
   }
 
   start() {
-    this.log("Ready.");
+    this.log('Ready.');
     this.newPrompt();
   }
 
