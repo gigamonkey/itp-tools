@@ -28,6 +28,7 @@ class Evaluator {
    * iframe's repl object (see newIframe) to communicate back.
    */
   evaluate(code, source) {
+    console.log('here in evaluate');
     const d = this.iframe.contentDocument;
     const s = d.createElement('script');
     Object.entries(this.scriptConfig).forEach(([k, v]) => {
@@ -35,6 +36,9 @@ class Evaluator {
     });
     s.append(d.createTextNode(`"use strict";\n//# sourceURL=${source}\n${code}\n`));
     d.documentElement.append(s);
+
+    console.log(d.querySelectorAll('script'));
+    console.log('end of evaluate');
   }
 
   /*
@@ -42,6 +46,8 @@ class Evaluator {
    * definitions.
    */
   load(code, source) {
+    console.log('here in load');
+
     this.resetIframe(() =>
       this.evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, source),
     );
@@ -54,6 +60,8 @@ class Evaluator {
   resetIframe(after) {
     const f = document.createElement('iframe');
 
+    f.addEventListener('load', () => console.log(`iframe loaded src=${f.src}`));
+
     Object.entries(this.config).forEach(([k, v]) => {
       f.setAttribute(k, v);
     });
@@ -61,15 +69,56 @@ class Evaluator {
     // Note: need to add the new frame to the document before we try to
     // manipulate it's contentWindow but after we set it's src. When we set
     // hidden doesn't seem to matter.
+
+    // Because we can't attach the DOMContentLoaded event listener until after
+    // the window is created there's a race where it might have finished loading
+    // before we add the listener. So we wrap our actual callback in this
+    // closure to make sure it only runs once and then we'll check the document
+    // readyState at the end of this function and run this if it's complete.
+    // Which way we end up calling this seems to perhaps  depend on whether the
+    // iframe is created with about:blank or something that actually has to load
+    // something over the network.
+    let done = false;
+    const once = (where) => {
+      console.log(`once: ${where}; done: ${done}`);
+      if (!done) after();
+      done = true;
+    };
+
     (this.iframe ?? placeholder()).replaceWith(f);
+
+    const origDoc = f.contentDocument;
+    console.log(`just after added readyState: ${f.contentDocument.readyState}`);
+
+    f.contentDocument.onreadystatechange = (e) => {
+      console.log(e);
+    };
 
     f.contentWindow.repl = this.repl;
     f.contentWindow.console = this.repl.console;
     f.contentWindow.minibuffer = { message: this.message };
     f.contentWindow.onerror = (...args) => this.showError(...args);
-    f.contentWindow.addEventListener('DOMContentLoaded', after);
+
+    // FIXME: maybe this should be onload event.
+    f.contentWindow.addEventListener('DOMContentLoaded', () => {
+      console.log('DOMContentLoaded');
+      console.log(f.contentDocument.querySelectorAll('script'));
+      once('content loaded');
+    });
+    f.contentWindow.onload = () => {
+      console.log('onload fired');
+      console.log(f.contentDocument.querySelectorAll('script'));
+      console.log(`same document: ${f.contentDocument === origDoc}`);
+    };
 
     this.iframe = f;
+
+    // In case we got ready before we were able to add the DOMContentLoaded
+    // event listener.
+    if (f.contentDocument.readyState === 'complete') {
+      console.log(f.contentDocument.querySelectorAll('script'));
+      once('main thread');
+    }
   }
 
   /*
@@ -92,6 +141,7 @@ class Evaluator {
   }
 }
 
-const evaluator = (config, scriptConfig, repl, message) => new Evaluator(config, scriptConfig, repl, message);
+const evaluator = (config, scriptConfig, repl, message) =>
+  new Evaluator(config, scriptConfig, repl, message);
 
 export default evaluator;

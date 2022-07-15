@@ -99,7 +99,6 @@ const makeStorage = async () => {
   return files(branch, repo);
 };
 
-
 const setup = async () => {
   const config = await configuration();
   const storage = await makeStorage();
@@ -115,12 +114,19 @@ const setup = async () => {
 
   // Evaluate code now in editor and also save it.
   const reevaluateCode = () => {
+    console.log('reevaluating code');
     const code = editor.getValue();
-    storage.save(filename, code).then((f) => {
-      if (f.updated || f.created) {
-        console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
-      }
-    });
+    console.log(code);
+    storage
+      .save(filename, code)
+      .then((f) => {
+        if (f.updated || f.created) {
+          console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
+        }
+      })
+      .catch(console.log);
+
+    console.log('here about to evaluate');
     evaluator.load(code, filename);
   };
 
