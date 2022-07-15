@@ -13,8 +13,9 @@ const placeholder = () => {
 };
 
 class Evaluator {
-  constructor(config, repl, message) {
+  constructor(config, scriptConfig, repl, message) {
     this.config = config ?? DEFAULT_CONFIG;
+    this.scriptConfig = scriptConfig ?? {};
     this.repl = repl;
     this.repl.evaluate = (code, source) => this.evaluate(code, source);
     this.message = message;
@@ -29,6 +30,9 @@ class Evaluator {
   evaluate(code, source) {
     const d = this.iframe.contentDocument;
     const s = d.createElement('script');
+    Object.entries(this.scriptConfig).forEach(([k, v]) => {
+      s.setAttribute(k, v);
+    });
     s.append(d.createTextNode(`"use strict";\n${code}\n//# sourceURL=${source}`));
     d.documentElement.append(s);
   }

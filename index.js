@@ -103,23 +103,25 @@ const makeStorage = async () => {
 const setup = async () => {
   const config = await configuration();
   const storage = await makeStorage();
-  const evaluator = makeEvaluator(config.iframe, repl, message);
+  const evaluator = makeEvaluator(config.iframe, config.script, repl, message);
+
+  const filename = config.files[0];
 
   // Put code in editor and evaluate it.
   const fillEditor = (code) => {
     editor.setValue(code);
-    evaluator.load(code);
+    evaluator.load(code, filename);
   };
 
   // Evaluate code now in editor and also save it.
   const reevaluateCode = () => {
     const code = editor.getValue();
-    storage.save(config.files[0], code).then((f) => {
+    storage.save(filename, code).then((f) => {
       if (f.updated || f.created) {
         console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
       }
     });
-    evaluator.load(code);
+    evaluator.load(code, filename);
   };
 
   // For when we log in to GitHub after the user has loaded the page and maybe
@@ -129,10 +131,9 @@ const setup = async () => {
   const attachToGithub = async () => {
     storage.repo = await connectToGithub('itp');
 
-    const file = config.files[0];
     const current = editor.getValue();
-    const starter = await storage.loadFromWeb(file);
-    const inRepo = await storage.ensureFileInBranch(file);
+    const starter = await storage.loadFromWeb(filename);
+    const inRepo = await storage.ensureFileInBranch(filename);
 
     if (current === starter && inRepo !== starter) {
       // I.e. we loaded the page, got the starter, and then logged in
@@ -150,9 +151,9 @@ const setup = async () => {
   };
 
   if (storage.repo !== null) {
-    storage.ensureFileInBranch(config.files[0]).then(fillEditor);
+    storage.ensureFileInBranch(filename).then(fillEditor);
   } else {
-    storage.load(config.files[0]).then(fillEditor);
+    storage.load(filename).then(fillEditor);
   }
 
   loginButton.onclick = attachToGithub;
