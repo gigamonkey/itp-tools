@@ -7,15 +7,13 @@ const always = (x) => () => x;
 
 const getToken = () => sessionStorage.getItem('githubToken');
 
-const setToken = (t) => {
-  sessionStorage.setItem('githubToken', t);
-};
+const setToken = (t) => sessionStorage.setItem('githubToken', t);
+
+const removeToken = () => sessionStorage.removeItem('githubToken');
 
 const token = async (siteId) => {
   const t = getToken();
-  if (t !== null) {
-    return t;
-  }
+  if (t !== null) return t;
 
   const config = { site_id: siteId };
   const auth = { provider: 'github', scope: SCOPES };
@@ -26,7 +24,7 @@ const token = async (siteId) => {
       setToken(data.token);
       resolve(data.token);
     });
-  });
+  }).catch((e) => { console.log('caught in token()'); console.log(e); throw e; });
 };
 
 /*
@@ -311,12 +309,22 @@ const hasToken = () => getToken() !== null;
 /*
  * Connect to Github, get the current, and wrap it all up in a wrapper object.
  */
-const connect = async (siteId) => {
-  const octokit = await token(siteId).then((t) => new Octokit({ auth: t }));
-  return octokit
-    .request('GET /user')
-    .then(if200)
-    .then((data) => new Github(octokit, data));
+const connect = async (siteId, retries = 3) => {
+  if (retries > 0) {
+    const octokit = await token(siteId).then((t) => { console.log(`got token: ${t}`); return new Octokit({ auth: t })});
+    return octokit
+      .request('GET /user')
+      .then(if200)
+      .then((data) => new Github(octokit, data))
+      .catch((r) => {
+        if (r.status === 401) {
+          removeToken();
+          return connect(siteId, retries - 1);
+        } else {
+          throw r;
+        }
+      });
+  }
 };
 
 export default { connect, hasToken };
