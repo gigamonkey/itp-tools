@@ -61,6 +61,10 @@ class Github {
     this.userRepos = new RepoOwner(octokit, this.user.login);
   }
 
+  orgRepos(org) {
+    return new RepoOwner(this.octokit, org);
+  }
+
   getRepo(...args) {
     return this.userRepos.getRepo(...args);
   }

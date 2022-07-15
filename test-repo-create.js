@@ -1,5 +1,7 @@
 import github from './modules/github';
 
+const GITHUB_ORG = 'gigamonkeys';
+
 const scopes = ['repo', 'user'];
 const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
 
@@ -8,15 +10,21 @@ let gh = null;
 const login = async () => {
   try {
     gh = await github.connect(siteId, scopes);
-    document.getElementById('after-login').hidden = false;
+    showAfterLogin(gh.user.login);
   } catch (e) {
     document.getElementById('bad-login').hidden = false;
   }
 };
 
+const showAfterLogin = (name) => {
+  const p = document.getElementById('after-login');
+  p.querySelector('code.reponame').innerText = `${GITHUB_ORG}/${name}`;
+  p.hidden = false;
+};
+
 const showAlreadyExists = (name) => {
   const p = document.getElementById('already-exists');
-  p.querySelector('code').innerText = name;
+  p.querySelector('code').innerText = `${GITHUB_ORG}/${name}`;
   p.hidden = false;
 };
 
@@ -35,14 +43,16 @@ const showProblem = (e) => {
 };
 
 const makeRepo = async () => {
-  const name = document.getElementById('repo-name').value;
+  const name = gh.user.login;
 
-  if (await gh.repoExists(name)) {
+  if (await gh.orgRepos(GITHUB_ORG).repoExists(name)) {
     showAlreadyExists(name);
   } else {
     document.getElementById('creating').hidden = false;
     try {
-      const repo = await gh.makeRepoFromTemplate(name, 'gigamonkey', 'itp-template');
+      const repo = await gh
+        .orgRepos(GITHUB_ORG)
+        .makeRepoFromTemplate(name, 'gigamonkey', 'itp-template');
       showLink(repo.html_url);
     } catch (e) {
       showProblem(e);

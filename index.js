@@ -5,6 +5,8 @@ import monaco from './modules/editor';
 import replize from './modules/repl';
 import { jsonIfOk } from './modules/fetch-helpers';
 
+const GITHUB_ORG = 'gigamonkeys'; // FIXME: load this from config file from website.
+
 const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-template/main/.version';
 
 const loggedInName = document.getElementById('logged-in');
@@ -80,11 +82,11 @@ const checkRepoVersion = async (repo) => {
 // this back to a relative link.
 const configuration = async () => fetch(`${window.location.pathname}config.json`).then(jsonIfOk);
 
-const connectToGithub = async (repoName) => {
+const connectToGithub = async () => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
   const gh = await github.connect(siteId, ['repo', 'user']);
   showLoggedIn(gh.user.login);
-  return checkRepoVersion(await gh.getRepo(repoName));
+  return checkRepoVersion(await gh.orgRepos(GITHUB_ORG).getRepo(gh.user.login));
 };
 
 const makeStorage = async () => {
