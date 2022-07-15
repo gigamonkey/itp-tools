@@ -58,12 +58,36 @@ class Github {
   constructor(octokit, user) {
     this.octokit = octokit;
     this.user = user;
+    this.userRepos = new RepoOwner(octokit, this.user.login);
+  }
+
+  getRepo(...args) {
+    return this.userRepos.getRepo(...args);
+  }
+
+  makeRepo(...args) {
+    return this.userRepos.makeRepo(...args);
+  }
+
+  makeRepoFromTemplate(...args) {
+    this.userRepos.makeRepoFromTemplate(...args);
+  }
+
+  repoExists(...args) {
+    return this.userRepos.repoExists(...args);
+  }
+}
+
+class RepoOwner {
+  constructor(octokit, owner) {
+    this.octokit = octokit;
+    this.owner = owner;
   }
 
   async getRepo(name) {
     const url = 'GET /repos/{owner}/{name}';
     return this.octokit
-      .request(url, { owner: this.user.login, name })
+      .request(url, { owner: this.owner, name })
       .then(if200)
       .then((data) => new Repo(this.octokit, data));
   }
@@ -82,7 +106,7 @@ class Github {
       .request(url, {
         template_owner: templateOwner,
         template_repo: templateRepo,
-        owner: this.user.login,
+        owner: this.owner,
         name,
         description: `Repo made from ${templateOwner}/${templateRepo}`,
         include_all_branches: true,
