@@ -19,16 +19,26 @@ let ballSize = 15;
 // May also need to define a variable to keep track of when each bounce starts
 // as the time value that is passed in is just the current time, i.e. the same
 // thing we would get from calling now().
-const drawFrame = (time) => {};
+
+let start = now();
+
+const drawFrame = (time) => {
+    const h = height(time - start);
+    drawShadow(shadowSize(h), shadowDarkness(h));
+    drawBall(h, ballSize);
+    if (h <= 0) {
+        start = time;
+    }
+};
 
 // Compute the height in pixels at time t after the ball hit the ground
-const height = (t) => 0;
+const height = (t) => Math.max(0, t * (bounce - (gravity * t) / 2));
 
-// Compute the shade of the shadow. 0 is black; 255 is white.
-const shadowDarkness = (h) => 0;
+// The higher we are, the lighter the shadow.
+const shadowDarkness = (h) => 148 + 1.015 ** h;
 
-// Compute the size of the shadow.
-const shadowSize = (h) => 0;
+// The higher we are, the bigger the shadow.
+const shadowSize = (h) => 0.1 * (h + ballSize) + ballSize / 2;
 
 // Call the animate function from the framework.
 animate(drawFrame);

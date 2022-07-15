@@ -1,5 +1,5 @@
 {
-  "files": ["empty.js"],
+  "files": ["code.js"],
   "iframe": {
     "src": "assignments/bouncing-ball/frame.html",
     "hidden": false,

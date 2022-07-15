@@ -56,6 +56,11 @@ const drawBall = (height, size) => {
 };
 
 /*
+ * Available to script as convenience.
+ */
+const now = () => performance.now();
+
+/*
  * Called from script.js to kick off the animation.
  */
 const animate = (drawFrame) => {
