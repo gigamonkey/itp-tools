@@ -33,7 +33,7 @@ class Evaluator {
     Object.entries(this.scriptConfig).forEach(([k, v]) => {
       s.setAttribute(k, v);
     });
-    s.append(d.createTextNode(`"use strict";\n${code}\n//# sourceURL=${source}`));
+    s.append(d.createTextNode(`"use strict";\n//# sourceURL=${source}\n${code}\n`));
     d.documentElement.append(s);
   }
 
@@ -92,6 +92,6 @@ class Evaluator {
   }
 }
 
-const evaluator = (config, repl, message) => new Evaluator(config, repl, message);
+const evaluator = (config, scriptConfig, repl, message) => new Evaluator(config, scriptConfig, repl, message);
 
 export default evaluator;
