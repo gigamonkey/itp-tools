@@ -1,5 +1,6 @@
-- If there is starter code, perhaps should save it to `main` first and then make
-  the branch so the PR shows changes from the starter code.
+- Test ES6 module style.
+
+- Build test case assignment based on my Replit tester.
 
 - Support multiple files in a project/assignment.
 
@@ -12,11 +13,9 @@
 
 - Show SHA subtly somewhere in web page.
 
-- Make set of files to load data driven.
-
 - Figure out how to be robust (or at least graceful) if token stored is
-  sessionStorage has been revoked. (Probably if any API requests file clear the
-  current token from sessionStorage and then redirect to login.)
+  sessionStorage has been revoked. (Probably if any API requests fail, clear the
+  current token from sessionStorage and then show logged out state.)
 
 # Maybe not.
 
