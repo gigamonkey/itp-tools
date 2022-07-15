@@ -1,5 +1,7 @@
 import * as acorn from 'acorn';
 
+const OPTS = { ecmaVersion: 2022 };
+
 const textNode = (s) => document.createTextNode(s);
 
 const pretty = (v) => {
@@ -28,9 +30,19 @@ const pretty = (v) => {
 };
 
 const isExpression = (code) => {
+
   try {
-    const parsed = acorn.parse(code, { ecmaVersion: 2022 });
-    return parsed.body.length === 1 && parsed.body[0].type === 'ExpressionStatement';
+    const p = acorn.parseExpressionAt(code, 0, OPTS);
+    if (p.end === code.length) {
+      return true;
+    }
+  } catch (e) {
+    // Fallthru to next way
+  }
+
+  try {
+    const p = acorn.parse(code, OPTS);
+    return p.body.length === 1 && p.body[0].type === 'ExpressionStatement';
   } catch (e) {
     return false;
   }
@@ -143,11 +155,11 @@ class Repl {
       this.cursor.replaceChildren();
       parent.removeChild(this.cursor);
 
-      if (isExpression(text)) {
+      if (isExpression(text.trim())) {
         while (text.endsWith(';')) {
           text = text.substring(0, text.length - 1);
         }
-        this.evaluate(`repl.print((\n${text}\n))`, 'repl');
+        this.evaluate(`repl.print(\n${text}\n)`, 'repl');
       } else {
         this.evaluate(`\n${text}\nrepl.message("Ok.");`, 'repl');
       }
