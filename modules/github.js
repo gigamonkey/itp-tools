@@ -39,6 +39,14 @@ const if200 = (r) => {
   throw r;
 };
 
+const if404 = (r) => {
+  if (r.status === 404) {
+    return r;
+  }
+  throw r;
+};
+
+
 /*
  * Wrapper over the octokit object and the fetched user data so by the time one
  * of these is constructed we know we have sucessfully logged in and retrieved
@@ -98,6 +106,10 @@ class Repo {
     // Extract a few bits we're going to need a lot.
     this.owner = raw.owner.login;
     this.name = raw.name;
+  }
+
+  fileExists(path, ref) {
+    return this.getFile(path, ref).then(always(true)).catch(if404).then(always(false));
   }
 
   getFile(path, ref) {

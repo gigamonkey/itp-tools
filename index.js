@@ -99,10 +99,6 @@ const makeStorage = async () => {
   return files(branch, repo);
 };
 
-const attachToGithub = async (storage) => {
-  const repo = await connectToGithub('itp');
-  return storage.attachToRepo(repo);
-};
 
 const setup = async () => {
   const config = await configuration();
@@ -126,26 +122,40 @@ const setup = async () => {
     evaluator.load(code);
   };
 
+  // For when we log in to GitHub after the user has loaded the page and maybe
+  // even edited the file. FIXME: this doesn't do anything with the machinery
+  // (which probably isn't fully baked) for saving versions of files while
+  // disconnected.
+  const attachToGithub = async () => {
+    storage.repo = await connectToGithub('itp');
+
+    const file = config.files[0];
+    const current = editor.getValue();
+    const starter = await storage.loadFromWeb(file);
+    const inRepo = await storage.ensureFileInBranch(file);
+
+    if (current === starter && inRepo !== starter) {
+      // I.e. we loaded the page, got the starter, and then logged in
+      // immediately. Switch to repo version.
+      fillEditor(inRepo);
+    } else if (current !== starter && current !== inRepo) {
+      // We loaded the page, messed about with the code, and then logged in.
+      // Don't really need to do anything since we're just going to leave things
+      // as they are. However might be nice to ask if they want to revert to
+      // what's in the repo. Or show a diff. Or whatever. If they then evaluate
+      // the code it will be saved, stomping the latet verson in git. Of course,
+      // old versions are recoverable from git though not presently through this
+      // code UI.
+    }
+  };
+
   if (storage.repo !== null) {
     storage.ensureFileInBranch(config.files[0]).then(fillEditor);
   } else {
     storage.load(config.files[0]).then(fillEditor);
   }
 
-  loginButton.onclick = async () => {
-    attachToGithub(storage).then(async (b) => {
-      if (b.created) {
-        storage.save(config.files[0], editor.getValue());
-      } else {
-        const current = editor.getValue();
-        const starter = await storage.ensureFileInBranch(config.files[0]);
-        if (current !== starter) {
-          storage.save(config.files[0], current);
-        }
-      }
-    });
-  };
-
+  loginButton.onclick = attachToGithub;
   submit.onclick = reevaluateCode;
   repl.focus();
 };

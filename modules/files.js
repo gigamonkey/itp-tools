@@ -4,33 +4,32 @@ class Files {
   constructor(branch, repo) {
     this.branch = branch;
     this.repo = repo; // maybe null.
-    if (repo !== null) this.attachToRepo(repo);
     this.inMemory = {};
-  }
-
-  /*
-   * Attach our files to repo. Used if we were constructed without a repo
-   * because the user weren't logged in yet. Assumes the repo has already been
-   * validated as a well-formed repo.
-   */
-  attachToRepo(repo) {
-    this.repo = repo;
-    console.log(`Ensuring branch ${this.branch}`);
-    return this.repo.ensureBranch(this.branch, 'main');
   }
 
   async ensureFileInBranch(file) {
     if (this.repo === null) {
       throw Error("Can't ensure file until attached to repo.");
     }
-    try {
-      // It's possible the branch was created but the file was not.
-      return await this.loadFromGithub(file, this.branch);
-    } catch (e) {
-      const text = await this.loadFromWeb(file);
-      this.saveToGithub(file, text);
-      return text;
+
+    if (!await this.repo.branchExists(this.branch)) {
+
+      // Add the starter file to main before we branch so the PR is only the
+      // changes from the starter code. FIXME: if we want to have multiple
+      // starter files we'll have to refactor this a bit to create all the files
+      // in main before creating the branch. I.e. it won't be enough to just
+      // call this method once per file.
+      if (!await this.existsOnBranch(file, 'main')) {
+        const text = await this.loadFromWeb(file);
+        await this.saveToGithubOnBranch(file, text, 'main');
+      }
+      await this.repo.makeBranch(this.branch, 'main');
     }
+
+    // Now we know the branch exists and the file had better because the branch
+    // was made from main after the file was added there. If the file has been
+    // deleted out of band or something this will throw which is probably right.
+    return await this.loadFromGithub(file, this.branch);
   }
 
   /*
@@ -77,8 +76,23 @@ class Files {
    * Save file content to github in correct directory and branch.
    */
   saveToGithub(file, content) {
+    return this.saveToGithubOnBranch(file, content, this.branch);
+  }
+
+  /*
+   * Save file content to github in correct directory but a specified branch.
+   */
+  saveToGithubOnBranch(file, content, branch) {
     const path = this.gitPath(file);
-    return this.repo.ensureFileContents(path, 'Creating', 'Updating', content, this.branch);
+    return this.repo.ensureFileContents(path, 'Creating', 'Updating', content, branch);
+  }
+
+  /*
+   * Does the file exist in the correct directory on the given branch.
+   */
+  existsOnBranch(file, branch) {
+    return this.repo.fileExists(this.gitPath(file), 'main');
+
   }
 
   /*
