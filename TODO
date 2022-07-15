@@ -1,4 +1,6 @@
-- Test ES6 module style.
+- Popup to warn about not being logged in.
+
+- Show stack traces (see error.stack)
 
 - Build test case assignment based on my Replit tester.
 
@@ -19,6 +21,6 @@
 
 # Maybe not.
 
-? Use netlify \_rewrite rule
+- Use netlify \_rewrite rule
   (https://docs.netlify.com/routing/redirects/rewrites-proxies/) to have a
   single page that handles all branches
