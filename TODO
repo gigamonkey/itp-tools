@@ -1,12 +1,20 @@
 - Popup to warn about not being logged in.
 
-- Show stack traces (see error.stack)
-
 - Build test case assignment based on my Replit tester.
 
-- Support multiple files in a project/assignment.
+- Sort out logged out storage situation or rip it out. Goal should be to at
+  least allow evaluating new code while logged out. Maybe not necessary to save
+  it. (In fact no point in saving it unless we actually then save it all when
+  logged in. Which seems maybe too complicated.)
+
+- Fix styling (again) to keep everything on the page.
 
 - Finish new-repl and replace REPL with it.
+
+- Show stack traces (see error.stack also
+  https://github.com/stacktracejs/stacktrace.js)
+
+- Support multiple files in a project/assignment.
 
 - Move "Saving" indicator into web page.
 
