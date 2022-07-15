@@ -85,5 +85,3 @@ const animate = (drawFrame) => {
 
   maybeStep();
 };
-
-drawBackground();
