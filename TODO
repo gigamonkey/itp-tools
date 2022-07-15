@@ -29,6 +29,10 @@
   sessionStorage has been revoked. (Probably if any API requests fail, clear the
   current token from sessionStorage and then show logged out state.)
 
+- Someday, should probably figure out if this thing should really be a GitHub
+  App for finer grained permissions plus maybe the ability to do stuff in the
+  org that the user doesn't have permission to do.
+
 # Maybe not.
 
 - Use netlify \_rewrite rule
