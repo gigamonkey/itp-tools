@@ -27,18 +27,39 @@
   <script src="js/test-repo-create.js" type="module"></script>
 </head>
 <body>
-  <p>This page is testing the ability to create a GitHub repository from a template repository which is something I
-  want to be able to do from a tool I'm building for my students. If you want to help me test this bit of functionality
-  please follow these instructions.</p>
-  <p>First please click here to log into GitHub: <img alt="GitHub" id="login" src="img/GitHub-Mark-32px.png"></p>
-  <p hidden="true" id="bad-login">Uh oh. Couldn't log in.</p>
-  <p hidden="true" id="after-login">Okay, good. Now please <button id="doit">click here</button> and I'll create
-    the <code class="reponame"></code> repo for you.</p>
-  <p hidden="true" id="already-exists">Whoops. The <code></code> repo already exists.</p>
+  <p>This page is testing the ability to create a GitHub repository from a
+  template repository which is something I want to be able to do from a tool I'm
+  building for my students. If you want to help me test this bit of
+  functionality please follow these instructions.</p>
+
+  <p>First please click here to log into GitHub: <img alt="GitHub" id="login"
+  src="img/GitHub-Mark-32px.png"></p>
+
+  <p hidden="true" id="bad-login">Uh oh. Couldn't log in. It's possible Peter
+  wiped all the exising OAuth tokens. If so, creating a new tab and loading this
+  same URL should fix it.<code></code></p>
+
+  <p hidden="true" id="membership-good">Good. I see that you are a member of
+    the <code></code> org.</p>
+
+  <p hidden="true" id="membership-bad">Uh oh. You logged in to GitHub fine but
+    you don't seem to be a member of the <code></code> org.</p>
+
+  <p hidden="true" id="after-login">Okay, good. Now
+    please <button id="doit">click here</button> and I'll create the
+    <code></code> repo for you.</p>
+
+  <p hidden="true" id="already-exists">Whoops. The <code></code> repo already
+    exists.</p>
+
   <p hidden="true" id="creating">Creating repo.</p>
-  <p hidden="true" id="send-link">Awesome. Please send <a class="mailto" href="mailto:peter@gigamonkeys.com">me</a>
-  this link so I can take a quick look at the repo: <a class="link"></a>. I'll let you know when I'm done so you can
-  delete it.</p>
+
+  <p hidden="true" id="send-link">Awesome. Please send <a class="mailto"
+ href="mailto:peter@gigamonkeys.com">me</a> this link so I can take a quick look
+ at the repo: <a class="link"></a>. I'll let you know when I'm done so you can
+ delete it.</p>
+
   <p hidden="true" id="show-problem">Uh oh. Ran into a problem. <code></code></p>
+
 </body>
 </html>

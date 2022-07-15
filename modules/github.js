@@ -1,6 +1,8 @@
 import Netlify from 'netlify-auth-providers';
 import { Octokit } from '@octokit/core';
 
+const SCOPES = ['repo', 'user', 'read:org' ];
+
 const always = (x) => () => x;
 
 const getToken = () => sessionStorage.getItem('githubToken');
@@ -9,14 +11,14 @@ const setToken = (t) => {
   sessionStorage.setItem('githubToken', t);
 };
 
-const token = async (siteId, scopes) => {
+const token = async (siteId) => {
   const t = getToken();
   if (t !== null) {
     return t;
   }
 
   const config = { site_id: siteId };
-  const auth = { provider: 'github', scope: scopes };
+  const auth = { provider: 'github', scope: SCOPES };
 
   return new Promise((resolve, reject) => {
     new Netlify(config).authenticate(auth, (err, data) => {
@@ -39,9 +41,9 @@ const if200 = (r) => {
   throw r;
 };
 
-const if404 = (r) => {
+const if404 = (value) => (r) => {
   if (r.status === 404) {
-    return r;
+    return value;
   }
   throw r;
 };
@@ -59,6 +61,12 @@ class Github {
     this.octokit = octokit;
     this.user = user;
     this.userRepos = new RepoOwner(octokit, this.user.login);
+  }
+
+  membership(org) {
+    console.log(`Looking for membership for '${org}'`);
+    const url = 'GET /user/memberships/orgs/{org}';
+    return this.octokit.request(url, { org }).then(if200).catch(if404(false));
   }
 
   orgRepos(org) {
@@ -136,7 +144,7 @@ class Repo {
   }
 
   fileExists(path, ref) {
-    return this.getFile(path, ref).then(always(true)).catch(if404).then(always(false));
+    return this.getFile(path, ref).then(always(true)).catch(if404(false))
   }
 
   getFile(path, ref) {
@@ -303,8 +311,8 @@ const hasToken = () => getToken() !== null;
 /*
  * Connect to Github, get the current, and wrap it all up in a wrapper object.
  */
-const connect = async (siteId, scopes) => {
-  const octokit = await token(siteId, scopes).then((t) => new Octokit({ auth: t }));
+const connect = async (siteId) => {
+  const octokit = await token(siteId).then((t) => new Octokit({ auth: t }));
   return octokit
     .request('GET /user')
     .then(if200)

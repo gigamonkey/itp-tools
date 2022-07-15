@@ -84,7 +84,7 @@ const configuration = async () => fetch(`${window.location.pathname}config.json`
 
 const connectToGithub = async () => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
-  const gh = await github.connect(siteId, ['repo', 'user']);
+  const gh = await github.connect(siteId);
   showLoggedIn(gh.user.login);
   return checkRepoVersion(await gh.orgRepos(GITHUB_ORG).getRepo(gh.user.login));
 };
