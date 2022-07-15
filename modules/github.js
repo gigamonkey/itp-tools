@@ -46,7 +46,6 @@ const if404 = (r) => {
   throw r;
 };
 
-
 /*
  * Wrapper over the octokit object and the fetched user data so by the time one
  * of these is constructed we know we have sucessfully logged in and retrieved

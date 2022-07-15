@@ -30,7 +30,6 @@ const pretty = (v) => {
 };
 
 const isExpression = (code) => {
-
   try {
     const p = acorn.parseExpressionAt(code, 0, OPTS);
     if (p.end === code.length) {
@@ -73,7 +72,6 @@ class Repl {
   }
 
   start() {
-    this.log('Ready.');
     this.newPrompt();
   }
 

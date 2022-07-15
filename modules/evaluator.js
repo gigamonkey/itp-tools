@@ -3,6 +3,11 @@ const DEFAULT_CONFIG = {
   src: 'about:blank',
 };
 
+/*
+ * The placeholder for where we will add the first evaluation iframe. If the
+ * document contains an iframe element we use it. Otherwise, just stick an empty
+ * div at the end of the body which will be immediately replaced.
+ */
 const placeholder = () => {
   let ph = document.querySelector('iframe');
   if (!ph) {
@@ -28,7 +33,6 @@ class Evaluator {
    * iframe's repl object (see newIframe) to communicate back.
    */
   evaluate(code, source) {
-    console.log('here in evaluate');
     const d = this.iframe.contentDocument;
     const s = d.createElement('script');
     Object.entries(this.scriptConfig).forEach(([k, v]) => {
@@ -36,9 +40,6 @@ class Evaluator {
     });
     s.append(d.createTextNode(`"use strict";\n//# sourceURL=${source}\n${code}\n`));
     d.documentElement.append(s);
-
-    console.log(d.querySelectorAll('script'));
-    console.log('end of evaluate');
   }
 
   /*
@@ -46,8 +47,6 @@ class Evaluator {
    * definitions.
    */
   load(code, source) {
-    console.log('here in load');
-
     this.resetIframe(() =>
       this.evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, source),
     );
@@ -60,65 +59,27 @@ class Evaluator {
   resetIframe(after) {
     const f = document.createElement('iframe');
 
-    f.addEventListener('load', () => console.log(`iframe loaded src=${f.src}`));
+    // Depending on whether the iframe is purely local (i.e. about:blank) or
+    // actually loaded over the network, the load event may fire as soon as we
+    // add it to the document or at some later point. But we don't want to run
+    // the after callback until all the setup in this function is complete.
+    // Which is exactly what queueMicrotask is for, it seems. So here we are.
+    f.onload = () => queueMicrotask(after);
 
     Object.entries(this.config).forEach(([k, v]) => {
       f.setAttribute(k, v);
     });
 
-    // Note: need to add the new frame to the document before we try to
-    // manipulate it's contentWindow but after we set it's src. When we set
-    // hidden doesn't seem to matter.
-
-    // Because we can't attach the DOMContentLoaded event listener until after
-    // the window is created there's a race where it might have finished loading
-    // before we add the listener. So we wrap our actual callback in this
-    // closure to make sure it only runs once and then we'll check the document
-    // readyState at the end of this function and run this if it's complete.
-    // Which way we end up calling this seems to perhaps  depend on whether the
-    // iframe is created with about:blank or something that actually has to load
-    // something over the network.
-    let done = false;
-    const once = (where) => {
-      console.log(`once: ${where}; done: ${done}`);
-      if (!done) after();
-      done = true;
-    };
-
     (this.iframe ?? placeholder()).replaceWith(f);
 
-    const origDoc = f.contentDocument;
-    console.log(`just after added readyState: ${f.contentDocument.readyState}`);
-
-    f.contentDocument.onreadystatechange = (e) => {
-      console.log(e);
-    };
-
+    // Setup we can only do after adding the iframe to the document because
+    // contentWindow doesn't exist until then.
     f.contentWindow.repl = this.repl;
     f.contentWindow.console = this.repl.console;
     f.contentWindow.minibuffer = { message: this.message };
     f.contentWindow.onerror = (...args) => this.showError(...args);
 
-    // FIXME: maybe this should be onload event.
-    f.contentWindow.addEventListener('DOMContentLoaded', () => {
-      console.log('DOMContentLoaded');
-      console.log(f.contentDocument.querySelectorAll('script'));
-      once('content loaded');
-    });
-    f.contentWindow.onload = () => {
-      console.log('onload fired');
-      console.log(f.contentDocument.querySelectorAll('script'));
-      console.log(`same document: ${f.contentDocument === origDoc}`);
-    };
-
     this.iframe = f;
-
-    // In case we got ready before we were able to add the DOMContentLoaded
-    // event listener.
-    if (f.contentDocument.readyState === 'complete') {
-      console.log(f.contentDocument.querySelectorAll('script'));
-      once('main thread');
-    }
   }
 
   /*

@@ -12,14 +12,13 @@ class Files {
       throw Error("Can't ensure file until attached to repo.");
     }
 
-    if (!await this.repo.branchExists(this.branch)) {
-
+    if (!(await this.repo.branchExists(this.branch))) {
       // Add the starter file to main before we branch so the PR is only the
       // changes from the starter code. FIXME: if we want to have multiple
       // starter files we'll have to refactor this a bit to create all the files
       // in main before creating the branch. I.e. it won't be enough to just
       // call this method once per file.
-      if (!await this.existsOnBranch(file, 'main')) {
+      if (!(await this.existsOnBranch(file, 'main'))) {
         const text = await this.loadFromWeb(file);
         await this.saveToGithubOnBranch(file, text, 'main');
       }
@@ -29,7 +28,7 @@ class Files {
     // Now we know the branch exists and the file had better because the branch
     // was made from main after the file was added there. If the file has been
     // deleted out of band or something this will throw which is probably right.
-    return await this.loadFromGithub(file, this.branch);
+    return this.loadFromGithub(file, this.branch);
   }
 
   /*
@@ -91,8 +90,7 @@ class Files {
    * Does the file exist in the correct directory on the given branch.
    */
   existsOnBranch(file, branch) {
-    return this.repo.fileExists(this.gitPath(file), 'main');
-
+    return this.repo.fileExists(this.gitPath(file), branch);
   }
 
   /*
