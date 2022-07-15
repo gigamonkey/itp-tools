@@ -7,8 +7,5 @@
     "scrolling": "no",
     "width": "502",
     "height": "402"
-  },
-  "script": {
-    "type": "module"
   }
 }

@@ -85,6 +85,3 @@ const animate = (drawFrame) => {
 
   maybeStep();
 };
-
-
-export { animate, now, drawBall, drawShadow };
