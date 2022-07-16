@@ -52,6 +52,7 @@ p {
 
 #banner {
   font-family: 'Gill Sans', sans-serif;
+  font-weight: 300;
   width: 30em;
   position: absolute;
   left: calc((100vw - 30em) / 2);
@@ -126,6 +127,7 @@ p {
 }
 
 h1 {
+  padding-left: 40px;
   padding-bottom: 0.5em;
 }
 
