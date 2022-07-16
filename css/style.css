@@ -170,7 +170,7 @@ iframe.canvas {
 
 #editor,
 #repl {
-  flex-grow: 1;
+  flex: 1 0 0;
 }
 
 #repl {
