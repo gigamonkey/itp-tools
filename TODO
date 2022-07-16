@@ -7,7 +7,15 @@
 
 - Wire up info icon in top-toolbar to show something useful.
 
+- Look into setting branch protection rule on main.
+
 - Popup to warn about not being logged in.
+
+- Add README to itp-template
+
+- Move itp-template into gigamonkeys org
+
+- Rename gigamonkeys org or make new one.
 
 - Build test case assignment based on my Replit tester.
 
