@@ -9,6 +9,10 @@ const GITHUB_ORG = 'gigamonkeys'; // FIXME: load this from config file from webs
 
 const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-template/main/.version';
 
+const $ = (selector) => document.querySelector(selector);
+
+const $$ = (selector) => document.querySelectorAll(selector);
+
 const loggedInName = document.getElementById('logged-in');
 const loginButton = document.getElementById('login');
 const minibuffer = document.getElementById('minibuffer');
@@ -22,6 +26,12 @@ const el = (name, text) => {
   if (text) e.innerText = text;
   return e;
 };
+
+const url = (s) => {
+  const e = el('a', s);
+  e.href = s;
+  return e;
+}
 
 const text = (t) => document.createTextNode(t);
 
@@ -42,12 +52,19 @@ const message = (text, fade) => {
 const showLoggedOut = () => {
   loginButton.hidden = false;
   loggedInName.hidden = true;
+  showBanner('.logged-out');
 };
 
 const showLoggedIn = (username) => {
   loginButton.hidden = true;
   fill(loggedInName, '.github-user', el('span', username));
   loggedInName.hidden = false;
+};
+
+const showBanner = (sel) => {
+  const b = $('#banner');
+  b.querySelector(sel).hidden = false;
+  b.hidden = false;
 };
 
 // End UI manipulations
@@ -65,14 +82,6 @@ const checkRepoVersion = async (repo) => {
       .catch(() => 'No .version file'),
   ]);
 
-  const same = expected.version === got.version && expected.uuid === got.uuid;
-  fill(
-    loggedInName,
-    '.github-repo',
-    text(' / '),
-    el('span', same ? repo.name : `${repo.name} (malformed)`),
-  );
-
   return repo;
 };
 
@@ -86,8 +95,22 @@ const connectToGithub = async () => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
   const gh = await github.connect(siteId);
   showLoggedIn(gh.user.login);
+
+  if (true || !(await gh.membership(GITHUB_ORG))) {
+
+
+    $('#banner .profile-url > span').replaceChildren(url(gh.user.html_url));
+    $('#banner .profile-url > svg').onclick = (e) => {
+      navigator.clipboard.writeText(gh.user.html_url);
+    };
+
+    showBanner('.not-a-member');
+  }
+
   return checkRepoVersion(await gh.orgRepos(GITHUB_ORG).getRepo(gh.user.login));
 };
+
+
 
 const makeStorage = async () => {
   let branch = window.location.pathname.substring(1);

@@ -9,20 +9,74 @@
   <script src="js/index.js" type="module"></script>
 </head>
 <body>
+
+  <div hidden="true" id="banner">
+
+    <h1>BHS Intro to Programming</h1>
+
+    <div hidden="true" class="logged-out">
+      <p>Welcome to <i>Intro to Programming</i>. If you are a student in the
+        class, the first thing you need to do (and which we should have done in
+        class) is set up your GitHub account.</p>
+
+      <p>Once you have a GitHub account, click “Log in to GitHub” below to
+        proceed. Or you can click “Use anonymously” to play with the environment
+        but you will not be able to save your work or submit assignments.</p>
+
+      <div class="login-buttons">
+        <button class="login-button">
+          <svg class="bi" fill="#fff"><use xlink:href="img/bootstrap-icons.svg#github"/></svg>
+          <span>Log in to GitHub</span>
+        </button>
+        <button class="login-button">
+          <svg class="bi" fill="#fff"><use xlink:href="img/bootstrap-icons.svg#person"/></svg>
+          <span>Use anonymously</span>
+        </button>
+      </div>
+
+      <p>If you don’t have a GitHub account yet, please create one and then log
+      in here for further instructions.</p>
+    </div>
+
+    <div hidden="true" class="not-a-member">
+      <p>Congratulations! You have successfully connected this app to GitHub.
+        However you are not yet a member of the GitHub organization for this
+        class, something Mr. Seibel needs to set up for you.</p>
+
+      <p>This is your GitHub profile URL:</p>
+
+      <div class="profile-url">
+        <span></span>
+        <svg class="login-icon" class="bi" fill="#333"><use xlink:href="img/bootstrap-icons.svg#clipboard"/></svg>
+      </div>
+
+      <p>Click the clipboard icon to copy it and then submit it
+      at <a href="https://forms.gle/mPJFB33u9WADy86r5" target="_blank">this
+      form</a> so he can add you.</p>
+    </div>
+
+    <span hidden="true" class="problem-with-repo">I see you are logged into GitHub
+      and a member of the Intro to Programming GitHub organization. However
+      there seems to have been some problem setting you up. Please let Mr.
+      Seibel know.</span>
+
+  </div>
+
   <div id="top-toolbar">
 
-    <button hidden="true" id="login">
-      <svg class="bi" fill="#000"><use xlink:href="img/bootstrap-icons.svg#github"/></svg>
-      <span>Log in</span>
-    </button>
 
-    <span hidden="true" id="logged-in">
-      <svg class="bi" fill="#000"><use xlink:href="img/bootstrap-icons.svg#github"/></svg>
-      <span class="github-user"></span>
-      <span class="github-repo"></span>
-      <span class="github-branch"></span>
+    <span class="github">
+      <button hidden="true" id="login">
+        <svg class="bi" fill="#000"><use xlink:href="img/bootstrap-icons.svg#github"/></svg>
+        <span>Log in</span>
+      </button>
+
+      <span hidden="true" id="logged-in">
+        <svg class="bi" fill="#000"><use xlink:href="img/bootstrap-icons.svg#github"/></svg>
+        <span class="github-user"></span>
+        <span class="github-repo"></span>
+      </span>
     </span>
-
 
   </div>
   <div id="container">
