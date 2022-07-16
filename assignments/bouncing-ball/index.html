@@ -13,6 +13,7 @@
   <div hidden="true" id="banner"></div>
   <div id="top-toolbar"></div>
 
+  <h1>Bouncing ball</h1>
   <div id="container">
     <div id="left">
       <p>Put definitions here.</p>
@@ -46,19 +47,29 @@
           type in there until you get a sense of how things work. You can click
           the <svg class="bi"
           fill="#000"><use xlink:href="img/bootstrap-icons.svg#arrow-clockwise"/></svg>
-          icon below the editor to run your code at any time though pay
-          attention to the area to the left of that icon: if there are certain
-          kinds of errors in the code, it will say something about them there.
+          icon below the editor to run your code at any time. But pay attention
+          to the area to the left of that icon: if there are certain kinds of
+          errors in the code, it will complain about them there.
         </p>
-
 
       </div>
 
-      <p>Graphics here</p>
       <!-- iframe holding the canvas we'll draw on. -->
       <iframe></iframe>
 
-      <p>Evaluate expressions here.</p>
+      <div class="instructions">
+        <p>
+          The area below is called a REPL which is an acronym for Read Eval
+          Print Loop. You can type in Javascript expressions there and it will
+          evaluate them and print the results. This can be handy for doing small
+          experiments to understand your code. Try clicking in the REPL and then
+          when the cursor shows up, typing something like <code>1 + 2</code> and
+          hitting return.
+        </p>
+
+      </div>
+
+
       <div id="repl"></div>
       <p class="codeLink"><a href="https://github.com/gigamonkey/repl"><img alt="GitHub" height="12" src=
       "img/GitHub-Mark-32px.png" width="12"></a> <a href=
