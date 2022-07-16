@@ -1,6 +1,6 @@
 - Build test case assignment based on my Replit tester.
 
-- Figure out how to catch errors from running code (e.g. references to undefined variables)
+- Componentize my editor (i.e. monaco plus the minibuffer, etc.)
 
 - Look into setting branch protection rule on main.
 
@@ -9,7 +9,6 @@
 - Move itp-template into gigamonkeys org
 
 - Rename gigamonkeys org or make new one.
-
 
 - Sort out logged out storage situation or rip it out. Goal should be to at
   least allow evaluating new code while logged out. Maybe not necessary to save
