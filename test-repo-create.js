@@ -20,7 +20,6 @@ const showLink = (id, link) => {
   p.hidden = false;
 };
 
-
 document.getElementById('login').onclick = async () => {
   try {
     gh = await github.connect(siteId);

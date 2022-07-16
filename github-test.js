@@ -16,14 +16,14 @@ const test = async () => {
   out += toJSON(await gh.membership('gigamonkeys'));
 
   out += '\n// Getting repo//`n';
-  const r = await gh.orgRepos('gigamonkeys').getRepo('gigamonkey')
+  const r = await gh.orgRepos('gigamonkeys').getRepo('gigamonkey');
   out += toJSON(r);
 
   out += '\n// Checking .version exists/\n';
-  out += toJSON(await r.fileExists(".version", 'main'));
+  out += toJSON(await r.fileExists('.version', 'main'));
 
   out += '\n// Checking .garbage exists/\n';
-  out += toJSON(await r.fileExists(".garbage", 'main'));
+  out += toJSON(await r.fileExists('.garbage', 'main'));
 
   if (false) {
     if (await gh.repoExists(REPO_NAME)) {

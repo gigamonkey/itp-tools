@@ -31,7 +31,6 @@ p {
   flex-direction: row;
   padding: 10px 20px;
   justify-content: flex-end;
-
 }
 
 #top-toolbar button {
@@ -81,8 +80,8 @@ p {
   background: #000;
 }
 
-.login-buttons, .profile-url
-{
+.login-buttons,
+.profile-url {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -95,7 +94,8 @@ p {
   margin: 0 1em;
 }
 
-.login-button span,svg {
+.login-button span,
+svg {
   color: #fff;
   vertical-align: middle;
 }
@@ -106,7 +106,8 @@ p {
   line-height: 20px;
 }
 
-.profile-url span,svg {
+.profile-url span,
+svg {
   flex: 0 1 auto;
   margin: 0 6px;
   vertical-align: middle;
