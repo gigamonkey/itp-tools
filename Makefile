@@ -43,6 +43,8 @@ js/%.js: %.js
 
 pretty:
 	prettier -w *.js modules/*.js css/*.css
+
+tidy:
 	tidy -config .tidyconfig *.html
 
 lint:
