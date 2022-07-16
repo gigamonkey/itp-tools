@@ -3,7 +3,7 @@ import github from './modules/github';
 import makeEvaluator from './modules/evaluator';
 import monaco from './modules/editor';
 import replize from './modules/repl';
-import { jsonIfOk } from './modules/fetch-helpers';
+import { jsonIfOk, textIfOk  } from './modules/fetch-helpers';
 import Login from './modules/login';
 
 const GITHUB_ORG = 'gigamonkeys'; // FIXME: load this from config file from website.
@@ -14,11 +14,6 @@ const TEMPLATE_REPO = 'itp-template';
 const $ = (selector) => document.querySelector(selector);
 
 const $$ = (selector) => document.querySelectorAll(selector);
-
-const loggedInName = $('#logged-in');
-const loginButton = $('#login');
-const minibuffer = $('#minibuffer');
-const submit = $('#submit');
 
 const login = new Login();
 
@@ -50,18 +45,19 @@ const fill = (parent, selector, ...what) => {
 };
 
 const message = (text, fade) => {
-  minibuffer.innerText = text;
+  $('#minibuffer').innerText = text;
   if (fade) {
     setTimeout(() => {
-      minibuffer.innerText = '';
+      $('#minibuffer').innerText = '';
     }, fade);
   }
 };
 
 const showLoggedIn = () => {
   const u = login.repoURL ? a(login.username, login.repoURL, '_blank') : el('span', login.username);
-  fill(loggedInName, '.github-user', u);
-  loggedInName.hidden = false;
+  const e = $('#logged-in');
+  fill(e, '.github-user', u);
+  e.hidden = false;
 };
 
 const toggleInfo = () => {
@@ -223,6 +219,8 @@ const makeStorage = async () => {
 };
 
 const setup = async () => {
+  $("#banner").outerHTML = await fetch("banner.html").then(textIfOk);
+
   const config = await configuration();
   const storage = await makeStorage();
   const evaluator = makeEvaluator(config.iframe, config.script, repl, message);
@@ -274,18 +272,21 @@ const setup = async () => {
     }
   };
 
+
   if (storage.repo !== null) {
     storage.ensureFileInBranch(filename).then(fillEditor);
   } else {
     storage.load(filename).then(fillEditor);
   }
 
-  loginButton.onclick = attachToGithub;
+  // N.B. some of these elements come from the dynamically added banner.
+  $('#login').onclick = attachToGithub;
   $('#anonymous').onclick = goAnonymous;
   $('#github-icon').onclick = deanonymize;
   $('#info-circle').onclick = toggleInfo;
   $('#banner svg.x').onclick = hideInfo;
-  submit.onclick = reevaluateCode;
+  $("#submit").onclick = reevaluateCode;
+
   repl.focus();
 };
 
