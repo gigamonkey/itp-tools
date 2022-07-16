@@ -4,6 +4,7 @@ import makeEvaluator from './modules/evaluator';
 import monaco from './modules/editor';
 import replize from './modules/repl';
 import { jsonIfOk } from './modules/fetch-helpers';
+import Login from './modules/login'
 
 const GITHUB_ORG = 'gigamonkeys'; // FIXME: load this from config file from website.
 
@@ -17,6 +18,8 @@ const loggedInName = $('#logged-in');
 const loginButton = $('#login');
 const minibuffer = $('#minibuffer');
 const submit = $('#submit');
+
+const login = new Login;
 
 ////////////////////////////////////////////////////////////////////////////////
 // UI manipulations
@@ -49,22 +52,65 @@ const message = (text, fade) => {
 
 const showLoggedOut = () => {
   loggedInName.hidden = true;
-  showBanner('.logged-out');
 };
 
-const showLoggedIn = (username) => {
-  fill(loggedInName, '.github-user', el('span', username));
+const showLoggedIn = (login) => {
+  fill(loggedInName, '.github-user', el('span', login.username));
   loggedInName.hidden = false;
 };
 
-const showBanner = (sel) => {
+const showInfo = () => {
   const b = $('#banner');
-  $$('#banner > div').forEach((e) => {
-    e.hidden = true;
-  });
-  b.querySelector(sel).hidden = false;
+  b.querySelector('.x').hidden = false;
+  b.querySelector('.info').hidden = false;
   b.hidden = false;
 };
+
+const hideInfo = () => {
+  $('#banner').hidden = true;
+};
+
+const showBanner = () => {
+
+  const b = $('#banner');
+
+  if (login.anonymous || login.isMember) {
+
+    b.hidden = true;
+
+  } else {
+
+    // Hide everything ...
+    $$('#banner > div').forEach((e) => {
+      e.hidden = true;
+    });
+
+    // ... and then show the right thing.
+    if (!login.isLoggedIn) {
+      b.querySelector('.logged-out').hidden = false;
+
+    } else if (!login.isMember) {
+      $('#banner .profile-url > span').replaceChildren(url(login.profileURL));
+      $('#banner .profile-url > svg').onclick = () => {
+        navigator.clipboard.writeText(login.profileURL);
+      };
+      b.querySelector('.not-a-member').hidden = false;
+    }
+
+    b.hidden = false;
+  }
+};
+
+const goAnonymous = () => {
+  login.anonymous = true;
+  showBanner();
+}
+
+const deanonymize = () => {
+  login.anonymous = false;
+  showBanner();
+}
+
 
 // End UI manipulations
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,15 +140,16 @@ const configuration = async () => fetch(`${window.location.pathname}config.json`
 const connectToGithub = async () => {
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
   const gh = await github.connect(siteId);
-  showLoggedIn(gh.user.login);
 
-  if (!(await gh.membership(GITHUB_ORG))) {
-    $('#banner .profile-url > span').replaceChildren(url(gh.user.html_url));
-    $('#banner .profile-url > svg').onclick = () => {
-      navigator.clipboard.writeText(gh.user.html_url);
-    };
-    showBanner('.not-a-member');
+  login.logIn(gh.user.login, gh.user.html_url);
+
+  showLoggedIn(login);
+
+  if (await gh.membership(GITHUB_ORG)) {
+    login.isMember = true;
   }
+
+  showBanner();
 
   return gh.orgRepos(GITHUB_ORG).getRepo(gh.user.login);
 };
@@ -115,7 +162,10 @@ const makeStorage = async () => {
   }
 
   const repo = github.hasToken() ? await connectToGithub('itp') : null;
-  if (repo === null) showLoggedOut();
+
+  if (repo === null) {
+    showBanner();
+  }
   return files(branch, repo);
 };
 
@@ -148,6 +198,9 @@ const setup = async () => {
   // (which probably isn't fully baked) for saving versions of files while
   // disconnected.
   const attachToGithub = async () => {
+
+    if (login.isLoggedIn) return;
+
     storage.repo = await connectToGithub('itp');
 
     const current = editor.getValue();
@@ -176,6 +229,10 @@ const setup = async () => {
   }
 
   loginButton.onclick = attachToGithub;
+  $('#anonymous').onclick = goAnonymous;
+  $('#github-icon').onclick = attachToGithub;
+  $('#info-circle').onclick = showInfo;
+  $('#banner svg.x').onclick = hideInfo;
   submit.onclick = reevaluateCode;
   repl.focus();
 };

@@ -33,6 +33,11 @@ p {
   justify-content: flex-end;
 }
 
+#top-toolbar > * {
+  margin: 0 3px;
+  vertical-align: middle;
+}
+
 #top-toolbar button {
   background: #fff;
   padding: 6px 9px;
@@ -73,6 +78,12 @@ p {
   width: 16px;
 }
 
+#banner svg.x {
+  height: 24px;
+  width: 24px;
+  float: right;
+}
+
 .login-button {
   padding: 5px 9px;
   border: none;
@@ -95,7 +106,7 @@ p {
 }
 
 .login-button span,
-svg {
+.login-button svg {
   color: #fff;
   vertical-align: middle;
 }
@@ -107,7 +118,7 @@ svg {
 }
 
 .profile-url span,
-svg {
+.profile-url svg {
   flex: 0 1 auto;
   margin: 0 6px;
   vertical-align: middle;
