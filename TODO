@@ -1,5 +1,7 @@
 - Build test case assignment based on my Replit tester.
 
+- Figure out how to keep the REPL from growing as it fills with output.
+
 - Componentize my editor (i.e. monaco plus the minibuffer, etc.)
 
 - Look into setting branch protection rule on main.
