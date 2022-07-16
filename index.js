@@ -64,6 +64,15 @@ const showLoggedIn = () => {
   loggedInName.hidden = false;
 };
 
+const toggleInfo = () => {
+  if ($("#banner").hidden) {
+    showInfo();
+  } else {
+    hideInfo();
+  }
+}
+
+
 const showInfo = () => {
   const b = $('#banner');
   $$('#banner > div').forEach((e) => {
@@ -274,7 +283,7 @@ const setup = async () => {
   loginButton.onclick = attachToGithub;
   $('#anonymous').onclick = goAnonymous;
   $('#github-icon').onclick = deanonymize;
-  $('#info-circle').onclick = showInfo;
+  $('#info-circle').onclick = toggleInfo;
   $('#banner svg.x').onclick = hideInfo;
   submit.onclick = reevaluateCode;
   repl.focus();
