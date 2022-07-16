@@ -1,4 +1,11 @@
-- Reorganize (no pun intended) around putting student repos into Github organization.
+- Wire up "Use anonymously" to hide banner.
+
+- Add back a small GitHub icon in the toolbar to enable login from the logged out state.
+
+- Figure out how to easily put common login code an every assigment, demo, and
+  project page.
+
+- Wire up info icon in top-toolbar to show something useful.
 
 - Popup to warn about not being logged in.
 
