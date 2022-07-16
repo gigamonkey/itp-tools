@@ -1,18 +1,8 @@
 # Setup
 
-When a user first logs into GitHub, we check if they a) have an existing `itp`
-repo and b) if they do if it contains a .version file that matches one of the
-versions we know about.
-
-If no `itp` repository exists, life is easy. Show a dialog asking if it's okay
-to create one and once confirmed, create from the `gigamonkey/itp-template`
-repo.
-
-If one exists and the `.version` file seems legit, then we're good to go.
-
-The only problematic case is there is an `itp` repo but it does not contain a
-good `.version` file. In that case we need to ask the user whether they have an
-`itp` repo for some other reason or if they have one that is somehow corrupted.
+To be fully set up a user needs a GitHub account that has been added to the
+`gigamonkeys` GitHub organization and need a repo created in that organization
+named the same as their GitHub username.
 
 # Basic model
 
