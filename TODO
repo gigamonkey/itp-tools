@@ -1,9 +1,6 @@
-- Put login code into bouncing ball assignment.
-
-- Figure out how to easily put common login code an every assigment, demo, and
-  project page.
-
 - Build test case assignment based on my Replit tester.
+
+- Figure out how to catch errors from running code (e.g. references to undefined variables)
 
 - Look into setting branch protection rule on main.
 
