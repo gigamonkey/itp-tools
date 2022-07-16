@@ -251,3 +251,17 @@ div.message {
 #toolbar > #minibuffer {
   flex-grow: 1;
 }
+
+.instructions {
+  line-height: 2em;
+}
+
+.instructions p {
+  font-weight: 300;
+  padding-top: 0.5em;
+}
+
+.instructions svg {
+  width: 1em;
+  height: 1em;
+}
