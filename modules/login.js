@@ -4,6 +4,9 @@ class Login {
     this.profileURL = null;
     this.isMember = false;
     this.anonymous = false;
+    this.problemMakingRepo = null;
+    this.createdRepo = false;
+    this.repoURL = null;
   }
 
   logIn(username, profileURL) {
@@ -13,6 +16,10 @@ class Login {
 
   get isLoggedIn() {
     return this.username !== null;
+  }
+
+  get ok() {
+    return this.isLoggedIn && this.isMember && this.problemMakingRepo === null;
   }
 }
 

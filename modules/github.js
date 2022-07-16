@@ -62,7 +62,6 @@ class Github {
   }
 
   membership(org) {
-    console.log(`Looking for membership for '${org}'`);
     const url = 'GET /user/memberships/orgs/{org}';
     return this.octokit.request(url, { org }).then(if200).catch(if404(false));
   }
@@ -139,6 +138,7 @@ class Repo {
     // Extract a few bits we're going to need a lot.
     this.owner = raw.owner.login;
     this.name = raw.name;
+    this.url = raw.html_url;
   }
 
   fileExists(path, ref) {

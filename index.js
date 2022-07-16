@@ -4,11 +4,12 @@ import makeEvaluator from './modules/evaluator';
 import monaco from './modules/editor';
 import replize from './modules/repl';
 import { jsonIfOk } from './modules/fetch-helpers';
-import Login from './modules/login'
+import Login from './modules/login';
 
 const GITHUB_ORG = 'gigamonkeys'; // FIXME: load this from config file from website.
-
-const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-template/main/.version';
+const TEMPLATE_OWNER = 'gigamonkey';
+const TEMPLATE_REPO = 'itp-template';
+// const CANONICAL_VERSION = 'https://raw.githubusercontent.com/gigamonkey/itp-template/main/.version';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -19,7 +20,7 @@ const loginButton = $('#login');
 const minibuffer = $('#minibuffer');
 const submit = $('#submit');
 
-const login = new Login;
+const login = new Login();
 
 ////////////////////////////////////////////////////////////////////////////////
 // UI manipulations
@@ -27,6 +28,13 @@ const login = new Login;
 const el = (name, text) => {
   const e = document.createElement(name);
   if (text) e.innerText = text;
+  return e;
+};
+
+const a = (text, href, target) => {
+  const e = el('a', text);
+  e.setAttribute('href', href);
+  if (target) e.setAttribute('target', target);
   return e;
 };
 
@@ -50,18 +58,18 @@ const message = (text, fade) => {
   }
 };
 
-const showLoggedOut = () => {
-  loggedInName.hidden = true;
-};
-
-const showLoggedIn = (login) => {
-  fill(loggedInName, '.github-user', el('span', login.username));
+const showLoggedIn = () => {
+  const u = login.repoURL ? a(login.username, login.repoURL, '_blank') : el('span', login.username);
+  fill(loggedInName, '.github-user', u);
   loggedInName.hidden = false;
 };
 
 const showInfo = () => {
   const b = $('#banner');
-  b.querySelector('.x').hidden = false;
+  $$('#banner > div').forEach((e) => {
+    e.hidden = true;
+  });
+  b.querySelector('.x').style.display = 'inline';
   b.querySelector('.info').hidden = false;
   b.hidden = false;
 };
@@ -71,46 +79,53 @@ const hideInfo = () => {
 };
 
 const showBanner = () => {
-
   const b = $('#banner');
 
-  if (login.anonymous || login.isMember) {
-
+  if (login.anonymous || (login.ok && !login.createdRepo)) {
     b.hidden = true;
-
   } else {
-
     // Hide everything ...
     $$('#banner > div').forEach((e) => {
       e.hidden = true;
     });
+    b.querySelector('.x').style.display = 'none';
 
     // ... and then show the right thing.
     if (!login.isLoggedIn) {
       b.querySelector('.logged-out').hidden = false;
-
     } else if (!login.isMember) {
       $('#banner .profile-url > span').replaceChildren(url(login.profileURL));
       $('#banner .profile-url > svg').onclick = () => {
         navigator.clipboard.writeText(login.profileURL);
       };
       b.querySelector('.not-a-member').hidden = false;
+    } else if (login.problemMakingRepo) {
+      b.querySelector('.x').style.display = 'inline';
+      b.querySelector('.problem-with-repo').hidden = false;
+    } else if (login.createdRepo) {
+      b.querySelector('.x').style.display = 'inline';
+      const div = b.querySelector('.created-repo');
+      div.querySelector('span').replaceChildren(url(login.repoURL));
+      div.hidden = false;
     }
 
     b.hidden = false;
   }
 };
 
+const hideBanner = () => {
+  $('#banner').hidden = true;
+};
+
 const goAnonymous = () => {
   login.anonymous = true;
   showBanner();
-}
+};
 
 const deanonymize = () => {
   login.anonymous = false;
   showBanner();
-}
-
+};
 
 // End UI manipulations
 ////////////////////////////////////////////////////////////////////////////////
@@ -138,20 +153,46 @@ const checkRepoVersion = async (repo) => {
 const configuration = async () => fetch(`${window.location.pathname}config.json`).then(jsonIfOk);
 
 const connectToGithub = async () => {
+  hideBanner();
+
   const siteId = '1d7e043c-5d02-47fa-8ba8-9df0662ba82b';
   const gh = await github.connect(siteId);
 
   login.logIn(gh.user.login, gh.user.html_url);
 
-  showLoggedIn(login);
+  let repo = null;
 
   if (await gh.membership(GITHUB_ORG)) {
     login.isMember = true;
+
+    try {
+      repo = await gh.orgRepos(GITHUB_ORG).getRepo(login.username);
+    } catch (e) {
+      try {
+        repo = await gh
+          .orgRepos(GITHUB_ORG)
+          .makeRepoFromTemplate(login.username, TEMPLATE_OWNER, TEMPLATE_REPO);
+        // Record that we created the repo now so we can show a banner about it.
+        login.createdRepo = true;
+      } catch (e) {
+        console.log(e); // So I can debug if student runs into this.
+        login.problemMakingRepo = e;
+        repo = null;
+      }
+    }
   }
 
-  showBanner();
+  if (repo !== null) {
+    login.repoURL = repo.url;
+  }
 
-  return gh.orgRepos(GITHUB_ORG).getRepo(gh.user.login);
+  showLoggedIn();
+
+  if (repo === null || login.createdRepo) {
+    showBanner();
+  }
+
+  return repo;
 };
 
 const makeStorage = async () => {
@@ -161,11 +202,14 @@ const makeStorage = async () => {
     branch = branch.substring(0, branch.length - 1);
   }
 
-  const repo = github.hasToken() ? await connectToGithub('itp') : null;
-
-  if (repo === null) {
+  let repo = null;
+  if (github.hasToken()) {
+    repo = await connectToGithub();
+  } else {
+    repo = null;
     showBanner();
   }
+
   return files(branch, repo);
 };
 
@@ -198,10 +242,9 @@ const setup = async () => {
   // (which probably isn't fully baked) for saving versions of files while
   // disconnected.
   const attachToGithub = async () => {
-
     if (login.isLoggedIn) return;
 
-    storage.repo = await connectToGithub('itp');
+    storage.repo = await connectToGithub();
 
     const current = editor.getValue();
     const starter = await storage.loadFromWeb(filename);
@@ -230,7 +273,7 @@ const setup = async () => {
 
   loginButton.onclick = attachToGithub;
   $('#anonymous').onclick = goAnonymous;
-  $('#github-icon').onclick = attachToGithub;
+  $('#github-icon').onclick = deanonymize;
   $('#info-circle').onclick = showInfo;
   $('#banner svg.x').onclick = hideInfo;
   submit.onclick = reevaluateCode;
