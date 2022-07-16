@@ -1,7 +1,7 @@
 import Netlify from 'netlify-auth-providers';
 import { Octokit } from '@octokit/core';
 
-const SCOPES = ['repo', 'user', 'read:org' ];
+const SCOPES = ['repo', 'user', 'read:org'];
 
 const always = (x) => () => x;
 
@@ -24,7 +24,7 @@ const token = async (siteId) => {
       setToken(data.token);
       resolve(data.token);
     });
-  }).catch((e) => { console.log('caught in token()'); console.log(e); throw e; });
+  });
 };
 
 /*
@@ -142,7 +142,7 @@ class Repo {
   }
 
   fileExists(path, ref) {
-    return this.getFile(path, ref).then(always(true)).catch(if404(false))
+    return this.getFile(path, ref).then(always(true)).catch(if404(false));
   }
 
   getFile(path, ref) {
@@ -311,7 +311,7 @@ const hasToken = () => getToken() !== null;
  */
 const connect = async (siteId, retries = 3) => {
   if (retries > 0) {
-    const octokit = await token(siteId).then((t) => { console.log(`got token: ${t}`); return new Octokit({ auth: t })});
+    const octokit = await token(siteId).then((t) => new Octokit({ auth: t }));
     return octokit
       .request('GET /user')
       .then(if200)
@@ -325,6 +325,7 @@ const connect = async (siteId, retries = 3) => {
         }
       });
   }
+  throw new Error("Couldn't connect.");
 };
 
 export default { connect, hasToken };

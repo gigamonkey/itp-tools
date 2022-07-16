@@ -13,10 +13,10 @@ const $ = (selector) => document.querySelector(selector);
 
 const $$ = (selector) => document.querySelectorAll(selector);
 
-const loggedInName = document.getElementById('logged-in');
-const loginButton = document.getElementById('login');
-const minibuffer = document.getElementById('minibuffer');
-const submit = document.getElementById('submit');
+const loggedInName = $('#logged-in');
+const loginButton = $('#login');
+const minibuffer = $('#minibuffer');
+const submit = $('#submit');
 
 ////////////////////////////////////////////////////////////////////////////////
 // UI manipulations
@@ -31,9 +31,7 @@ const url = (s) => {
   const e = el('a', s);
   e.href = s;
   return e;
-}
-
-const text = (t) => document.createTextNode(t);
+};
 
 const fill = (parent, selector, ...what) => {
   const e = parent.querySelector(selector);
@@ -50,19 +48,20 @@ const message = (text, fade) => {
 };
 
 const showLoggedOut = () => {
-  loginButton.hidden = false;
   loggedInName.hidden = true;
   showBanner('.logged-out');
 };
 
 const showLoggedIn = (username) => {
-  loginButton.hidden = true;
   fill(loggedInName, '.github-user', el('span', username));
   loggedInName.hidden = false;
 };
 
 const showBanner = (sel) => {
   const b = $('#banner');
+  $$('#banner > div').forEach((e) => {
+    e.hidden = true;
+  });
   b.querySelector(sel).hidden = false;
   b.hidden = false;
 };
@@ -73,6 +72,7 @@ const showBanner = (sel) => {
 const editor = monaco('editor');
 const repl = replize('repl');
 
+/*
 const checkRepoVersion = async (repo) => {
   const [expected, got] = await Promise.all([
     fetch(CANONICAL_VERSION).then(jsonIfOk),
@@ -81,9 +81,9 @@ const checkRepoVersion = async (repo) => {
       .then((f) => JSON.parse(atob(f.content)))
       .catch(() => 'No .version file'),
   ]);
-
   return repo;
 };
+*/
 
 // The window.location.pathname thing below is part of our base href kludge to
 // deal with the monaco worker plugin files (see modules/editor.js). Since we've
@@ -96,21 +96,16 @@ const connectToGithub = async () => {
   const gh = await github.connect(siteId);
   showLoggedIn(gh.user.login);
 
-  if (true || !(await gh.membership(GITHUB_ORG))) {
-
-
+  if (!(await gh.membership(GITHUB_ORG))) {
     $('#banner .profile-url > span').replaceChildren(url(gh.user.html_url));
-    $('#banner .profile-url > svg').onclick = (e) => {
+    $('#banner .profile-url > svg').onclick = () => {
       navigator.clipboard.writeText(gh.user.html_url);
     };
-
     showBanner('.not-a-member');
   }
 
-  return checkRepoVersion(await gh.orgRepos(GITHUB_ORG).getRepo(gh.user.login));
+  return gh.orgRepos(GITHUB_ORG).getRepo(gh.user.login);
 };
-
-
 
 const makeStorage = async () => {
   let branch = window.location.pathname.substring(1);
