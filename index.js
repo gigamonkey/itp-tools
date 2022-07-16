@@ -48,7 +48,9 @@ const message = (text, fade) => {
   $('#minibuffer').innerText = text;
   if (fade) {
     setTimeout(() => {
-      $('#minibuffer').innerText = '';
+      if ($('#minibuffer').innerText === text) {
+        $('#minibuffer').innerText = '';
+      }
     }, fade);
   }
 };
