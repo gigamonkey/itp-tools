@@ -1,15 +1,11 @@
-- Wire up "Use anonymously" to hide banner.
-
-- Add back a small GitHub icon in the toolbar to enable login from the logged out state.
+- Put login code into bouncing ball assignment.
 
 - Figure out how to easily put common login code an every assigment, demo, and
   project page.
 
-- Wire up info icon in top-toolbar to show something useful.
+- Build test case assignment based on my Replit tester.
 
 - Look into setting branch protection rule on main.
-
-- Popup to warn about not being logged in.
 
 - Add README to itp-template
 
@@ -17,7 +13,6 @@
 
 - Rename gigamonkeys org or make new one.
 
-- Build test case assignment based on my Replit tester.
 
 - Sort out logged out storage situation or rip it out. Goal should be to at
   least allow evaluating new code while logged out. Maybe not necessary to save
