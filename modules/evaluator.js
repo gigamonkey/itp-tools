@@ -48,7 +48,7 @@ class Evaluator {
    */
   load(code, source) {
     this.resetIframe(() =>
-      this.evaluate(`\n${code}\nminibuffer.message('Loaded.', 1000);`, source),
+      this.evaluate(`\ntry{\n${code}\n} catch (e) { minibuffer.message(String(e)); }\nminibuffer.message('Loaded.', 1000);`, source),
     );
   }
 
