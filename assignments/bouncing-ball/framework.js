@@ -48,7 +48,7 @@ const drawBall = (height, size) => {
   // Since height increases when the ball goes up, we need
   // to translate to a y coordinate that increases as the
   // ball goes down.
-  let y = landingY - height - size / 2;
+  let y = (landingY - height) - size / 2;
   ctx.fillStyle = "#4775ff";
   ctx.beginPath();
   ctx.ellipse(ballX, y, size, size, 0, 0, 2 * Math.PI);
