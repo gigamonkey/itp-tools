@@ -22,45 +22,15 @@ function withClass(className, e) {
   return e;
 }
 
-
-// FIXME: these should be loaded from data file
-//const testCases = fetch("test-cases.json").then(jsonIfOk);
-const testCases = [
-  {
-    "name": "add",
-    "description": "A function that takes two numbers and returns their sum.",
-    "cases": [
-      { "args": [0, 0], "expected": 0 },
-      { "args": [0, 10], "expected": 10 },
-      { "args": [10, 0], "expected": 10 },
-      { "args": [10, 11], "expected": 21 },
-      { "args": [1, 2], "expected": 3 }
-    ]
-  },
-  {
-    "name": "subtract",
-    "description": "A function that takes two numbers and returns their difference.",
-    "cases": [
-      { "args": [0, 0], "expected": 0 },
-      { "args": [0, 10], "expected": -10 },
-      { "args": [10, 0], "expected": 10 },
-      { "args": [10, 11], "expected": -1 },
-      { "args": [1, 2], "expected": 3 }
-    ]
-  },
-  {
-    "name": "multiply",
-    "description": "A function that takes two numbers and returns their product.",
-    "cases": [
-      { "args": [0, 0], "expected": 0 },
-      { "args": [0, 10], "expected": 0 },
-      { "args": [10, 0], "expected": 0 },
-      { "args": [10, 11], "expected": 110 },
-      { "args": [1, 2], "expected": 2 },
-      { "args": [2, 3], "expected": 6 }
-    ]
+const jsonIfOk = (r) => {
+  if (r.ok) {
+    return r.json();
   }
-];
+  throw r;
+};
+
+
+const promisedTestCases = fetch("test-cases.json").then(jsonIfOk);
 
 // Kludge to get the function assuming it was named with const or let and thus
 // not on the window object.
@@ -119,26 +89,22 @@ const displayResults = (name, results) => {
   console.log(`${name} ${results}`);
 }
 
-const jsonIfOk = (r) => {
-  if (r.ok) {
-    return r.json();
-  }
-  throw r;
-};
+// 1. Look at test cases and create pills style with 'no_results'.
+promisedTestCases.then(makePills);
 
-window.onCodeLoaded = () => {
+window.onCodeLoaded = (fn) => {
 
-  // 1. Look at test cases and create pills style with 'no_results'.
-  makePills(testCases);
+  promisedTestCases.then((testCases) => {
+    const results = allResults(testCases);
 
-  const results = allResults(testCases);
+    // 2. When code is loaded, compute all results and restyle pills. (If code
+    // loaded before test cases, probably stash them for later.
+    stylePills(results);
 
-  // 2. When code is loaded, compute all results and restyle pills. (If code
-  // loaded before test cases, probably stash them for later.
-  stylePills(results);
+    fn(results);
 
-  // 3. When pill is clicked, use the existing results to fill the results table
-  // and display it.
-
+    // 3. When pill is clicked, use the existing results to fill the results table
+    // and display it.
+  });
 
 };
