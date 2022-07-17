@@ -5,7 +5,6 @@ const testCases = {
     {args: [10, 0], expected: 10},
     {args: [10, 11], expected: 21},
     {args: [1,2], expected: 3},
-    {args: [1,2], expected: 3},
   ],
   sub: [
     {args: [0, 0], expected: 0},
@@ -13,13 +12,27 @@ const testCases = {
     {args: [10, 0], expected: 10},
     {args: [10, 11], expected: -1},
     {args: [1,2], expected: 3},
-    {args: [1,2], expected: 3},
+  ],
+
+  mul: [
+    {args: [0, 0], expected: 0},
+    {args: [0, 10], expected: 0},
+    {args: [10, 0], expected: 0},
+    {args: [10, 11], expected: 110},
+    {args: [1,2], expected: 2},
+    {args: [2,3], expected: 6},
   ],
 };
 
 // Kludge to get the function assuming it was named with const (or let) and thus
 // not on the window object.
-const get = (name) => Function(`return ${name}`)();
+const get = (name) => {
+  try {
+    return Function(`return ${name}`)();
+  } catch {
+    return void 0;
+  }
+};
 
 const testResults = (fn, cases) => cases.map((test) => runTestCase(fn, test));
 
