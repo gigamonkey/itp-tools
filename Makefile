@@ -1,3 +1,5 @@
+SHELL := bash -O globstar
+
 # Tool setup
 
 esbuild := ./node_modules/.bin/esbuild
@@ -42,7 +44,7 @@ js/%.js: %.js
 	$(esbuild) $< $(esbuild_opts)
 
 pretty:
-	prettier -w *.js modules/*.js css/*.css
+	prettier -w *.js modules/*.js assignments/**/*.js demo/**/*.js css/*.css
 
 tidy:
 	tidy -config .tidyconfig *.html
