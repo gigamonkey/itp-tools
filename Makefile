@@ -52,6 +52,9 @@ tidy:
 lint:
 	npx eslint $(eslint_opts) *.js modules/*.js
 
+fixmes:
+	ag --no-group FIXME
+
 ready: pretty lint
 
 strict_lint:
