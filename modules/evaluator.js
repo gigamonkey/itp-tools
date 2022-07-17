@@ -51,8 +51,8 @@ class Evaluator {
   load(code, source, fn) {
     this.resetIframe(() => {
       this.evaluate(`${code}\nminibuffer.message('Loaded.', 1000);`, source);
-      if (fn && this.iframe.contentWindow.onCodeLoaded) {
-        this.iframe.contentWindow.onCodeLoaded(fn);
+      if (fn) {
+        fn();
       }
     });
   }

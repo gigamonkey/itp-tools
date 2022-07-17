@@ -1,10 +1,11 @@
+import Login from './modules/login';
 import files from './modules/files';
 import github from './modules/github';
 import makeEvaluator from './modules/evaluator';
 import monaco from './modules/editor';
 import replize from './modules/repl';
+import testing from './modules/testing';
 import { jsonIfOk, textIfOk } from './modules/fetch-helpers';
-import Login from './modules/login';
 
 const GITHUB_ORG = 'gigamonkeys'; // FIXME: load this from config file from website.
 const TEMPLATE_OWNER = 'gigamonkey';
@@ -219,6 +220,19 @@ const makeStorage = async () => {
   return files(branch, repo);
 };
 
+const maybeSetupTesting = async (config) => {
+  if (config.testing) {
+    const t = testing($(config.testing.id));
+    const testCases = await fetch(config.testing.cases).then(jsonIfOk);
+    t.makePills(testCases);
+    return () => {
+      window.runTests(testCases, (r) => t.stylePills(r));
+    };
+  } else {
+    return () => console.log('no testing callback');
+  }
+};
+
 const setup = async () => {
   $('#banner').outerHTML = await fetch('banner.html').then(textIfOk);
   $('#top-toolbar').outerHTML = await fetch('toolbar.html').then(textIfOk);
@@ -227,12 +241,14 @@ const setup = async () => {
   const storage = await makeStorage();
   const evaluator = makeEvaluator(config.iframe, config.script, repl, message);
 
+  const testingCallback = await maybeSetupTesting(config);
+
   const filename = config.files[0];
 
   // Put code in editor and evaluate it.
   const fillEditor = (code) => {
     editor.setValue(code);
-    evaluator.load(code, filename, console.log);
+    evaluator.load(code, filename, testingCallback);
   };
 
   // Evaluate code now in editor and also save it.
@@ -243,7 +259,7 @@ const setup = async () => {
         console.log('Saved.'); // FIXME: should show this in the web UI somewhere.
       }
     });
-    evaluator.load(code, filename);
+    evaluator.load(code, filename, testingCallback);
   };
 
   // For when we log in to GitHub after the user has loaded the page and maybe
@@ -288,7 +304,9 @@ const setup = async () => {
   $('#banner svg.x').onclick = hideInfo;
   $('#submit').onclick = reevaluateCode;
 
-  $('#minibuffer').onclick = () => ($('#minibuffer').innerText = '');
+  $('#minibuffer').onclick = () => {
+    $('#minibuffer').innerText = '';
+  };
 
   repl.focus();
 };

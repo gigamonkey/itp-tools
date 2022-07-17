@@ -1,8 +1,11 @@
 {
   "files": ["code.js"],
+  "testing": {
+    "id": "#testing",
+    "cases": "assignments/test-cases-01/test-cases.json"
+  },
   "iframe": {
     "src": "assignments/test-cases-01/frame.html",
-    "hidden": false,
-    "class": "test-cases"
+    "hidden": true
   }
 }
