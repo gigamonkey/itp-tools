@@ -37,7 +37,7 @@ const pill = (name) => {
 };
 
 const pillStyle = (results) => {
-  if (results.length === 0) {
+  if (results === null) {
     return 'no_results';
   } else if (results.every((x) => x.passed)) {
     return 'all_passing';
@@ -46,13 +46,69 @@ const pillStyle = (results) => {
   }
 };
 
+const resultsTable = () => {
+  const table = withClass('results', $('<table>'));
+  table.hidden = true;
+
+  const colgroup = $('<colgroup>');
+  colgroup.append(withClass('functionCall', $('<col>')));
+  colgroup.append(withClass('got', $('<col>')));
+  colgroup.append(withClass('expected', $('<col>')));
+  colgroup.append(withClass('result', $('<col>')));
+  table.append(colgroup);
+
+  const thead = $('<thead>');
+  const tr = $('<tr>');
+  tr.append($('<th>', 'Invocation'));
+  tr.append($('<th>', 'Got'));
+  tr.append($('<th>', 'Expected'));
+  tr.append($('<th>', 'Passed?'));
+  thead.append(tr);
+  table.append(thead);
+  table.append($('<tbody>'));
+  return table;
+};
+
+const resultsBody = (name, results) => {
+  const tbody = $('<tbody>');
+  results.forEach((result) => addResultRow(tbody, name, result));
+  return tbody;
+};
+
+const addResultRow = (tbody, name, result) => {
+  const { args, got, exception, expected, passed } = result;
+  const row = tbody.insertRow();
+  row.className = passed ? 'pass' : 'fail';
+  row.insertCell().append(`${name}(${args.map(JSON.stringify).join(', ')})`);
+  row.insertCell().append(exception === null ? $(JSON.stringify(got)) : `${exception}`);
+  row.insertCell().append($(JSON.stringify(expected)));
+  row.insertCell().append($(statusEmoji(passed, exception)));
+};
+
+const statusEmoji = (passed, exception) => {
+  if (passed) {
+    return '✅';
+  } else if (exception) {
+    return '💥';
+  } else {
+    return '❌';
+  }
+};
+
 class Testing {
   constructor(div) {
     this.div = div;
+
     this.pills = withClass('pills', $('<div>'));
     this.description = withClass('description', $('<div>'));
+    this.table = resultsTable();
+    this.summary = withClass('summary', $('<div>'));
+
     this.div.append(this.pills);
     this.div.append(this.description);
+    this.div.append(this.table);
+    this.div.append(this.summary);
+
     this.testCases = null;
   }
 
@@ -78,6 +134,22 @@ class Testing {
     p.append($('<b>', `${name}: `));
     p.append(this.descriptions[name]);
     this.description.replaceChildren(p);
+
+    if (results !== null) {
+      const old = this.table.querySelector('tbody');
+      this.table.replaceChild(resultsBody(name, results), old);
+      this.table.hidden = false;
+
+      const passed = results.reduce((a, b) => a + (b.passed ? 1 : 0), 0);
+      const stop = passed === results.length ? '!' : '.';
+
+      this.summary.replaceChildren(
+        $('<p>', `${passed} of ${results.length} test cases passed${stop}`),
+      );
+    } else {
+      this.table.hidden = true;
+      this.summary.replaceChildren();
+    }
   }
 }
 

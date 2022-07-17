@@ -52,7 +52,12 @@ class Evaluator {
     this.resetIframe(() => {
       this.evaluate(`${code}\nminibuffer.message('Loaded.', 1000);`, source);
       if (fn) {
-        fn();
+        try {
+          fn();
+        } catch (e) {
+          console.log('Exception in load callback');
+          console.log(e);
+        }
       }
     });
   }
