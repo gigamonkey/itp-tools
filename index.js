@@ -3,7 +3,7 @@ import github from './modules/github';
 import makeEvaluator from './modules/evaluator';
 import monaco from './modules/editor';
 import replize from './modules/repl';
-import { jsonIfOk, textIfOk  } from './modules/fetch-helpers';
+import { jsonIfOk, textIfOk } from './modules/fetch-helpers';
 import Login from './modules/login';
 
 const GITHUB_ORG = 'gigamonkeys'; // FIXME: load this from config file from website.
@@ -63,13 +63,12 @@ const showLoggedIn = () => {
 };
 
 const toggleInfo = () => {
-  if ($("#banner").hidden) {
+  if ($('#banner').hidden) {
     showInfo();
   } else {
     hideInfo();
   }
-}
-
+};
 
 const showInfo = () => {
   const b = $('#banner');
@@ -221,8 +220,8 @@ const makeStorage = async () => {
 };
 
 const setup = async () => {
-  $("#banner").outerHTML = await fetch("banner.html").then(textIfOk);
-  $("#top-toolbar").outerHTML = await fetch("toolbar.html").then(textIfOk);
+  $('#banner').outerHTML = await fetch('banner.html').then(textIfOk);
+  $('#top-toolbar').outerHTML = await fetch('toolbar.html').then(textIfOk);
 
   const config = await configuration();
   const storage = await makeStorage();
@@ -233,7 +232,7 @@ const setup = async () => {
   // Put code in editor and evaluate it.
   const fillEditor = (code) => {
     editor.setValue(code);
-    evaluator.load(code, filename);
+    evaluator.load(code, filename, console.log);
   };
 
   // Evaluate code now in editor and also save it.
@@ -275,7 +274,6 @@ const setup = async () => {
     }
   };
 
-
   if (storage.repo !== null) {
     storage.ensureFileInBranch(filename).then(fillEditor);
   } else {
@@ -288,9 +286,9 @@ const setup = async () => {
   $('#github-icon').onclick = deanonymize;
   $('#info-circle').onclick = toggleInfo;
   $('#banner svg.x').onclick = hideInfo;
-  $("#submit").onclick = reevaluateCode;
+  $('#submit').onclick = reevaluateCode;
 
-  $("#minibuffer").onclick = () => $("#minibuffer").innerText = "";
+  $('#minibuffer').onclick = () => ($('#minibuffer').innerText = '');
 
   repl.focus();
 };

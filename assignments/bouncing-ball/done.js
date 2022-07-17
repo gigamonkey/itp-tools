@@ -3,7 +3,6 @@ let bounce = 0.7;
 let gravity = 0.001;
 let ballSize = 15;
 
-
 // The framework will draw the background for us. It also provides three
 // functions we can use:
 //
@@ -14,7 +13,6 @@ let ballSize = 15;
 //
 // now() - returns the current time in milliseconds.
 
-
 // Implement this in terms of drawShadow(), drawBall() and the functions below.
 // May also need to define a variable to keep track of when each bounce starts
 // as the time value that is passed in is just the current time, i.e. the same
@@ -23,12 +21,12 @@ let ballSize = 15;
 let start = now();
 
 const drawFrame = (time) => {
-    const h = height(time - start);
-    drawShadow(shadowSize(h), shadowDarkness(h));
-    drawBall(h, ballSize);
-    if (h <= 0) {
-        start = time;
-    }
+  const h = height(time - start);
+  drawShadow(shadowSize(h), shadowDarkness(h));
+  drawBall(h, ballSize);
+  if (h <= 0) {
+    start = time;
+  }
 };
 
 // Compute the height in pixels at time t after the ball hit the ground

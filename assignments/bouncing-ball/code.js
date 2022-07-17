@@ -3,7 +3,6 @@ let bounce = 0.7;
 let gravity = 0.001;
 let ballSize = 15;
 
-
 // The framework will draw the background for us. It also provides three
 // functions we can use:
 //
@@ -13,7 +12,6 @@ let ballSize = 15;
 // drawBall(height, size) - draws the ball at the given height and size.
 //
 // now() - returns the current time in milliseconds.
-
 
 // Implement this in terms of drawShadow(), drawBall() and the functions below.
 // May also need to define a variable to keep track of when each bounce starts

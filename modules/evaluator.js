@@ -109,7 +109,8 @@ class Evaluator {
   }
 }
 
-const errorMessage = (error, line, column, source) => source === 'repl' ? error : `${error} (line ${line - 2}, column ${column}) of ${source}`;
+const errorMessage = (error, line, column, source) =>
+  source === 'repl' ? error : `${error} (line ${line - 2}, column ${column}) of ${source}`;
 
 const evaluator = (config, scriptConfig, repl, message) =>
   new Evaluator(config, scriptConfig, repl, message);
