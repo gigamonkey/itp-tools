@@ -12,6 +12,16 @@
 
 - Move itp-template into gigamonkeys org
 
+- Investigate using data URLs to import editor code as module into REPL. (Idea
+  being: repl code is evaluated as a module but includes a line that does a
+  dynamic import of a data URL containing the current code from the editor. That
+  would mean that only exported things would be available in the REPL but that
+  might actually be good?)
+
+- Fix pretty printer
+
+- Give a way to explicitly save with a comment so the branches aren't 100% "Updating".
+
 - Rename gigamonkeys org or make new one.
 
 - Sort out logged out storage situation or rip it out. Goal should be to at
@@ -33,8 +43,6 @@
 - Write function to check that you're ready to go: logged into GitHub, repo
   exists, and repo well formed.
 
-- Show SHA subtly somewhere in web page.
-
 - Figure out how to be robust (or at least graceful) if token stored is
   sessionStorage has been revoked. (Probably if any API requests fail, clear the
   current token from sessionStorage and then show logged out state.)
@@ -53,3 +61,5 @@
 - Use netlify \_rewrite rule
   (https://docs.netlify.com/routing/redirects/rewrites-proxies/) to have a
   single page that handles all branches
+
+- Show SHA subtly somewhere in web page.
