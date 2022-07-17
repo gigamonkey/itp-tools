@@ -1,9 +1,3 @@
-- Build test case assignment based on my Replit tester.
-
-- Ah, crud. Find another way to trap runtime errors without creating a new scope.
-
-- Figure out how to keep the REPL from growing as it fills with output.
-
 - Componentize my editor (i.e. monaco plus the minibuffer, etc.)
 
 - Look into setting branch protection rule on main.
@@ -11,12 +5,6 @@
 - Add README to itp-template
 
 - Move itp-template into gigamonkeys org
-
-- Investigate using data URLs to import editor code as module into REPL. (Idea
-  being: repl code is evaluated as a module but includes a line that does a
-  dynamic import of a data URL containing the current code from the editor. That
-  would mean that only exported things would be available in the REPL but that
-  might actually be good?)
 
 - Fix pretty printer
 
@@ -57,6 +45,12 @@
 
 
 # Maybe not.
+
+- Investigate using data URLs to import editor code as module into REPL. (Idea
+  being: repl code is evaluated as a module but includes a line that does a
+  dynamic import of a data URL containing the current code from the editor. That
+  would mean that only exported things would be available in the REPL but that
+  might actually be good?)
 
 - Use netlify \_rewrite rule
   (https://docs.netlify.com/routing/redirects/rewrites-proxies/) to have a
