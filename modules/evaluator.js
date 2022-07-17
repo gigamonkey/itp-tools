@@ -49,9 +49,12 @@ class Evaluator {
    * definitions.
    */
   load(code, source) {
-    this.resetIframe(() =>
-      this.evaluate(`${code}\nminibuffer.message('Loaded.', 1000);`, source),
-    );
+    this.resetIframe(() => {
+      this.evaluate(`${code}\nminibuffer.message('Loaded.', 1000);`, source);
+      if (this.iframe.contentWindow.onCodeLoaded) {
+        this.iframe.contentWindow.onCodeLoaded();
+      }
+    });
   }
 
   /*
