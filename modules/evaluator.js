@@ -31,7 +31,7 @@ class Evaluator {
 
   /*
    * Evaluate code in the current iframe. The code can use the functions in the
-   * iframe's repl object (see newIframe) to communicate back.
+   * iframe's repl object (see restIframe) to communicate back.
    */
   evaluate(code, source) {
     this.fromRepl = source === 'repl';
@@ -48,11 +48,11 @@ class Evaluator {
    * Load the code from the editor into a new iframe. This wipes out all old
    * definitions.
    */
-  load(code, source) {
+  load(code, source, fn) {
     this.resetIframe(() => {
       this.evaluate(`${code}\nminibuffer.message('Loaded.', 1000);`, source);
-      if (this.iframe.contentWindow.onCodeLoaded) {
-        this.iframe.contentWindow.onCodeLoaded();
+      if (fn && this.iframe.contentWindow.onCodeLoaded) {
+        this.iframe.contentWindow.onCodeLoaded(fn);
       }
     });
   }
