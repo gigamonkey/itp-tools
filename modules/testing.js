@@ -30,6 +30,14 @@ function withClass(className, e) {
   return e;
 }
 
+const makePills = (testCases) => {
+  const pills = withClass('pills', $('<div>'));
+  testCases.forEach((spec) => {
+    pills.append(pill(spec.name));
+  });
+  return pills;
+};
+
 const pill = (name) => {
   const b = withClass('no_results', $('<button>', name));
   b.value = name;
@@ -96,10 +104,12 @@ const statusEmoji = (passed, exception) => {
 };
 
 class Testing {
-  constructor(div) {
+  constructor(div, testCases) {
     this.div = div;
+    this.testCases = testCases;
+    this.descriptions = Object.fromEntries(testCases.map((o) => [o.name, o.description]));
 
-    this.pills = withClass('pills', $('<div>'));
+    this.pills = makePills(testCases);
     this.description = withClass('description', $('<div>'));
     this.table = resultsTable();
     this.summary = withClass('summary', $('<div>'));
@@ -109,19 +119,10 @@ class Testing {
     this.div.append(this.table);
     this.div.append(this.summary);
 
-    this.testCases = null;
     this.selected = null;
   }
 
-  makePills(testCases) {
-    this.testCases = testCases;
-    this.descriptions = Object.fromEntries(testCases.map((o) => [o.name, o.description]));
-    testCases.forEach((spec) => {
-      this.pills.append(pill(spec.name));
-    });
-  }
-
-  stylePills(testResults) {
+  update(testResults) {
     this.pills.querySelectorAll('button').forEach((b) => {
       const results = testResults[b.value];
       b.classList.remove('no_results', 'some_failing', 'all_passing');
@@ -159,6 +160,6 @@ class Testing {
   }
 }
 
-const testing = (div) => new Testing(div);
+const testing = (div, testCases) => new Testing(div, testCases);
 
 export default testing;

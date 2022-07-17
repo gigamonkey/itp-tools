@@ -222,11 +222,10 @@ const makeStorage = async () => {
 
 const maybeSetupTesting = async (config) => {
   if (config.testing) {
-    const t = testing($(config.testing.id));
     const testCases = await fetch(config.testing.cases).then(jsonIfOk);
-    t.makePills(testCases);
+    const t = testing($(config.testing.id), testCases);
     return () => {
-      window.runTests(testCases, (r) => t.stylePills(r));
+      window.runTests(testCases, (r) => t.update(r));
     };
   } else {
     return () => console.log('no testing callback');
