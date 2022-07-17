@@ -1,4 +1,12 @@
 /*
+ * Turn a div we are given into a widget for displaying test results. We are not
+ * responsible for actually running the tests because that happens off in the
+ * hidden iframe. (Hmmm, possibly we could pass this object the evaluator and
+ * let it register with the evaluator to be notified when code is loaded so it
+ * can do it's thing. That's probably better. FIXME.)
+ */
+
+/*
  * Poor man's jQuery.
  */
 function $(s, t) {
@@ -42,10 +50,15 @@ class Testing {
   constructor(div) {
     this.div = div;
     this.pills = withClass('pills', $('<div>'));
+    this.description = withClass('description', $('<div>'));
     this.div.append(this.pills);
+    this.div.append(this.description);
+    this.testCases = null;
   }
 
   makePills(testCases) {
+    this.testCases = testCases;
+    this.descriptions = Object.fromEntries(testCases.map((o) => [o.name, o.description]));
     testCases.forEach((spec) => {
       this.pills.append(pill(spec.name));
     });
@@ -61,9 +74,10 @@ class Testing {
   }
 
   displayResults(name, results) {
-    const pre = $('<pre>');
-    pre.append(JSON.stringify(results, null, 2));
-    this.div.appendChild(pre);
+    const p = $('<p>');
+    p.append($('<b>', `${name}: `));
+    p.append(this.descriptions[name]);
+    this.description.replaceChildren(p);
   }
 }
 
