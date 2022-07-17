@@ -110,6 +110,7 @@ class Testing {
     this.div.append(this.summary);
 
     this.testCases = null;
+    this.selected = null;
   }
 
   makePills(testCases) {
@@ -127,9 +128,14 @@ class Testing {
       b.classList.add(pillStyle(results));
       b.onclick = () => this.displayResults(b.value, results);
     });
+
+    if (this.selected) {
+      this.displayResults(this.selected, testResults[this.selected]);
+    }
   }
 
   displayResults(name, results) {
+    this.selected = name;
     const p = $('<p>');
     p.append($('<b>', `${name}: `));
     p.append(this.descriptions[name]);
