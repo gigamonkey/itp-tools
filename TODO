@@ -1,8 +1,6 @@
 - Inject run-tests.js into the iframe if testing is on rather than requiring a
   frame to specify it.
 
-- Move test cases into config.json.
-
 - Componentize my editor (i.e. monaco plus the minibuffer, etc.)
 
 - Look into setting branch protection rule on main.

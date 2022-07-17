@@ -220,9 +220,9 @@ const makeStorage = async () => {
   return files(branch, repo);
 };
 
-const maybeSetupTesting = async (config) => {
+const maybeSetupTesting = (config) => {
   if (config.testing) {
-    const testCases = await fetch(config.testing.cases).then(jsonIfOk);
+    const testCases = config.testing.cases;
     const t = testing($(config.testing.id), testCases);
     return () => {
       window.runTests(testCases, (r) => t.update(r));
@@ -240,7 +240,7 @@ const setup = async () => {
   const storage = await makeStorage();
   const evaluator = makeEvaluator(config.iframe, config.script, repl, message);
 
-  const testingCallback = await maybeSetupTesting(config);
+  const testingCallback = maybeSetupTesting(config);
 
   const filename = config.files[0];
 
