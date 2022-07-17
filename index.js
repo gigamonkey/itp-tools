@@ -290,6 +290,8 @@ const setup = async () => {
   $('#banner svg.x').onclick = hideInfo;
   $("#submit").onclick = reevaluateCode;
 
+  $("#minibuffer").onclick = () => $("#minibuffer").innerText = "";
+
   repl.focus();
 };
 
