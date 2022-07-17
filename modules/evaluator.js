@@ -26,6 +26,7 @@ class Evaluator {
     this.message = message;
     this.iframe = null;
     this.resetIframe(() => repl.start());
+    this.fromRepl = false;
   }
 
   /*
@@ -33,6 +34,7 @@ class Evaluator {
    * iframe's repl object (see newIframe) to communicate back.
    */
   evaluate(code, source) {
+    this.fromRepl = source === 'repl';
     const d = this.iframe.contentDocument;
     const s = d.createElement('script');
     Object.entries(this.scriptConfig).forEach(([k, v]) => {
@@ -48,7 +50,7 @@ class Evaluator {
    */
   load(code, source) {
     this.resetIframe(() =>
-      this.evaluate(`try{ ${code}\n} catch (e) { minibuffer.message(String(e)); }\nminibuffer.message('Loaded.', 1000);`, source),
+      this.evaluate(`${code}\nminibuffer.message('Loaded.', 1000);`, source),
     );
   }
 
@@ -94,13 +96,17 @@ class Evaluator {
       return;
     }
 
-    if (source === 'repl') {
-      this.repl.error(error);
+    const e = errorMessage(error, line, column, source);
+
+    if (this.fromRepl) {
+      this.repl.error(e);
     } else {
-      this.message(`${error} (line ${line - 2}, column ${column})`);
+      this.message(e);
     }
   }
 }
+
+const errorMessage = (error, line, column, source) => source === 'repl' ? error : `${error} (line ${line - 2}, column ${column}) of ${source}`;
 
 const evaluator = (config, scriptConfig, repl, message) =>
   new Evaluator(config, scriptConfig, repl, message);
