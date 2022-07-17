@@ -2,10 +2,7 @@
   "env": {
     "browser": true
   },
-  "extends": [
-    "airbnb-base",
-    "prettier"
-  ],
+  "extends": ["airbnb-base", "prettier"],
   "parserOptions": {
     "ecmaVersion": "2022"
   },
@@ -13,18 +10,14 @@
     "max-classes-per-file": "off",
     "no-console": "off",
     "no-else-return": "off",
-    "no-param-reassign": [
-      "error", { "props": false }
-    ],
+    "no-param-reassign": ["error", { "props": false }],
     "no-shadow": "off",
     "no-use-before-define": "off",
     "spaced-comment": [
       "error",
       "always",
       {
-        "exceptions": [
-          "/"
-        ]
+        "exceptions": ["/"]
       }
     ],
     "yoda": [
