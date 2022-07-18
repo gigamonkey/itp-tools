@@ -3,6 +3,8 @@
 
 - Componentize my editor (i.e. monaco plus the minibuffer, etc.)
 
+- Break out DOM manipulation stuff into module.
+
 - Look into setting branch protection rule on main.
 
 - Add README to itp-template
@@ -42,10 +44,20 @@
   App for finer grained permissions plus maybe the ability to do stuff in the
   org that the user doesn't have permission to do.
 
+# Fit and finish
+
+- Sort out the font situation: use web fonts probably.
+
 # Super polish
 
 - Make the clipboard icon move a bit when you press it.
 
+
+# Future directions/experiments
+
+- Can we use web workers for evaluation? They can only load from files, it
+  seems, which might be a problem. (Maybe just pass the code in as a string via
+  postMessage and `eval` or `Function()` it in the worker.)
 
 # Maybe not.
 
