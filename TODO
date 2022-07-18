@@ -13,6 +13,8 @@
 
 - Fix pretty printer
 
+- Create top-level index.html with useful links.
+
 - Give a way to explicitly save with a comment so the branches aren't 100% "Updating".
 
 - Rename gigamonkeys org or make new one.
@@ -50,8 +52,7 @@
 
 # Super polish
 
-- Make the clipboard icon move a bit when you press it.
-
+- Make the clipboard icon in the banner move a bit when you press it.
 
 # Future directions/experiments
 
