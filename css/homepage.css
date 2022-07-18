@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+body {
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  height: 100%;
+  width: 100%;
+  background: #f2f2f2;
+}
+
+.main {
+  width: calc(min(40em, 80vw));
+  margin: 50px auto;
+  border: 1px solid #e6e6e6;
+  background: #f9f2f9;
+  padding: 2em;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+p {
+  margin-top: 0.85em;
+  line-height: 1.75em;
+}

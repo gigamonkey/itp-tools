@@ -9,7 +9,8 @@
 }
 
 body {
-  font-family: Menlo, Monaco, 'Courier New', monospace;
+  font-family: -apple-system,BlinkMacSystemFont,Segoe WPC,Segoe UI,HelveticaNeue-Light,system-ui,Ubuntu,Droid Sans,sans-serif;
+  //font-family: Menlo, Monaco, 'Courier New', monospace;
   font-size: 12px;
   display: flex;
   flex-direction: column;
