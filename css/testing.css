@@ -7,39 +7,48 @@
 }
 
 .pills {
-  padding: 0 0;
+  padding: 10px 0;
+  text-align: center;
 }
 
 .pills button {
-  margin: 4px;
-  padding: 6px;
-  border: none;
+  margin: 4px 8px;
+  padding: 6px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
   background: rgba(0, 0, 0, 0.2);
+  position: relative;
+  color: black;
 }
 
-.pills button.selected {
-  background: blue;
-  color: white;
+.pills button .marker {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: inline-block;
+  font-size: 12px;
+  width: 1em;
+  height: 1em;
 }
 
 .pills button.all_passing {
-  background: green;
-  color: white;
+  background: rgba(100, 255, 100, 0.5);
 }
 
 .pills button.some_failing {
-  background: red;
-  color: white;
+  background: rgba(255, 100, 100, 0.5);
 }
 
 .pills button.no_results {
   background: rgba(0, 0, 0, 0.2);
-  color: white;
 }
 
 .description {
-  padding: 20px;
+  padding: 0 20px 20px;
   text-align: center;
+}
+
+.description p {
+  padding-top: 0.75em;
 }
 
 table.results {
@@ -89,6 +98,12 @@ tr.pass {
 
 tr.fail {
   background: rgba(255, 100, 100, 0.2);
+}
+
+.no-results {
+  text-align: center;
+  font-size: 1.2em;
+  margin-top: 1em;
 }
 
 .summary {

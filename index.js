@@ -42,11 +42,6 @@ const url = (s) => {
   return e;
 };
 
-const fill = (parent, selector, ...what) => {
-  const e = parent.querySelector(selector);
-  e.replaceChildren(...what);
-};
-
 const message = (text, fade) => {
   $('#minibuffer').innerText = text;
   if (fade) {

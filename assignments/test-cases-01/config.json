@@ -39,7 +39,9 @@
       },
       {
         "name": "divide",
-        "description": "A function that takes two numbers and returns their quotient.",
+        "description": [
+          "A function that takes two numbers and returns their quotient.",
+          "You can assume the second argument (the divisor) is not 0."],
         "cases": [
           { "args": [0, 10], "expected": 0 },
           { "args": [10, 2], "expected": 5 },

@@ -25,6 +25,11 @@ function $(s, t) {
   }
 }
 
+const fill = (parent, selector, ...what) => {
+  const e = parent.querySelector(selector);
+  e.replaceChildren(...what);
+};
+
 function withClass(className, e) {
   e.className = className;
   return e;
@@ -41,16 +46,17 @@ const makePills = (testCases) => {
 const pill = (name) => {
   const b = withClass('no_results', $('<button>', name));
   b.value = name;
+  b.append(withClass('marker', $('<span>', '')));
   return b;
 };
 
 const pillStyle = (results) => {
   if (results === null) {
-    return 'no_results';
+    return { style: 'no_results', marker: '' };
   } else if (results.every((x) => x.passed)) {
-    return 'all_passing';
+    return { style: 'all_passing', marker: '✅' };
   } else {
-    return 'some_failing';
+    return { style: 'some_failing', marker: '❌' };
   }
 };
 
@@ -75,6 +81,15 @@ const resultsTable = () => {
   table.append(thead);
   table.append($('<tbody>'));
   return table;
+};
+
+const noResults = () => {
+  const div = withClass(
+    'no-results',
+    $('<div>', 'No test results. You need to define the function.'),
+  );
+  div.hidden = true;
+  return div;
 };
 
 const resultsBody = (name, results) => {
@@ -103,6 +118,21 @@ const statusEmoji = (passed, exception) => {
   }
 };
 
+const functionDescription = (name, description) => {
+  const desc = withClass('description', $('<div>'));
+  const prefix = $('<b>', `${name}: `);
+  if (typeof description === 'string') {
+    const p = $('<p>');
+    p.replaceChildren(prefix, $(description));
+    desc.append(p);
+  } else {
+    const ps = description.map((d) => $('<p>', d));
+    ps[0].prepend(prefix);
+    desc.replaceChildren(...ps);
+  }
+  return desc;
+};
+
 class Testing {
   constructor(div, testCases) {
     this.div = div;
@@ -112,21 +142,27 @@ class Testing {
     this.pills = makePills(testCases);
     this.description = withClass('description', $('<div>'));
     this.table = resultsTable();
+    this.noResults = noResults();
     this.summary = withClass('summary', $('<div>'));
 
     this.div.append(this.pills);
     this.div.append(this.description);
     this.div.append(this.table);
+    this.div.append(this.noResults);
     this.div.append(this.summary);
 
-    this.selected = null;
+    this.selected = testCases[0].name;
   }
 
   update(testResults) {
     this.pills.querySelectorAll('button').forEach((b) => {
       const results = testResults[b.value];
       b.classList.remove('no_results', 'some_failing', 'all_passing');
-      b.classList.add(pillStyle(results));
+
+      const { style, marker } = pillStyle(results);
+      b.classList.add(style);
+      fill(b, '.marker', $(marker));
+
       b.onclick = () => this.displayResults(b.value, results);
     });
 
@@ -137,25 +173,28 @@ class Testing {
 
   displayResults(name, results) {
     this.selected = name;
-    const p = $('<p>');
-    p.append($('<b>', `${name}: `));
-    p.append(this.descriptions[name]);
-    this.description.replaceChildren(p);
+
+    const newDesc = functionDescription(name, this.descriptions[name]);
+    this.description.replaceWith(newDesc);
+    this.description = newDesc;
 
     if (results !== null) {
       const old = this.table.querySelector('tbody');
       this.table.replaceChild(resultsBody(name, results), old);
       this.table.hidden = false;
+      this.noResults.hidden = true;
 
       const passed = results.reduce((a, b) => a + (b.passed ? 1 : 0), 0);
+      const all = passed === results.length ? 'All ' : '';
       const stop = passed === results.length ? '!' : '.';
 
       this.summary.replaceChildren(
-        $('<p>', `${passed} of ${results.length} test cases passed${stop}`),
+        $('<p>', `${all}${passed} of ${results.length} test cases passed${stop}`),
       );
     } else {
+      this.noResults.hidden = false;
       this.table.hidden = true;
-      this.summary.replaceChildren();
+      this.summary.hidden = true;
     }
   }
 }
