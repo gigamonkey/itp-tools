@@ -22,7 +22,7 @@
           { "args": [0, 10], "expected": -10 },
           { "args": [10, 0], "expected": 10 },
           { "args": [10, 11], "expected": -1 },
-          { "args": [1, 2], "expected": 3 }
+          { "args": [1, 2], "expected": -1 }
         ]
       },
       {
@@ -35,6 +35,16 @@
           { "args": [10, 11], "expected": 110 },
           { "args": [1, 2], "expected": 2 },
           { "args": [2, 3], "expected": 6 }
+        ]
+      },
+      {
+        "name": "divide",
+        "description": "A function that takes two numbers and returns their quotient.",
+        "cases": [
+          { "args": [0, 10], "expected": 0 },
+          { "args": [10, 2], "expected": 5 },
+          { "args": [1, 2], "expected": 0.5 },
+          { "args": [1, 1], "expected": 1 }
         ]
       }
     ]
