@@ -101,6 +101,9 @@ class Files {
       this.inMemory[file] = [];
     }
     this.inMemory[file].push(content);
+
+    // kludge to let .then() work.
+    return new Promise((res, rej) => res({}));
   }
 
   gitPath(file) {
