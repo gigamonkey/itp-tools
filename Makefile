@@ -31,6 +31,8 @@ to_publish += css/
 to_publish += fonts/
 to_publish += img/
 to_publish += js/
+to_publish += demo/
+to_publish += assignments/
 
 all:  build
 
