@@ -27,6 +27,8 @@ const el = (name, text) => {
   return e;
 };
 
+const text = (t) => document.createTextNode(t);
+
 const a = (text, href, target) => {
   const e = el('a', text);
   e.setAttribute('href', href);
@@ -57,10 +59,12 @@ const message = (text, fade) => {
 };
 
 const showLoggedIn = () => {
-  const u = login.repoURL ? a(login.username, login.repoURL, '_blank') : el('span', login.username);
-  const e = $('#logged-in');
-  fill(e, '.github-user', u);
-  e.hidden = false;
+  const u = login.repoURL ? a(login.username, login.repoURL, '_blank') : text(login.username);
+  $('#username').replaceChildren(u);
+};
+
+const showLoggedOut = () => {
+  $('#username').replaceChildren(text('anonymous'));
 };
 
 const toggleInfo = () => {
@@ -126,6 +130,7 @@ const hideBanner = () => {
 
 const goAnonymous = () => {
   login.anonymous = true;
+  showLoggedOut();
   showBanner();
 };
 
