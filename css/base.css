@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Montserrat:wght@100;300;400;500&family=Open+Sans:wght@300;400;500;600&display=swap');
+
+.logo {
+  font-size: 64px;
+  font-family: 'Alfa Slab One', cursive;
+}
+
+.logo a {
+  text-decoration: none;
+  color: inherit;
+}
+
+p.logo {
+  line-height: 1em;
+  margin: 0;
+  margin-bottom: 0.5em;
+}
+
+
+h1 {
+  font-weight: 500;
+}
