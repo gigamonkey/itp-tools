@@ -233,8 +233,6 @@ const maybeSetupTesting = (config) => {
 };
 
 const setup = async () => {
-  $('#banner').outerHTML = await fetch('banner.html').then(textIfOk);
-  $('#top-toolbar').outerHTML = await fetch('toolbar.html').then(textIfOk);
 
   const config = await configuration();
   const storage = await makeStorage();
