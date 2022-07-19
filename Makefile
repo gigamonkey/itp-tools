@@ -28,7 +28,6 @@ built_js += $(addprefix js/, $(worker_entry_points))
 
 to_publish := $(shell git ls-files *.html)
 to_publish += css/
-to_publish += fonts/
 to_publish += img/
 to_publish += js/
 to_publish += demo/
